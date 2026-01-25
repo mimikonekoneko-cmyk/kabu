@@ -3,16 +3,13 @@ import numpy as np
 import yfinance as yf
 import requests
 import os
-from datetime import datetime
 
 # --- Messaging API CONFIG ---
-# GitHubのSecretsに設定した変数から読み込みます
 ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 USER_ID = os.getenv("LINE_USER_ID")
 
-# --- 戦略パラメータ (2022年有益データ反映済) ---
-MA_SHORT = 50   
-MA_LONG = 200   
+# --- ロジック定数 ---
+MA_SHORT, MA_LONG = 50, 200
 VOL_SPIKE_RATIO = 1.15
 TIGHTNESS_TIER1 = 2.5
 TIGHTNESS_TIER2 = 3.5
@@ -30,70 +27,83 @@ TICKERS = {
 
 class StrategicAnalyzer:
     @staticmethod
-    def get_market_weather():
-        try:
-            m_data = yf.download(["SPY", "^VIX", "^TNX"], period="200d", progress=False)
-            vix = m_data['Close']['^VIX'].iloc[-1]
-            tnx = m_data['Close']['^TNX'].iloc[-1]
-            spy = m_data['Close']['SPY']
-            spy_ma200 = spy.rolling(200).mean().iloc[-1]
-            spy_now = spy.iloc[-1]
-            dist = (spy_now - spy_ma200) / spy_ma200 * 100
-            if spy_now > spy_ma200 and vix < 22:
-                return "☀️快晴", "積極参入。MA200上の強いトレンドです。"
-            elif spy_now < spy_ma200 or vix > 28:
-                return "⛈️荒天", "全休推奨。資金を守るのが今の仕事です。"
-            else:
-                return "🌥️曇天", "慎重に。個別銘柄のMA50保持を確認。"
-        except: return "❔不明", "データ不足"
-
-    @staticmethod
-    def evaluate_tier(df):
-        if len(df) < MA_LONG + 5: return 0, ["データ不足"]
+    def analyze_ticker(t, df, sector):
+        if len(df) < MA_LONG: return None
+        
         c = df['Close']
+        h, l, v = df['High'], df['Low'], df['Volume']
+        
+        # 1. 守備力の判定 (2022年回避ロジック)
         ma50 = c.rolling(MA_SHORT).mean().iloc[-1]
         ma200 = c.rolling(MA_LONG).mean().iloc[-1]
-        ma200_prev = c.rolling(MA_LONG).mean().iloc[-5]
-        if not (c.iloc[-1] > ma50 and c.iloc[-1] > ma200 and ma200 > ma200_prev):
-            return 0, ["トレンドNG"]
-        tr = pd.concat([(df['High']-df['Low']), (df['High']-df['Close'].shift()).abs(), (df['Low']-df['Close'].shift()).abs()], axis=1).max(axis=1)
-        tightness = (float(df['High'].iloc[-5:].max() - df['Low'].iloc[-5:].min())) / tr.rolling(14).mean().iloc[-1]
-        vol_spike = df['Volume'].iloc[-1] > df['Volume'].rolling(50).mean().iloc[-1] * VOL_SPIKE_RATIO
-        dist_to_high = (df['High'].rolling(20).max().iloc[-1] - c.iloc[-1]) / c.iloc[-1]
-        if tightness <= TIGHTNESS_TIER1 and vol_spike: return 1, ["Tier1:王道VCP"]
-        if tightness <= TIGHTNESS_TIER2 and dist_to_high < 0.05: return 2, ["Tier2:前兆"]
-        return 0, [f"条件未達(T:{tightness:.1f})"]
+        ma200_prev = c.rolling(MA_LONG).mean().iloc[-10] # 2週間前比較
+        
+        trend_ok = c.iloc[-1] > ma50 and c.iloc[-1] > ma200 and ma200 > ma200_prev
+        if not trend_ok: return None
 
-def send_line_message(msg):
-    """Messaging APIを使用したプッシュ通知"""
+        # 2. 攻撃力の判定 (VCPロジック)
+        # タイトネス計算
+        tr = pd.concat([(h-l), (h-c.shift()).abs(), (l-c.shift()).abs()], axis=1).max(axis=1)
+        tightness = (float(h.iloc[-5:].max() - l.iloc[-5:].min())) / tr.rolling(14).mean().iloc[-1]
+        
+        # 出来高確認
+        vol_avg = v.rolling(50).mean().iloc[-1]
+        vol_ratio = v.iloc[-1] / vol_avg
+        
+        # INの目安 (直近5日の高値 + α)
+        pivot = h.iloc[-5:].max() * 1.002 
+        
+        # スコアリング (最大100点)
+        score = 60 # 基本点
+        if tightness < 2.0: score += 20
+        elif tightness < 3.0: score += 10
+        if vol_ratio > 1.2: score += 20
+        elif vol_ratio > 1.0: score += 10
+
+        tier = 0
+        if trend_ok and tightness <= TIGHTNESS_TIER1 and vol_ratio >= VOL_SPIKE_RATIO: tier = 1
+        elif trend_ok and tightness <= TIGHTNESS_TIER2: tier = 2
+        
+        if tier == 0: return None
+
+        return {
+            "tier": tier, "score": score, "pivot": pivot, 
+            "tightness": tightness, "vol_ratio": vol_ratio, "sector": sector
+        }
+
+def send_line(msg):
     if not ACCESS_TOKEN or not USER_ID: return
     url = "https://api.line.me/v2/bot/message/push"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {ACCESS_TOKEN}"
-    }
-    payload = {
-        "to": USER_ID,
-        "messages": [{"type": "text", "text": msg}]
-    }
-    try:
-        requests.post(url, headers=headers, json=payload)
-    except: pass
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {ACCESS_TOKEN}"}
+    payload = {"to": USER_ID, "messages": [{"type": "text", "text": msg}]}
+    requests.post(url, headers=headers, json=payload)
 
 def run_mission():
-    weather, advice = StrategicAnalyzer.get_market_weather()
-    report = [f"🛡️ Sentinel 戦略報告\n天気: {weather}\n助言: {advice}\n" + "-"*15]
-    hits = {1: [], 2: []}; rejects = {}
     all_data = yf.download(list(TICKERS.keys()), period="300d", progress=False, group_by='ticker')
+    results = []
+    
     for t, sec in TICKERS.items():
-        df = all_data[t]
-        if df.empty or len(df) < 200: continue
-        tier, reasons = StrategicAnalyzer.evaluate_tier(df)
-        if tier > 0: hits[tier].append(f"{t}({sec})")
-        else: rejects[reasons[0]] = rejects.get(reasons[0], 0) + 1
-    report.append(f"🔥Tier1: {', '.join(hits[1]) if hits[1] else 'なし'}")
-    report.append(f"⚡Tier2: {', '.join(hits[2]) if hits[2] else 'なし'}")
-    send_line_message("\n".join(report))
+        res = StrategicAnalyzer.analyze_ticker(t, all_data[t], sec)
+        if res: results.append((t, res))
+    
+    # スコア順にソート
+    results.sort(key=lambda x: x[1]['score'], reverse=True)
+    
+    report = ["🛡️ Sentinel v16.0 偵察報告", "----------------"]
+    
+    if not results:
+        report.append("現在、112%ロジックに合致する銘柄はありません。2022年のような地固めを待つ時期です。")
+    else:
+        for t, r in results:
+            t_icon = "🔥" if r['tier'] == 1 else "⚡"
+            msg = f"{t_icon}{t} ({r['sector']})\n"
+            msg += f" ├ 推奨スコア: {r['score']}点\n"
+            msg += f" ├ IN目安: ${r['pivot']:.2f}超\n"
+            msg += f" └ 根拠: 収縮度{r['tightness']:.1f} / 出来高{r['vol_ratio']:.1f}倍\n"
+            if r['tightness'] < 2.5: msg += "   (※爆発寸前の非常にタイトな形状)"
+            report.append(msg)
+
+    send_line("\n".join(report))
 
 if __name__ == "__main__":
     run_mission()
