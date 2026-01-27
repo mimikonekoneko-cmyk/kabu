@@ -3,14 +3,14 @@ import numpy as np
 import yfinance as yf
 import requests
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # --- CONFIG (GitHub Secretsから読み込み) ---
 ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 USER_ID = os.getenv("LINE_USER_ID")
 
 # --- 予算設定 ---
-BUDGET_JPY = 200000      # 総予算 20万円
+BUDGET_JPY = 350000      # 総予算 35万円（BLKも拾えるように）
 
 # --- テクニカルパラメータ ---
 MA_SHORT, MA_LONG = 50, 200
@@ -47,15 +47,13 @@ SECTOR_ETF = {
     'Health': 'XLV',
     'Ind': 'XLI',
     'EV': 'IDRV',
-    'Crypto': 'CRYPTO',  # placeholder; no ETF -> treated as None
+    'Crypto': 'CRYPTO',  # placeholder
     'Power': 'PWR'
 }
 
-# --- マクロイベント（手動リスト。必要に応じて更新） ---
+# --- マクロイベント（必要に応じて更新） ---
 MACRO_EVENTS = [
-    # 例: 'YYYY-MM-DD'
-    '2026-01-30',  # 例: FOMC（実際の日付はユーザーで更新してください）
-    # ここに主要イベント日を追加
+    # '2026-01-30',  # 例: FOMC
 ]
 
 def get_current_fx_rate():
@@ -64,14 +62,11 @@ def get_current_fx_rate():
         data = yf.download("JPY=X", period="1d", progress=False)
         if not data.empty:
             return float(data['Close'].iloc[-1])
-        return 155.0  # 取得失敗時のフォールバック
+        return 155.0
     except:
         return 155.0
 
-# --- ファンダメンタル補助関数 ---
-
 def is_macro_event_today():
-    """今日が主要マクロイベント日かどうか"""
     try:
         today = datetime.now().strftime("%Y-%m-%d")
         return today in MACRO_EVENTS
@@ -81,51 +76,39 @@ def is_macro_event_today():
 def is_earnings_near(ticker, days_window=5):
     """
     決算日が近いか判定。
-    - True: 決算が近い（±days_window）
-    - False: 決算が近くない
-    - None: 情報取得できず
+    True: 決算±days_window
+    False: 遠い
+    None: 情報取れず
     """
     try:
         tk = yf.Ticker(ticker)
         cal = tk.calendar
         if cal is None or cal.empty:
             return None
-        # yfinance の calendar の形式は環境で異なるため柔軟に処理
-        # calendar の最初のセルを取り、datetime に変換を試みる
+
         try:
-            # pandas DataFrame で行ラベルが 'Earnings Date' の場合
             if 'Earnings Date' in cal.index:
                 val = cal.loc['Earnings Date'].values[0]
             else:
-                # それ以外は最初の要素を使う
-                val = cal.iloc[0,0]
-            # val が配列やリストの場合は最初の要素を使う
+                val = cal.iloc[0, 0]
             if isinstance(val, (list, tuple, np.ndarray)):
                 val = val[0]
-            # pandas.Timestamp なら日付化
             if hasattr(val, 'to_pydatetime'):
                 earnings_date = val.to_pydatetime()
-            elif isinstance(val, datetime):
-                earnings_date = val
             else:
-                # 文字列ならパース
                 earnings_date = pd.to_datetime(val)
         except Exception:
             return None
 
         days = (earnings_date.date() - datetime.now().date()).days
-        if abs(days) <= days_window:
-            return True
-        return False
+        return abs(days) <= days_window
     except Exception:
         return None
 
 def sector_is_strong(sector):
     """
-    セクターETFのMA200が上向きか判定
-    - True: 強い（MA200上向き）
-    - False: 弱い（MA200下向き）
-    - None: 情報取得できず / マッピングなし
+    セクターETFのMA200が上向きか
+    True / False / None
     """
     try:
         etf = SECTOR_ETF.get(sector)
@@ -135,36 +118,27 @@ def sector_is_strong(sector):
         if df is None or df.empty or len(df) < 210:
             return None
         ma200 = df['Close'].rolling(200).mean()
-        # 上向き判定：直近値 > 10日前の値
         return ma200.iloc[-1] > ma200.iloc[-10]
     except Exception:
         return None
 
 def basic_fundamental_check(ticker):
     """
-    簡易的な財務チェック
-    - True: OK
-    - False: NG（危険）
-    - None: 情報取得できず
-    チェック項目（簡易）:
-      - operatingCashflow > 0
-      - debtToEquity not extremely high (例: <= 300)
-      - profitMargins > 0
+    簡易財務チェック
+    True: OK
+    False: NG
+    None: 判定不能
     """
     try:
         info = yf.Ticker(ticker).info
-        # info が空なら None
         if not info:
             return None
         ocf = info.get("operatingCashflow")
         dte = info.get("debtToEquity")
         pm = info.get("profitMargins")
 
-        # 値が None の場合は判定不能（None）
         if ocf is None and dte is None and pm is None:
             return None
-
-        # 個別に判定。どれかがNGなら False
         if ocf is not None and ocf <= 0:
             return False
         if dte is not None and dte > 300:
@@ -178,17 +152,18 @@ def basic_fundamental_check(ticker):
 class StrategicAnalyzer:
     @staticmethod
     def analyze_ticker(t, df, sector, max_price_usd):
-        if len(df) < MA_LONG: return None
+        if len(df) < MA_LONG:
+            return None
         
         c = df['Close']
         h, l, v = df['High'], df['Low'], df['Volume']
         current_price = float(c.iloc[-1])
         
-        # 🟢 リアルタイム予算フィルター
+        # 予算フィルター
         if current_price > max_price_usd:
             return None
         
-        # トレンド分析
+        # トレンド
         ma50 = c.rolling(MA_SHORT).mean().iloc[-1]
         ma200 = c.rolling(MA_LONG).mean().iloc[-1]
         ma200_prev = c.rolling(MA_LONG).mean().iloc[-10]
@@ -196,21 +171,25 @@ class StrategicAnalyzer:
         if not (current_price > ma50 > ma200 and ma200 > ma200_prev):
             return None
 
-        # 収縮度 (Tightness)
+        # 収縮度
         tr = pd.concat([(h-l), (h-c.shift()).abs(), (l-c.shift()).abs()], axis=1).max(axis=1)
         atr14 = tr.rolling(14).mean().iloc[-1]
         range_5d = h.iloc[-5:].max() - l.iloc[-5:].min()
         tightness = float(range_5d / atr14) if atr14 and atr14 != 0 else float('inf')
-        if tightness > 3.0: return None
+        if tightness > 3.0:
+            return None
         
-        # スコアリング
+        # 出来高
         vol_avg = v.rolling(50).mean().iloc[-1]
         vol_ratio = v.iloc[-1] / vol_avg if vol_avg and vol_avg != 0 else 1.0
         
         score = 60
-        if tightness < 1.5: score += 25
-        elif tightness < 2.0: score += 15
-        if 0.7 <= vol_ratio <= 1.0: score += 15
+        if tightness < 1.5:
+            score += 25
+        elif tightness < 2.0:
+            score += 15
+        if 0.7 <= vol_ratio <= 1.0:
+            score += 15
         
         pivot = h.iloc[-5:].max() * 1.002
         stop_loss = pivot * 0.93
@@ -234,15 +213,94 @@ def send_line(msg):
     except Exception as e:
         print("LINE送信エラー:", e)
 
+def build_portfolio(results, budget_jpy, fx_rate):
+    """
+    Sentinel v19.0 ポートフォリオ生成
+    - results: [(ticker, data), ...]
+    - budget_jpy: 350000 など
+    - fx_rate: USD/JPY
+    """
+    if not results:
+        return "📦 ポートフォリオ: 対象銘柄なし"
+
+    budget_usd = budget_jpy / fx_rate
+
+    # セクター補正
+    sector_weight = {
+        'Fin': 1.2,
+        'Energy': 1.1,
+        'Semi': 1.0,
+        'Retail': 1.0,
+        'AI': 0.9,
+        'Cons': 0.8
+    }
+
+    weighted = []
+    for t, r in results:
+        base = r['score']
+        sec = r['sector']
+        w = base * sector_weight.get(sec, 1.0)
+        weighted.append((t, r, w))
+
+    total_weight = sum(w for _, _, w in weighted)
+    if total_weight == 0:
+        return "📦 ポートフォリオ: 重み計算不可"
+
+    portfolio = []
+    remaining = budget_usd
+
+    # 理想額→整数株
+    for t, r, w in weighted:
+        ideal_usd = budget_usd * (w / total_weight)
+        price = r['price']
+        shares = int(ideal_usd // price)
+        if shares > 0:
+            cost = shares * price
+            remaining -= cost
+            portfolio.append({
+                "ticker": t,
+                "shares": shares,
+                "price": price,
+                "cost": cost,
+                "target": r['target']
+            })
+
+    # 余り予算でスコア上位に追加購入
+    for t, r, w in weighted:
+        price = r['price']
+        if remaining >= price:
+            for p in portfolio:
+                if p["ticker"] == t:
+                    extra = int(remaining // price)
+                    if extra > 0:
+                        p["shares"] += extra
+                        p["cost"] += extra * price
+                        remaining -= extra * price
+                    break
+
+    lines = []
+    lines.append(f"📦 推奨ポートフォリオ（予算 ¥{budget_jpy:,}）\n")
+
+    total_cost_jpy = 0
+    for p in portfolio:
+        cost_jpy = int(p["cost"] * fx_rate)
+        total_cost_jpy += cost_jpy
+        lines.append(
+            f"{p['ticker']}: {p['shares']}株（¥{cost_jpy:,}） "
+            f"売却推奨: ${p['target']:.2f}"
+        )
+
+    lines.append(f"\n💰 使用額: ¥{total_cost_jpy:,}")
+    lines.append(f"💵 残り: ¥{int(remaining * fx_rate):,}")
+
+    return "\n".join(lines)
+
 def run_mission():
-    # 🛰️ 最新レートを取得
     current_fx = get_current_fx_rate()
-    # 予算20万円の90%を、1銘柄あたりの上限（ドル）とする
     max_price_usd = (BUDGET_JPY / current_fx) * 0.9
 
     print(f"🛰️ 偵察開始... (FX: {current_fx:.2f}円, 予算上限: ${max_price_usd:.1f})")
 
-    # マクロイベントチェック（全体）
     macro_today = is_macro_event_today()
     if macro_today:
         print("⚠️ 本日は主要マクロイベント日のため、全シグナルを無効化します。")
@@ -251,35 +309,25 @@ def run_mission():
     
     results = []
     for t, sec in TICKERS.items():
-        # 1) マクロイベント日ならスキップ
         if macro_today:
-            # レポート用に None を残す（スキップ）
             continue
 
-        # 2) 決算回避
         earnings_near = is_earnings_near(t)
         if earnings_near is True:
-            # 決算が近い -> スキップ
             continue
 
-        # 3) セクター判断
         sector_strength = sector_is_strong(sec)
         if sector_strength is False:
-            # セクターが弱い -> スキップ
             continue
 
-        # 4) 財務健全性（簡易）
         fund_ok = basic_fundamental_check(t)
         if fund_ok is False:
-            # 財務がNG -> スキップ
             continue
 
-        # 5) テクニカル判定
         try:
             df_t = all_data[t]
             res = StrategicAnalyzer.analyze_ticker(t, df_t, sec, max_price_usd)
-            # attach metadata for reporting
-            if res:
+            if res and res['score'] >= MIN_SCORE:
                 res['earnings_near'] = earnings_near if earnings_near is not None else None
                 res['sector_strength'] = sector_strength if sector_strength is not None else None
                 res['fund_ok'] = fund_ok if fund_ok is not None else None
@@ -290,12 +338,11 @@ def run_mission():
     results.sort(key=lambda x: x[1]['score'], reverse=True)
     results = results[:MAX_NOTIFICATIONS]
     
-    # レポート構築
     report = [
-        f"🛡️ Sentinel v18.0",
+        f"🛡️ Sentinel v19.0",
         f"📅 {datetime.now().strftime('%Y/%m/%d %H:%M')}",
         f"💵 $1 = {current_fx:.2f}円",
-        f"💰 予算内上限: ${max_price_usd:.1f}",
+        f"💰 予算内上限: ${(BUDGET_JPY / current_fx) * 0.9:.1f}",
         f"⚠️ マクロイベント日: {'Yes' if macro_today else 'No'}",
         "─" * 15
     ]
@@ -312,6 +359,10 @@ def run_mission():
             f"止: ${r['stop']:.2f} / 目: ${r['target']:.2f}\n"
             f"決算: {earnings_label}  セクター: {sector_label}  財務: {fund_label}\n"
         )
+
+    # ★ ポートフォリオ生成をここで追加
+    portfolio_text = build_portfolio(results, BUDGET_JPY, current_fx)
+    report.append(portfolio_text)
 
     full_msg = "\n".join(report)
     print(full_msg)
