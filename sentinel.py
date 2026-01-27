@@ -5,12 +5,12 @@ import requests
 import os
 from datetime import datetime
 
-# --- CONFIG (GitHub Secretsから読み込み) ---
+# --- CONFIG (環境変数から読み込み) ---
 ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 USER_ID = os.getenv("LINE_USER_ID")
 
 # --- 予算設定 ---
-BUDGET_JPY = 350000      # 総予算 35万円（BLKも拾えるように）
+BUDGET_JPY = 350000      # 総予算 35万円
 
 # --- テクニカルパラメータ ---
 MA_SHORT, MA_LONG = 50, 200
@@ -28,7 +28,6 @@ TICKERS = {
     'UBER':'Platform','BKNG':'Travel','ABNB':'Travel','DKNG':'Bet','LULU':'Cons','VRT':'Power'
 }
 
-# --- セクターETFマッピング（簡易） ---
 SECTOR_ETF = {
     'Energy': 'XLE',
     'Semi': 'SOXX',
@@ -47,17 +46,15 @@ SECTOR_ETF = {
     'Health': 'XLV',
     'Ind': 'XLI',
     'EV': 'IDRV',
-    'Crypto': 'CRYPTO',  # placeholder
+    'Crypto': 'CRYPTO',
     'Power': 'PWR'
 }
 
-# --- マクロイベント（必要に応じて更新） ---
 MACRO_EVENTS = [
-    # '2026-01-30',  # 例: FOMC
+    # '2026-01-30',  # 必要に応じて追加
 ]
 
 def get_current_fx_rate():
-    """USD/JPYの現在レートを取得"""
     try:
         data = yf.download("JPY=X", period="1d", progress=False)
         if not data.empty:
@@ -74,18 +71,11 @@ def is_macro_event_today():
         return False
 
 def is_earnings_near(ticker, days_window=5):
-    """
-    決算日が近いか判定。
-    True: 決算±days_window
-    False: 遠い
-    None: 情報取れず
-    """
     try:
         tk = yf.Ticker(ticker)
         cal = tk.calendar
         if cal is None or cal.empty:
             return None
-
         try:
             if 'Earnings Date' in cal.index:
                 val = cal.loc['Earnings Date'].values[0]
@@ -99,17 +89,12 @@ def is_earnings_near(ticker, days_window=5):
                 earnings_date = pd.to_datetime(val)
         except Exception:
             return None
-
         days = (earnings_date.date() - datetime.now().date()).days
         return abs(days) <= days_window
     except Exception:
         return None
 
 def sector_is_strong(sector):
-    """
-    セクターETFのMA200が上向きか
-    True / False / None
-    """
     try:
         etf = SECTOR_ETF.get(sector)
         if not etf or etf == 'CRYPTO':
@@ -123,12 +108,6 @@ def sector_is_strong(sector):
         return None
 
 def basic_fundamental_check(ticker):
-    """
-    簡易財務チェック
-    True: OK
-    False: NG
-    None: 判定不能
-    """
     try:
         info = yf.Ticker(ticker).info
         if not info:
@@ -136,7 +115,6 @@ def basic_fundamental_check(ticker):
         ocf = info.get("operatingCashflow")
         dte = info.get("debtToEquity")
         pm = info.get("profitMargins")
-
         if ocf is None and dte is None and pm is None:
             return None
         if ocf is not None and ocf <= 0:
@@ -154,35 +132,24 @@ class StrategicAnalyzer:
     def analyze_ticker(t, df, sector, max_price_usd):
         if len(df) < MA_LONG:
             return None
-        
         c = df['Close']
         h, l, v = df['High'], df['Low'], df['Volume']
         current_price = float(c.iloc[-1])
-        
-        # 予算フィルター
         if current_price > max_price_usd:
             return None
-        
-        # トレンド
         ma50 = c.rolling(MA_SHORT).mean().iloc[-1]
         ma200 = c.rolling(MA_LONG).mean().iloc[-1]
         ma200_prev = c.rolling(MA_LONG).mean().iloc[-10]
-        
         if not (current_price > ma50 > ma200 and ma200 > ma200_prev):
             return None
-
-        # 収縮度
         tr = pd.concat([(h-l), (h-c.shift()).abs(), (l-c.shift()).abs()], axis=1).max(axis=1)
         atr14 = tr.rolling(14).mean().iloc[-1]
         range_5d = h.iloc[-5:].max() - l.iloc[-5:].min()
         tightness = float(range_5d / atr14) if atr14 and atr14 != 0 else float('inf')
         if tightness > 3.0:
             return None
-        
-        # 出来高
         vol_avg = v.rolling(50).mean().iloc[-1]
         vol_ratio = v.iloc[-1] / vol_avg if vol_avg and vol_avg != 0 else 1.0
-        
         score = 60
         if tightness < 1.5:
             score += 25
@@ -190,11 +157,9 @@ class StrategicAnalyzer:
             score += 15
         if 0.7 <= vol_ratio <= 1.0:
             score += 15
-        
         pivot = h.iloc[-5:].max() * 1.002
         stop_loss = pivot * 0.93
         target = pivot * 1.15
-        
         return {
             "score": score, "price": current_price, "pivot": pivot,
             "stop": stop_loss, "target": target,
@@ -213,87 +178,141 @@ def send_line(msg):
     except Exception as e:
         print("LINE送信エラー:", e)
 
-def build_portfolio(results, budget_jpy, fx_rate):
+def build_portfolios(results, budget_jpy, fx_rate):
     """
-    Sentinel v19.0 ポートフォリオ生成
-    - results: [(ticker, data), ...]
-    - budget_jpy: 350000 など
+    リスク1〜3のポートフォリオ案を同時生成してテキストで返す。
+    - results: [(ticker, data), ...] （score, price, target, sector を含む）
+    - budget_jpy: 350000
     - fx_rate: USD/JPY
     """
     if not results:
-        return "📦 ポートフォリオ: 対象銘柄なし"
+        return "📦 推奨ポートフォリオ: 対象銘柄なし"
 
     budget_usd = budget_jpy / fx_rate
 
-    # セクター補正
-    sector_weight = {
-        'Fin': 1.2,
-        'Energy': 1.1,
-        'Semi': 1.0,
-        'Retail': 1.0,
-        'AI': 0.9,
-        'Cons': 0.8
+    # リスク別パラメータ
+    risk_profiles = {
+        1: {  # 保守
+            "sector_weight": {'Fin':1.3, 'Energy':1.15, 'Semi':0.8, 'AI':0.7, 'Cons':1.2, 'Retail':1.1},
+            "cash_buffer": 0.12,
+            "max_per_asset": 0.25,
+            "target_mult": 1.10
+        },
+        2: {  # 中庸（デフォルト）
+            "sector_weight": {'Fin':1.2, 'Energy':1.1, 'Semi':1.0, 'AI':0.9, 'Cons':0.8, 'Retail':1.0},
+            "cash_buffer": 0.07,
+            "max_per_asset": 0.35,
+            "target_mult": 1.15
+        },
+        3: {  # 攻め
+            "sector_weight": {'Fin':0.9, 'Energy':1.0, 'Semi':1.2, 'AI':1.2, 'Cons':0.7, 'Retail':0.9},
+            "cash_buffer": 0.03,
+            "max_per_asset": 0.50,
+            "target_mult": 1.20
+        }
     }
 
-    weighted = []
+    # ソート済み重みリスト（スコア順）
+    weighted_base = []
     for t, r in results:
-        base = r['score']
-        sec = r['sector']
-        w = base * sector_weight.get(sec, 1.0)
-        weighted.append((t, r, w))
+        weighted_base.append((t, r, r['score']))
+    weighted_base.sort(key=lambda x: x[2], reverse=True)
 
-    total_weight = sum(w for _, _, w in weighted)
-    if total_weight == 0:
-        return "📦 ポートフォリオ: 重み計算不可"
+    all_text_lines = []
+    for risk in (1,2,3):
+        cfg = risk_profiles[risk]
+        sector_w = cfg["sector_weight"]
+        cash_buf = cfg["cash_buffer"]
+        max_asset_pct = cfg["max_per_asset"]
+        target_mult = cfg["target_mult"]
 
-    portfolio = []
-    remaining = budget_usd
+        # 重み計算（スコア×セクター補正）
+        weighted = []
+        for t, r, base_score in weighted_base:
+            sec = r['sector']
+            w = base_score * sector_w.get(sec, 1.0)
+            weighted.append((t, r, w))
 
-    # 理想額→整数株
-    for t, r, w in weighted:
-        ideal_usd = budget_usd * (w / total_weight)
-        price = r['price']
-        shares = int(ideal_usd // price)
-        if shares > 0:
-            cost = shares * price
-            remaining -= cost
-            portfolio.append({
-                "ticker": t,
-                "shares": shares,
-                "price": price,
-                "cost": cost,
-                "target": r['target']
-            })
+        total_w = sum(w for _,_,w in weighted)
+        if total_w == 0:
+            all_text_lines.append(f"[リスク{risk}] 計算不能（重み0）\n")
+            continue
 
-    # 余り予算でスコア上位に追加購入
-    for t, r, w in weighted:
-        price = r['price']
-        if remaining >= price:
-            for p in portfolio:
-                if p["ticker"] == t:
-                    extra = int(remaining // price)
-                    if extra > 0:
-                        p["shares"] += extra
-                        p["cost"] += extra * price
-                        remaining -= extra * price
+        # 利用可能予算（現金バッファを確保）
+        usable_budget_usd = budget_usd * (1.0 - cash_buf)
+        remaining = usable_budget_usd
+
+        # 初期配分（理想額→切り捨て整数株）かつ銘柄上限を適用
+        portfolio = []
+        for t, r, w in weighted:
+            ideal_usd = usable_budget_usd * (w / total_w)
+            price = r['price']
+            # 銘柄上限（コストベース）
+            max_cost_for_asset = usable_budget_usd * max_asset_pct
+            max_shares_allowed = int(max_cost_for_asset // price) if price > 0 else 0
+            shares = int(ideal_usd // price)
+            if shares > max_shares_allowed:
+                shares = max_shares_allowed
+            if shares > 0:
+                cost = shares * price
+                if cost <= remaining:
+                    remaining -= cost
+                    portfolio.append({"ticker":t,"shares":shares,"price":price,"cost":cost,"target": r['pivot'] * target_mult})
+                else:
+                    # 予算不足なら買わない
+                    continue
+
+        # 余剰を上位銘柄へ追加（上限遵守）
+        # 上位順に回して、買えるだけ買う
+        for t, r, w in weighted:
+            price = r['price']
+            if price <= 0:
+                continue
+            # find entry
+            entry = next((p for p in portfolio if p['ticker']==t), None)
+            # compute max shares allowed
+            max_cost_for_asset = usable_budget_usd * max_asset_pct
+            max_shares_allowed = int(max_cost_for_asset // price)
+            current_shares = entry['shares'] if entry else 0
+            can_buy = max_shares_allowed - current_shares
+            if can_buy <= 0:
+                continue
+            affordable = int(remaining // price)
+            buy = min(can_buy, affordable)
+            if buy > 0:
+                if entry:
+                    entry['shares'] += buy
+                    entry['cost'] += buy * price
+                else:
+                    # if not present yet, add new entry
+                    portfolio.append({"ticker":t,"shares":buy,"price":price,"cost":buy*price,"target": r['pivot'] * target_mult})
+                remaining -= buy * price
+
+        # 最終チェック：もし portfolio が空なら、上位1銘柄を1株だけ買う（予算が許せば）
+        if not portfolio:
+            for t, r, w in weighted:
+                price = r['price']
+                if price <= 0:
+                    continue
+                if usable_budget_usd >= price:
+                    portfolio.append({"ticker":t,"shares":1,"price":price,"cost":price,"target": r['pivot'] * target_mult})
+                    remaining -= price
                     break
 
-    lines = []
-    lines.append(f"📦 推奨ポートフォリオ（予算 ¥{budget_jpy:,}）\n")
+        # テキスト生成
+        lines = []
+        lines.append(f"[リスク{risk} {'保守' if risk==1 else ('中庸' if risk==2 else '攻め')}]\n")
+        total_cost_jpy = 0
+        for p in portfolio:
+            cost_jpy = int(p['cost'] * fx_rate)
+            total_cost_jpy += cost_jpy
+            # 利確% 表示
+            gain_pct = int((p['target'] / p['price'] - 1.0) * 100)
+            lines.append(f"{p['ticker']}: {p['shares']}株（¥{cost_jpy:,}） 売却推奨: ${p['target']:.2f}（+{gain_pct}%）")
+        lines.append(f"使用額: ¥{total_cost_jpy:,}  現金バッファ: {int(cash_buf*100)}% 残り: ¥{int(remaining * fx_rate):,}\n")
+        all_text_lines.append("\n".join(lines))
 
-    total_cost_jpy = 0
-    for p in portfolio:
-        cost_jpy = int(p["cost"] * fx_rate)
-        total_cost_jpy += cost_jpy
-        lines.append(
-            f"{p['ticker']}: {p['shares']}株（¥{cost_jpy:,}） "
-            f"売却推奨: ${p['target']:.2f}"
-        )
-
-    lines.append(f"\n💰 使用額: ¥{total_cost_jpy:,}")
-    lines.append(f"💵 残り: ¥{int(remaining * fx_rate):,}")
-
-    return "\n".join(lines)
+    return "\n".join(all_text_lines)
 
 def run_mission():
     current_fx = get_current_fx_rate()
@@ -360,8 +379,8 @@ def run_mission():
             f"決算: {earnings_label}  セクター: {sector_label}  財務: {fund_label}\n"
         )
 
-    # ★ ポートフォリオ生成をここで追加
-    portfolio_text = build_portfolio(results, BUDGET_JPY, current_fx)
+    # リスク別ポートフォリオ案を追加
+    portfolio_text = build_portfolios(results, BUDGET_JPY, current_fx)
     report.append(portfolio_text)
 
     full_msg = "\n".join(report)
