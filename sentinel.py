@@ -38,15 +38,12 @@ USER_ID = os.getenv("LINE_USER_ID") or os.getenv("USER_ID")
 
 INITIAL_CAPITAL_JPY = 350_000
 TRADING_RATIO = 0.70
-TARGET_ANNUAL_RETURN = 0.10
 
 ATR_STOP_MULT = 2.0
 MAX_POSITION_SIZE = 0.25
 MAX_SECTOR_CONCENTRATION = 0.40
 
 MIN_SCORE = 60
-MIN_WINRATE = 0.55
-MIN_EXPECTANCY = 0.20
 MAX_TIGHTNESS_BASE = 1.5
 MAX_NOTIFICATIONS = 5
 
@@ -58,8 +55,6 @@ FX_SPREAD_RATE = 0.0005
 
 REWARD_MULTIPLIERS = {'aggressive': 2.5, 'stable': 2.0}
 AGGRESSIVE_SECTORS = ['Semi', 'AI', 'Soft', 'Sec', 'Auto', 'Crypto', 'Cloud', 'Ad', 'Service', 'Platform', 'Bet', 'Fintech']
-
-MA_SHORT, MA_LONG = 50, 200
 
 ALLOW_FRACTIONAL = False  # True if broker supports fractional shares
 
@@ -94,14 +89,18 @@ SECTOR_ETF = {
 }
 
 # ---------------------------
-# Utilities: FX, market
+# Utilities
 # ---------------------------
 def get_current_fx_rate():
     try:
         data = yf.download("JPY=X", period="5d", progress=False)
         if data is None or data.empty:
             return 152.0
-        return float(data['Close'].iloc[-1])
+        # Normalize column names if needed
+        if 'Close' in data.columns:
+            return float(data['Close'].iloc[-1])
+        # fallback: try last column
+        return float(data.iloc[-1, -1])
     except Exception as e:
         logger.warning("FX fetch failed: %s", e)
         return 152.0
@@ -109,15 +108,14 @@ def get_current_fx_rate():
 def jpy_to_usd(jpy, fx):
     return jpy / fx
 
-def usd_to_jpy(usd, fx):
-    return usd * fx
-
 def get_vix():
     try:
         data = yf.download("^VIX", period="5d", progress=False)
         if data is None or data.empty:
             return 20.0
-        return float(data['Close'].iloc[-1])
+        if 'Close' in data.columns:
+            return float(data['Close'].iloc[-1])
+        return float(data.iloc[-1, -1])
     except Exception as e:
         logger.warning("VIX fetch failed: %s", e)
         return 20.0
@@ -125,8 +123,18 @@ def get_vix():
 def check_market_trend():
     try:
         spy = yf.download("SPY", period="400d", progress=False)
-        close = spy['Close'].dropna()
-        if len(close) < 210:
+        if spy is None or spy.empty:
+            return True, "Unknown", 0.0
+        close = None
+        if 'Close' in spy.columns:
+            close = spy['Close'].dropna()
+        else:
+            # try to find a close-like column
+            for c in spy.columns:
+                if 'close' in str(c).lower():
+                    close = spy[c].dropna()
+                    break
+        if close is None or len(close) < 210:
             return True, "Unknown", 0.0
         curr = float(close.iloc[-1])
         ma200 = float(close.rolling(200).mean().iloc[-1])
@@ -139,10 +147,13 @@ def check_market_trend():
 # ---------------------------
 # Data helpers
 # ---------------------------
-def safe_download(ticker, period="700d", retry=2):
+def safe_download(ticker, period="700d", retry=3):
     for attempt in range(retry):
         try:
             df = yf.download(ticker, period=period, progress=False)
+            # If yfinance returns a Series for single-column, convert
+            if isinstance(df, pd.Series):
+                df = df.to_frame()
             return df
         except Exception as e:
             logger.warning("yf.download attempt %d failed for %s: %s", attempt+1, ticker, e)
@@ -152,7 +163,20 @@ def safe_download(ticker, period="700d", retry=2):
 def ensure_df(df):
     if isinstance(df, pd.Series):
         df = df.to_frame()
+    if df is None:
+        return pd.DataFrame()
     return df.copy()
+
+def safe_rolling_last(series, window, min_periods=1, default=np.nan):
+    try:
+        val = series.rolling(window, min_periods=min_periods).mean().iloc[-1]
+        return float(val) if not pd.isna(val) else default
+    except Exception:
+        try:
+            # fallback: last value
+            return float(series.iloc[-1])
+        except Exception:
+            return default
 
 # ---------------------------
 # Earnings & sector
@@ -205,8 +229,17 @@ def sector_is_strong(sector):
         else:
             etf_sym = str(etf)
 
-        df = yf.download(etf_sym, period="300d", progress=False)
+        df = safe_download(etf_sym, period="300d", retry=2)
         if df is None or df.empty:
+            return True
+
+        # Normalize Close column
+        if 'Close' not in df.columns:
+            for c in df.columns:
+                if 'close' in str(c).lower():
+                    df['Close'] = df[c]
+                    break
+        if 'Close' not in df.columns:
             return True
 
         close = df['Close'].dropna()
@@ -267,11 +300,27 @@ class PositionSizer:
 def simulate_past_performance_v2(df, sector, lookback_years=3):
     try:
         df = ensure_df(df)
-        close = df['Close'].dropna()
-        high = df['High'].dropna()
-        low = df['Low'].dropna()
-        if len(close) < 60:
+        # Normalize Close/High/Low
+        if 'Close' not in df.columns:
+            for c in df.columns:
+                if 'close' in str(c).lower():
+                    df['Close'] = df[c]; break
+        if 'High' not in df.columns:
+            for c in df.columns:
+                if 'high' in str(c).lower():
+                    df['High'] = df[c]; break
+        if 'Low' not in df.columns:
+            for c in df.columns:
+                if 'low' in str(c).lower():
+                    df['Low'] = df[c]; break
+
+        close = df['Close'].dropna() if 'Close' in df.columns else pd.Series(dtype=float)
+        high = df['High'].dropna() if 'High' in df.columns else pd.Series(dtype=float)
+        low = df['Low'].dropna() if 'Low' in df.columns else pd.Series(dtype=float)
+
+        if len(close) < 60 or len(high) < 60 or len(low) < 60:
             return {'winrate':0, 'net_expectancy':0, 'message':'LowData'}
+
         end_date = close.index[-1]
         start_date = end_date - pd.DateOffset(years=lookback_years)
         mask = close.index >= start_date
@@ -280,44 +329,50 @@ def simulate_past_performance_v2(df, sector, lookback_years=3):
         low = low.loc[mask]
         if len(close) < 60:
             return {'winrate':0, 'net_expectancy':0, 'message':'ShortWindow'}
+
         tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
-        atr = tr.rolling(14).mean().dropna()
+        atr = tr.rolling(14, min_periods=7).mean().dropna()
         reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
+
         wins = 0; losses = 0; total_r = 0.0; samples = 0
         for i in range(50, len(close)-40):
-            window_high = high.iloc[i-5:i].max()
-            pivot = window_high * 1.002
-            if high.iloc[i] < pivot:
-                continue
-            ma50 = close.rolling(50).mean().iloc[i]
-            ma200 = close.rolling(200).mean().iloc[i] if i >= 200 else None
-            if ma200 is not None and not (close.iloc[i] > ma50 or ma50 > ma200):
-                continue
-            stop_dist = atr.iloc[i] * ATR_STOP_MULT if i < len(atr) else atr.iloc[-1] * ATR_STOP_MULT
-            entry = pivot
-            target = entry + stop_dist * reward_mult
-            outcome = None
-            for j in range(1, 31):
-                if i + j >= len(close):
-                    break
-                if high.iloc[i+j] >= target:
-                    outcome = 'win'; break
-                if low.iloc[i+j] <= entry - stop_dist:
-                    outcome = 'loss'; break
-            if outcome is None:
-                last_close = close.iloc[min(i+30, len(close)-1)]
-                pnl = (last_close - entry) / stop_dist
-                if pnl > 0:
-                    wins += 1; total_r += min(pnl, reward_mult)
+            try:
+                window_high = high.iloc[i-5:i].max()
+                pivot = window_high * 1.002
+                if high.iloc[i] < pivot:
+                    continue
+                ma50 = close.rolling(50, min_periods=10).mean().iloc[i]
+                ma200 = close.rolling(200, min_periods=50).mean().iloc[i] if i >= 200 else None
+                if ma200 is not None and not (close.iloc[i] > ma50 or ma50 > ma200):
+                    continue
+                stop_dist = atr.iloc[i] * ATR_STOP_MULT if i < len(atr) else atr.iloc[-1] * ATR_STOP_MULT
+                entry = pivot
+                target = entry + stop_dist * reward_mult
+                outcome = None
+                for j in range(1, 31):
+                    if i + j >= len(close):
+                        break
+                    if high.iloc[i+j] >= target:
+                        outcome = 'win'; break
+                    if low.iloc[i+j] <= entry - stop_dist:
+                        outcome = 'loss'; break
+                if outcome is None:
+                    last_close = close.iloc[min(i+30, len(close)-1)]
+                    pnl = (last_close - entry) / stop_dist if stop_dist != 0 else 0
+                    if pnl > 0:
+                        wins += 1; total_r += min(pnl, reward_mult)
+                    else:
+                        losses += 1; total_r -= abs(pnl)
+                    samples += 1
                 else:
-                    losses += 1; total_r -= abs(pnl)
-                samples += 1
-            else:
-                samples += 1
-                if outcome == 'win':
-                    wins += 1; total_r += reward_mult
-                else:
-                    losses += 1; total_r -= 1.0
+                    samples += 1
+                    if outcome == 'win':
+                        wins += 1; total_r += reward_mult
+                    else:
+                        losses += 1; total_r -= 1.0
+            except Exception:
+                continue
+
         total = wins + losses
         if total < 8:
             return {'winrate':0, 'net_expectancy':0, 'message':f'LowSample:{total}'}
@@ -329,36 +384,60 @@ def simulate_past_performance_v2(df, sector, lookback_years=3):
         return {'winrate':0, 'net_expectancy':0, 'message':'BT Error'}
 
 # ---------------------------
-# Analyzer (robust, shares-based) - hardened with granular try/except
+# Analyzer (robust, shares-based)
 # ---------------------------
 class StrategicAnalyzerV2:
     @staticmethod
     def analyze_ticker(ticker, df, sector, max_position_value_usd, vix, sec_exposures, cap_usd, market_is_bull):
-        # Return (result_dict or None, reason_str)
         try:
-            # Basic validation and normalization
-            if df is None or df.empty:
+            if df is None or (isinstance(df, pd.DataFrame) and df.empty):
                 return None, "❌DATA"
             df = ensure_df(df)
 
-            # Ensure required columns exist and fill safely
-            for col in ['Close', 'High', 'Low', 'Volume']:
-                if col not in df.columns:
-                    if col == 'Volume':
-                        df['Volume'] = 0
-                    else:
-                        df[col] = df.get('Close', np.nan)
+            # --- Safety normalization for Close/High/Low/Volume ---
+            # If Close not present, try alternatives and flatten MultiIndex
+            if isinstance(df.columns, pd.MultiIndex):
+                try:
+                    df.columns = [' '.join(map(str, c)).strip() for c in df.columns.values]
+                except Exception:
+                    pass
 
+            # Try to create Close/High/Low/Volume if missing
+            if 'Close' not in df.columns:
+                for c in df.columns:
+                    if 'adj close' in str(c).lower() or 'adj_close' in str(c).lower():
+                        df['Close'] = df[c]; break
+                if 'Close' not in df.columns:
+                    for c in df.columns:
+                        if 'close' in str(c).lower():
+                            df['Close'] = df[c]; break
+
+            if 'High' not in df.columns:
+                for c in df.columns:
+                    if 'high' in str(c).lower():
+                        df['High'] = df[c]; break
+            if 'Low' not in df.columns:
+                for c in df.columns:
+                    if 'low' in str(c).lower():
+                        df['Low'] = df[c]; break
+            if 'Volume' not in df.columns:
+                for c in df.columns:
+                    if 'volume' in str(c).lower():
+                        df['Volume'] = df[c]; break
+            if 'Volume' not in df.columns:
+                df['Volume'] = 0
+
+            # Final check
+            if 'Close' not in df.columns:
+                logger.debug("analyze_ticker: missing Close column after normalization for ticker=%s, cols=%s", ticker, list(df.columns))
+                return None, "❌DATA"
+
+            # Drop rows without Close
             df = df.dropna(subset=['Close'])
             if df.empty:
                 return None, "❌DATA"
 
-            # Normalize index and forward/backfill to reduce NaNs
-            try:
-                df.index = pd.to_datetime(df.index, errors='coerce')
-            except Exception:
-                pass
-            df = df.dropna(subset=['Close'])
+            # Forward/backfill to reduce NaNs
             df[['High','Low','Close','Volume']] = df[['High','Low','Close','Volume']].ffill().bfill()
 
             close = df['Close'].astype(float)
@@ -369,12 +448,11 @@ class StrategicAnalyzerV2:
             if len(close) < 60:
                 return None, "❌DATA"
 
-            # Current price
             curr = float(close.iloc[-1]) if not pd.isna(close.iloc[-1]) else 0.0
             if curr <= 0:
                 return None, "❌PRICE"
 
-            # Shares capacity check (avoid price-based false negatives)
+            # shares capacity
             try:
                 max_shares = int(max_position_value_usd // curr)
             except Exception:
@@ -387,16 +465,9 @@ class StrategicAnalyzerV2:
             if not can_trade:
                 return None, "❌PRICE"
 
-            # Trend check (relaxed)
-            try:
-                ma50 = close.rolling(50, min_periods=10).mean().iloc[-1]
-            except Exception:
-                ma50 = float(close.iloc[-1])
-            try:
-                ma200 = close.rolling(200, min_periods=50).mean().iloc[-1] if len(close) >= 50 else None
-            except Exception:
-                ma200 = None
-
+            # Trend
+            ma50 = safe_rolling_last(close, 50, min_periods=10, default=curr)
+            ma200 = safe_rolling_last(close, 200, min_periods=50, default=None) if len(close) >= 50 else None
             if ma200 is not None:
                 if not (curr > ma50 or ma50 > ma200):
                     return None, "❌TREND"
@@ -404,7 +475,7 @@ class StrategicAnalyzerV2:
                 if not (curr > ma50):
                     return None, "❌TREND"
 
-            # ATR and tightness (safe)
+            # ATR and tightness
             try:
                 tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
                 atr14 = tr.rolling(14, min_periods=7).mean().iloc[-1]
@@ -423,7 +494,6 @@ class StrategicAnalyzerV2:
             except Exception:
                 tightness = 999.0
 
-            # Dynamic tightness threshold
             max_tightness = MAX_TIGHTNESS_BASE
             if market_is_bull and vix < 20:
                 max_tightness = MAX_TIGHTNESS_BASE * 1.4
@@ -432,19 +502,18 @@ class StrategicAnalyzerV2:
             if tightness > max_tightness:
                 return None, "❌LOOSE"
 
-            # Scoring (safe)
-            score = 0
-            reasons = []
+            # Score
+            score = 0; reasons = []
             try:
                 if tightness < 0.8:
                     score += 30; reasons.append("VCP+++")
                 elif tightness < 1.2:
                     score += 20; reasons.append("VCP+")
-                vol50 = vol.rolling(50, min_periods=10).mean().iloc[-1]
+                vol50 = safe_rolling_last(vol, 50, min_periods=10, default=np.nan)
                 if not pd.isna(vol50) and vol.iloc[-1] < vol50:
                     score += 15; reasons.append("VolDry")
-                mom5 = close.rolling(5, min_periods=3).mean().iloc[-1]
-                mom20 = close.rolling(20, min_periods=10).mean().iloc[-1]
+                mom5 = safe_rolling_last(close, 5, min_periods=3, default=np.nan)
+                mom20 = safe_rolling_last(close, 20, min_periods=10, default=np.nan)
                 if not pd.isna(mom5) and not pd.isna(mom20) and (mom5 / mom20) > 1.02:
                     score += 20; reasons.append("Mom+")
                 if ma200 is not None and ((ma50 - ma200) / ma200) > 0.03:
@@ -452,20 +521,20 @@ class StrategicAnalyzerV2:
                 elif ma200 is None and (curr > ma50):
                     score += 10; reasons.append("Trend?")
             except Exception:
-                # scoring fallback
                 pass
 
-            # Backtest (safe)
+            # Backtest
             bt = simulate_past_performance_v2(df, sector)
             winrate = bt.get('winrate', 0) / 100.0
 
-            # Position sizing (cap_usd must be provided)
+            # Position sizing (safe)
             try:
-                pos_val_usd, frac = PositionSizer.calculate_position(cap_usd, winrate, 2.0, atr_pct, vix, sec_exposures.get(sector, 0.0))
-            except Exception:
+                pos_val_usd, frac = PositionSizer.calculate_position(cap_usd, winrate, 2.0, atr_pct, vix, float(sec_exposures.get(sector, 0.0)))
+            except Exception as e:
+                logger.exception("PositionSizer error for %s: %s", ticker, e)
                 pos_val_usd, frac = 0.0, 0.0
 
-            # Convert pos_val_usd to shares safely
+            # Convert to shares safely
             try:
                 if ALLOW_FRACTIONAL:
                     est_shares = pos_val_usd / curr if curr > 0 else 0.0
@@ -501,7 +570,6 @@ class StrategicAnalyzerV2:
             return result, "✅PASS"
 
         except Exception as e:
-            # Log full trace and return generic error reason
             logger.exception("Analyze error for %s: %s", ticker, e)
             return None, "❌ERROR"
 
@@ -547,7 +615,6 @@ def run_mission():
             if earnings_flag:
                 stats["Earnings"] += 1
 
-            # sector_is_strong returns bool now
             try:
                 sector_flag = not bool(sector_is_strong(sector))
             except Exception:
@@ -576,7 +643,6 @@ def run_mission():
                 if not earnings_flag and not sector_flag:
                     stats["Pass"] += 1
             else:
-                # Count reasons for diagnostics
                 if reason is None:
                     stats["Error"] += 1
                 elif "TREND" in reason:
