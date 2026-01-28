@@ -181,22 +181,50 @@ def is_earnings_near(ticker, days_window=2):
         return False
 
 def sector_is_strong(sector):
+    """
+    Robust sector strength check that always returns a Python bool.
+    """
     try:
-        etf = SECTOR_ETF.get(sector)
+        # Normalize sector input
+        if isinstance(sector, (pd.Series, np.ndarray, list, tuple)):
+            if len(sector) == 0:
+                return True
+            sector_key = str(sector[0])
+        else:
+            sector_key = str(sector)
+
+        etf = SECTOR_ETF.get(sector_key)
         if not etf:
             return True
-        df = yf.download(etf, period="300d", progress=False)
+
+        # Normalize etf symbol
+        if isinstance(etf, (pd.Series, np.ndarray, list, tuple)):
+            if len(etf) == 0:
+                return True
+            etf_sym = str(etf[0])
+        else:
+            etf_sym = str(etf)
+
+        df = yf.download(etf_sym, period="300d", progress=False)
         if df is None or df.empty:
             return True
+
         close = df['Close'].dropna()
         if len(close) < 220:
             return True
-        ma200 = close.rolling(200).mean().dropna()
+
+        ma200 = close.rolling(200, min_periods=50).mean().dropna()
         if len(ma200) < 12:
             return True
-        slope = (ma200.iloc[-1] - ma200.iloc[-10]) / ma200.iloc[-10]
-        return slope >= 0.0
-    except Exception:
+
+        last = float(ma200.iloc[-1])
+        prev = float(ma200.iloc[-10])
+        slope = (last - prev) / prev if prev != 0 else 0.0
+
+        return bool(slope >= 0.0)
+
+    except Exception as e:
+        logger.exception("sector_is_strong error for %s: %s", sector, e)
         return True
 
 # ---------------------------
@@ -519,7 +547,13 @@ def run_mission():
             if earnings_flag:
                 stats["Earnings"] += 1
 
-            sector_flag = not sector_is_strong(sector)
+            # sector_is_strong returns bool now
+            try:
+                sector_flag = not bool(sector_is_strong(sector))
+            except Exception:
+                logger.exception("sector check failed for %s", sector)
+                sector_flag = False
+
             if sector_flag:
                 stats["Sector"] += 1
 
