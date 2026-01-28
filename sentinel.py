@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# SENTINEL v25.1 - Full Robust Version (Shares-based)
+# Requirements: pandas, numpy, yfinance, requests
+# Usage: python sentinel_full.py
+
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -13,46 +18,42 @@ warnings.filterwarnings('ignore')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger("SENTINEL")
 
----------------------------
+# ---------------------------
+# CONFIG
+# ---------------------------
+ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN") or os.getenv("ACCESS_TOKEN")
+USER_ID = os.getenv("LINE_USER_ID") or os.getenv("USER_ID")
 
-CONFIG
-
----------------------------
-ACCESSTOKEN = os.getenv("LINECHANNELACCESSTOKEN") or os.getenv("ACCESS_TOKEN")
-USERID = os.getenv("LINEUSERID") or os.getenv("USERID")
-
-INITIALCAPITALJPY = 350_000
+INITIAL_CAPITAL_JPY = 350_000
 TRADING_RATIO = 0.70
-TARGETANNUALRETURN = 0.10
+TARGET_ANNUAL_RETURN = 0.10
 
-ATRSTOPMULT = 2.0
-MAXPOSITIONSIZE = 0.25
-MAXSECTORCONCENTRATION = 0.40
+ATR_STOP_MULT = 2.0
+MAX_POSITION_SIZE = 0.25
+MAX_SECTOR_CONCENTRATION = 0.40
 
 MIN_SCORE = 60
 MIN_WINRATE = 0.55
 MIN_EXPECTANCY = 0.20
-MAXTIGHTNESSBASE = 1.5
+MAX_TIGHTNESS_BASE = 1.5
 MAX_NOTIFICATIONS = 5
 
-MINDAILYVOLUMEUSD = 10000_000
+MIN_DAILY_VOLUME_USD = 10_000_000
 
 COMMISSION_RATE = 0.002
 SLIPPAGE_RATE = 0.001
-FXSPREADRATE = 0.0005
+FX_SPREAD_RATE = 0.0005
 
 REWARD_MULTIPLIERS = {'aggressive': 2.5, 'stable': 2.0}
 AGGRESSIVE_SECTORS = ['Semi', 'AI', 'Soft', 'Sec', 'Auto', 'Crypto', 'Cloud', 'Ad', 'Service', 'Platform', 'Bet', 'Fintech']
 
-MASHORT, MALONG = 50, 200
+MA_SHORT, MA_LONG = 50, 200
 
 ALLOW_FRACTIONAL = False  # True if broker supports fractional shares
 
----------------------------
-
-TICKER UNIVERSE
-
----------------------------
+# ---------------------------
+# TICKER UNIVERSE
+# ---------------------------
 TICKERS = {
     'NVDA':'AI', 'AMD':'Semi', 'AVGO':'Semi', 'TSM':'Semi', 'ASML':'Semi', 'MU':'Semi',
     'ARM':'Semi', 'INTC':'Semi', 'QCOM':'Semi', 'ON':'Semi', 'LRCX':'Semi', 'AMAT':'Semi',
@@ -80,12 +81,10 @@ SECTOR_ETF = {
     'Power':'XLI', 'Platform':'QQQ', 'Travel':'XLY', 'Bet':'BETZ', 'Fintech':'ARKF'
 }
 
----------------------------
-
-Utilities: FX, market
-
----------------------------
-def getcurrentfx_rate():
+# ---------------------------
+# Utilities: FX, market
+# ---------------------------
+def get_current_fx_rate():
     try:
         data = yf.download("JPY=X", period="5d", progress=False)
         if data is None or data.empty:
@@ -95,10 +94,10 @@ def getcurrentfx_rate():
         logger.warning("FX fetch failed: %s", e)
         return 152.0
 
-def jpytousd(jpy, fx):
+def jpy_to_usd(jpy, fx):
     return jpy / fx
 
-def usdtojpy(usd, fx):
+def usd_to_jpy(usd, fx):
     return usd * fx
 
 def get_vix():
@@ -111,7 +110,7 @@ def get_vix():
         logger.warning("VIX fetch failed: %s", e)
         return 20.0
 
-def checkmarkettrend():
+def check_market_trend():
     try:
         spy = yf.download("SPY", period="400d", progress=False)
         close = spy['Close'].dropna()
@@ -125,11 +124,9 @@ def checkmarkettrend():
         logger.warning("Market trend check failed: %s", e)
         return True, "Unknown", 0.0
 
----------------------------
-
-Data helpers
-
----------------------------
+# ---------------------------
+# Data helpers
+# ---------------------------
 def safe_download(ticker, period="700d", retry=2):
     for attempt in range(retry):
         try:
@@ -145,12 +142,10 @@ def ensure_df(df):
         df = df.to_frame()
     return df.copy()
 
----------------------------
-
-Earnings & sector
-
----------------------------
-def isearningsnear(ticker, days_window=2):
+# ---------------------------
+# Earnings & sector
+# ---------------------------
+def is_earnings_near(ticker, days_window=2):
     try:
         tk = yf.Ticker(ticker)
         cal = tk.calendar
@@ -167,13 +162,13 @@ def isearningsnear(ticker, days_window=2):
             return False
         if date_val is None:
             return False
-        ed = pd.todatetime(dateval).date()
+        ed = pd.to_datetime(date_val).date()
         days_until = (ed - datetime.now().date()).days
-        return abs(daysuntil) <= dayswindow
+        return abs(days_until) <= days_window
     except Exception:
         return False
 
-def sectorisstrong(sector):
+def sector_is_strong(sector):
     try:
         etf = SECTOR_ETF.get(sector)
         if not etf:
@@ -192,50 +187,44 @@ def sectorisstrong(sector):
     except Exception:
         return True
 
----------------------------
-
-Transaction cost model
-
----------------------------
+# ---------------------------
+# Transaction cost model
+# ---------------------------
 class TransactionCostModel:
     @staticmethod
-    def calculatetotalcostusd(valusd):
-        comm = valusd * COMMISSIONRATE
-        slip = valusd * SLIPPAGERATE
+    def calculate_total_cost_usd(val_usd):
+        comm = val_usd * COMMISSION_RATE
+        slip = val_usd * SLIPPAGE_RATE
         return (comm + slip) * 2
 
     @staticmethod
-    def calculatetotalcostjpy(valusd, fx):
-        return TransactionCostModel.calculatetotalcostusd(valusd)  fx + (valusd  FXSPREAD_RATE  fx)  2
+    def calculate_total_cost_jpy(val_usd, fx):
+        return TransactionCostModel.calculate_total_cost_usd(val_usd) * fx + (val_usd * FX_SPREAD_RATE * fx) * 2
 
----------------------------
-
-Position sizing
-
----------------------------
+# ---------------------------
+# Position sizing
+# ---------------------------
 class PositionSizer:
     @staticmethod
-    def calculateposition(capusd, winrate, rr, atrpct, vix, secexp):
+    def calculate_position(cap_usd, winrate, rr, atr_pct, vix, sec_exp):
         try:
             if rr <= 0:
                 return 0.0, 0.0
             kelly = max(0.0, (winrate - (1 - winrate) / rr))
-            kelly = min(kelly * 0.5, MAXPOSITIONSIZE)
-            vf = 0.7 if atrpct > 0.05 else 0.85 if atr_pct > 0.03 else 1.0
+            kelly = min(kelly * 0.5, MAX_POSITION_SIZE)
+            v_f = 0.7 if atr_pct > 0.05 else 0.85 if atr_pct > 0.03 else 1.0
             m_f = 0.7 if vix > 30 else 0.85 if vix > 20 else 1.0
-            sf = 0.7 if secexp > MAXSECTORCONCENTRATION else 1.0
-            finalfrac = min(kelly  vf  mf * sf, MAXPOSITIONSIZE)
-            posval = capusd * final_frac
-            return posval, finalfrac
+            s_f = 0.7 if sec_exp > MAX_SECTOR_CONCENTRATION else 1.0
+            final_frac = min(kelly * v_f * m_f * s_f, MAX_POSITION_SIZE)
+            pos_val = cap_usd * final_frac
+            return pos_val, final_frac
         except Exception:
             return 0.0, 0.0
 
----------------------------
-
-Backtest
-
----------------------------
-def simulatepastperformancev2(df, sector, lookbackyears=3):
+# ---------------------------
+# Backtest
+# ---------------------------
+def simulate_past_performance_v2(df, sector, lookback_years=3):
     try:
         df = ensure_df(df)
         close = df['Close'].dropna()
@@ -244,7 +233,7 @@ def simulatepastperformancev2(df, sector, lookbackyears=3):
         if len(close) < 60:
             return {'winrate':0, 'net_expectancy':0, 'message':'LowData'}
         end_date = close.index[-1]
-        startdate = enddate - pd.DateOffset(years=lookback_years)
+        start_date = end_date - pd.DateOffset(years=lookback_years)
         mask = close.index >= start_date
         close = close.loc[mask]
         high = high.loc[mask]
@@ -253,7 +242,7 @@ def simulatepastperformancev2(df, sector, lookbackyears=3):
             return {'winrate':0, 'net_expectancy':0, 'message':'ShortWindow'}
         tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
         atr = tr.rolling(14).mean().dropna()
-        rewardmult = REWARDMULTIPLIERS['aggressive'] if sector in AGGRESSIVESECTORS else REWARDMULTIPLIERS['stable']
+        reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
         wins = 0; losses = 0; total_r = 0.0; samples = 0
         for i in range(50, len(close)-40):
             window_high = high.iloc[i-5:i].max()
@@ -264,9 +253,9 @@ def simulatepastperformancev2(df, sector, lookbackyears=3):
             ma200 = close.rolling(200).mean().iloc[i] if i >= 200 else None
             if ma200 is not None and not (close.iloc[i] > ma50 or ma50 > ma200):
                 continue
-            stopdist = atr.iloc[i]  ATRSTOPMULT if i < len(atr) else atr.iloc[-1]  ATRSTOP_MULT
+            stop_dist = atr.iloc[i] * ATR_STOP_MULT if i < len(atr) else atr.iloc[-1] * ATR_STOP_MULT
             entry = pivot
-            target = entry + stopdist * rewardmult
+            target = entry + stop_dist * reward_mult
             outcome = None
             for j in range(1, 31):
                 if i + j >= len(close):
@@ -277,16 +266,16 @@ def simulatepastperformancev2(df, sector, lookbackyears=3):
                     outcome = 'loss'; break
             if outcome is None:
                 last_close = close.iloc[min(i+30, len(close)-1)]
-                pnl = (lastclose - entry) / stopdist
+                pnl = (last_close - entry) / stop_dist
                 if pnl > 0:
-                    wins += 1; totalr += min(pnl, rewardmult)
+                    wins += 1; total_r += min(pnl, reward_mult)
                 else:
                     losses += 1; total_r -= abs(pnl)
                 samples += 1
             else:
                 samples += 1
                 if outcome == 'win':
-                    wins += 1; totalr += rewardmult
+                    wins += 1; total_r += reward_mult
                 else:
                     losses += 1; total_r -= 1.0
         total = wins + losses
@@ -294,19 +283,17 @@ def simulatepastperformancev2(df, sector, lookbackyears=3):
             return {'winrate':0, 'net_expectancy':0, 'message':f'LowSample:{total}'}
         wr = (wins / total)
         ev = total_r / total
-        return {'winrate':wr100, 'net_expectancy':ev - 0.05, 'message':f"WR{wr100:.0f}% EV{ev:.2f}"}
+        return {'winrate':wr*100, 'net_expectancy':ev - 0.05, 'message':f"WR{wr*100:.0f}% EV{ev:.2f}"}
     except Exception as e:
         logger.exception("Backtest error: %s", e)
         return {'winrate':0, 'net_expectancy':0, 'message':'BT Error'}
 
----------------------------
-
-Analyzer (robust, shares-based)
-
----------------------------
+# ---------------------------
+# Analyzer (robust, shares-based)
+# ---------------------------
 class StrategicAnalyzerV2:
     @staticmethod
-    def analyzeticker(ticker, df, sector, maxpositionvalueusd, vix, secexposures, capusd, marketisbull):
+    def analyze_ticker(ticker, df, sector, max_position_value_usd, vix, sec_exposures, cap_usd, market_is_bull):
         try:
             if df is None or df.empty:
                 return None, "❌DATA"
@@ -334,12 +321,12 @@ class StrategicAnalyzerV2:
             if curr <= 0:
                 return None, "❌PRICE"
             # shares capacity
-            maxshares = int(maxpositionvalueusd // curr)
-            fractionalpossible = (maxpositionvalueusd / curr)
+            max_shares = int(max_position_value_usd // curr)
+            fractional_possible = (max_position_value_usd / curr)
             if ALLOW_FRACTIONAL:
-                cantrade = fractionalpossible >= 0.01
+                can_trade = fractional_possible >= 0.01
             else:
-                cantrade = maxshares >= 1
+                can_trade = max_shares >= 1
             if not can_trade:
                 return None, "❌PRICE"
             # Trend (relaxed)
@@ -355,14 +342,14 @@ class StrategicAnalyzerV2:
             tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
             atr14 = tr.rolling(14, min_periods=7).mean().iloc[-1]
             if pd.isna(atr14) or atr14 <= 0:
-                atr14 = max((high - low).rolling(14, minperiods=7).mean().iloc[-1] if not pd.isna((high - low).rolling(14, minperiods=7).mean().iloc[-1]) else 0.0, 1e-6)
+                atr14 = max((high - low).rolling(14, min_periods=7).mean().iloc[-1] if not pd.isna((high - low).rolling(14, min_periods=7).mean().iloc[-1]) else 0.0, 1e-6)
             atr_pct = atr14 / curr if curr > 0 else 0.0
             tightness = (high.iloc[-5:].max() - low.iloc[-5:].min()) / (atr14 if atr14 > 0 else 1.0)
-            maxtightness = MAXTIGHTNESS_BASE
-            if marketisbull and vix < 20:
-                maxtightness = MAXTIGHTNESS_BASE * 1.4
+            max_tightness = MAX_TIGHTNESS_BASE
+            if market_is_bull and vix < 20:
+                max_tightness = MAX_TIGHTNESS_BASE * 1.4
             elif vix > 25:
-                maxtightness = MAXTIGHTNESS_BASE * 0.9
+                max_tightness = MAX_TIGHTNESS_BASE * 0.9
             if tightness > max_tightness:
                 return None, "❌LOOSE"
             # Score
@@ -386,22 +373,22 @@ class StrategicAnalyzerV2:
             except Exception:
                 pass
             # Backtest
-            bt = simulatepastperformance_v2(df, sector)
+            bt = simulate_past_performance_v2(df, sector)
             winrate = bt.get('winrate', 0) / 100.0
-            posvalusd, frac = PositionSizer.calculateposition(capusd, winrate, 2.0, atrpct, vix, secexposures.get(sector, 0.0))
+            pos_val_usd, frac = PositionSizer.calculate_position(cap_usd, winrate, 2.0, atr_pct, vix, sec_exposures.get(sector, 0.0))
             # Convert to shares
             if ALLOW_FRACTIONAL:
-                estshares = posval_usd / curr if curr > 0 else 0.0
+                est_shares = pos_val_usd / curr if curr > 0 else 0.0
             else:
-                estshares = int(posval_usd // curr) if curr > 0 else 0
-                if estshares < 1 and maxshares >= 1:
+                est_shares = int(pos_val_usd // curr) if curr > 0 else 0
+                if est_shares < 1 and max_shares >= 1:
                     est_shares = 1
-            if not ALLOWFRACTIONAL and estshares < 1:
+            if not ALLOW_FRACTIONAL and est_shares < 1:
                 return None, "❌PRICE"
-            if not ALLOWFRACTIONAL and estshares > max_shares:
-                estshares = maxshares
+            if not ALLOW_FRACTIONAL and est_shares > max_shares:
+                est_shares = max_shares
             pivot = high.iloc[-5:].max() * 1.002
-            stop = pivot - (atr14 * ATRSTOPMULT)
+            stop = pivot - (atr14 * ATR_STOP_MULT)
             result = {
                 'score': int(score),
                 'reasons': ' '.join(reasons),
@@ -409,12 +396,12 @@ class StrategicAnalyzerV2:
                 'stop': stop,
                 'sector': sector,
                 'bt': bt,
-                'posusd': posval_usd,
+                'pos_usd': pos_val_usd,
                 'pos_frac': frac,
-                'estshares': estshares,
+                'est_shares': est_shares,
                 'tightness': tightness,
                 'price': curr,
-                'atrpct': atrpct,
+                'atr_pct': atr_pct,
                 'vol': int(vol.iloc[-1]) if not pd.isna(vol.iloc[-1]) else 0
             }
             return result, "✅PASS"
@@ -422,14 +409,12 @@ class StrategicAnalyzerV2:
             logger.exception("Analyze error for %s: %s", ticker, e)
             return None, "❌ERROR"
 
----------------------------
-
-Messaging (LINE optional)
-
----------------------------
+# ---------------------------
+# Messaging (LINE optional)
+# ---------------------------
 def send_line(msg):
     logger.info("LINE message prepared.")
-    if not ACCESSTOKEN or not USERID:
+    if not ACCESS_TOKEN or not USER_ID:
         logger.debug("LINE credentials missing; skipping send.")
         return
     try:
@@ -439,43 +424,41 @@ def send_line(msg):
     except Exception as e:
         logger.warning("LINE send failed: %s", e)
 
----------------------------
-
-Main mission
-
----------------------------
+# ---------------------------
+# Main mission
+# ---------------------------
 def run_mission():
-    fx = getcurrentfx_rate()
+    fx = get_current_fx_rate()
     vix = get_vix()
-    isbull, marketstatus,  = checkmarket_trend()
+    is_bull, market_status, _ = check_market_trend()
     logger.info("Market: %s | VIX: %.1f | FX: ¥%.2f", market_status, vix, fx)
-    initialcapusd = jpytousd(INITIALCAPITALJPY, fx)
-    tradingcapusd = initialcapusd * TRADING_RATIO
+    initial_cap_usd = jpy_to_usd(INITIAL_CAPITAL_JPY, fx)
+    trading_cap_usd = initial_cap_usd * TRADING_RATIO
     results = []
     stats = {"Earnings":0, "Sector":0, "Trend":0, "Price":0, "Loose":0, "Data":0, "Pass":0, "Error":0}
     sec_exposures = {s: 0.0 for s in set(TICKERS.values())}
     for ticker, sector in TICKERS.items():
         try:
-            earningsflag = isearningsnear(ticker, dayswindow=2)
+            earnings_flag = is_earnings_near(ticker, days_window=2)
             if earnings_flag:
                 stats["Earnings"] += 1
-            sectorflag = not sectoris_strong(sector)
+            sector_flag = not sector_is_strong(sector)
             if sector_flag:
                 stats["Sector"] += 1
-            dft = safedownload(ticker, period="700d")
-            if dft is None or dft.empty:
+            df_t = safe_download(ticker, period="700d")
+            if df_t is None or df_t.empty:
                 stats["Data"] += 1
                 logger.debug("No data for %s", ticker)
                 continue
-            maxposvalusd = tradingcapusd * MAXPOSITION_SIZE
+            max_pos_val_usd = trading_cap_usd * MAX_POSITION_SIZE
             res, reason = StrategicAnalyzerV2.analyze_ticker(
-                ticker, dft, sector, maxposvalusd, vix, secexposures, tradingcapusd, isbull
+                ticker, df_t, sector, max_pos_val_usd, vix, sec_exposures, trading_cap_usd, is_bull
             )
             if res:
-                res['isearnings'] = earningsflag
-                res['issectorweak'] = sector_flag
+                res['is_earnings'] = earnings_flag
+                res['is_sector_weak'] = sector_flag
                 results.append((ticker, res))
-                if not earningsflag and not sectorflag:
+                if not earnings_flag and not sector_flag:
                     stats["Pass"] += 1
             else:
                 if "TREND" in reason:
@@ -493,99 +476,15 @@ def run_mission():
             stats["Error"] += 1
             continue
     all_sorted = sorted(results, key=lambda x: x[1]['score'], reverse=True)
-    passed = [r for r in allsorted if r[1]['score'] >= MINSCORE and not r[1]['isearnings'] and not r[1]['issector_weak']]
+    passed = [r for r in all_sorted if r[1]['score'] >= MIN_SCORE and not r[1]['is_earnings'] and not r[1]['is_sector_weak']]
     report_lines = []
     report_lines.append("SENTINEL v25.1 DIAGNOSTIC")
     report_lines.append(datetime.now().strftime("%m/%d %H:%M"))
     report_lines.append("")
-    reportlines.append(f"Mkt: {marketstatus}")
+    report_lines.append(f"Mkt: {market_status}")
     report_lines.append(f"VIX: {vix:.1f} | FX: ¥{fx:.2f}")
     report_lines.append("="*40)
     report_lines.append("【STATISTICS】")
     report_lines.append(f"Analyzed: {len(TICKERS)} tickers")
     report_lines.append(f"Blocked by Earnings: {stats['Earnings']}")
-    report_lines.append(f"Blocked by Sector:   {stats['Sector0, "Pass":0, "Error":0}
-    sec_exposures = {s: 0.0 for s in set(TICKERS.values())}
-    for ticker, sector in TICKERS.items():
-        try:
-            earningsflag = isearningsnear(ticker, dayswindow=2)
-            if earnings_flag:
-                stats["Earnings"] += 1
-            sectorflag = not sectoris_strong(sector)
-            if sector_flag:
-                stats["Sector"] += 1
-            dft = safedownload(ticker, period="700d")
-            if dft is None or dft.empty:
-                stats["Data"] += 1
-                logger.debug("No data for %s", ticker)
-                continue
-            maxposvalusd = tradingcapusd * MAXPOSITION_SIZE
-            res, reason = StrategicAnalyzerV2.analyze_ticker(
-                ticker, dft, sector, maxposvalusd, vix, secexposures, tradingcapusd, isbull
-            )
-            if res:
-                res['isearnings'] = earningsflag
-                res['issectorweak'] = sector_flag
-                results.append((ticker, res))
-                if not earningsflag and not sectorflag:
-                    stats["Pass"] += 1
-            else:
-                if "TREND" in reason:
-                    stats["Trend"] += 1
-                elif "PRICE" in reason:
-                    stats["Price"] += 1
-                elif "LOOSE" in reason:
-                    stats["Loose"] += 1
-                elif "DATA" in reason:
-                    stats["Data"] += 1
-                elif "ERROR" in reason:
-                    stats["Error"] += 1
-        except Exception as e:
-            logger.exception("Loop error for %s: %s", ticker, e)
-            stats["Error"] += 1
-            continue
-    all_sorted = sorted(results, key=lambda x: x[1]['score'], reverse=True)
-    passed = [r for r in allsorted if r[1]['score'] >= MINSCORE and not r[1]['isearnings'] and not r[1]['issector_weak']]
-    report_lines = []
-    report_lines.append("SENTINEL v25.1 DIAGNOSTIC")
-    report_lines.append(datetime.now().strftime("%m/%d %H:%M"))
-    report_lines.append("")
-    reportlines.append(f"Mkt: {marketstatus}")
-    report_lines.append(f"VIX: {vix:.1f} | FX: ¥{fx:.2f}")
-    report_lines.append("="*40)
-    report_lines.append("【STATISTICS】")
-    report_lines.append(f"Analyzed: {len(TICKERS)} tickers")
-    report_lines.append(f"Blocked by Earnings: {stats['Earnings']}")
-    report_lines.append(f"Blocked by Sector:   {stats['Sector']}")
-    report_lines.append(f"Blocked by Trend:    {stats['Trend']}")
-    reportlines.append(f"VCP/Score Pass:      {len(allsorted)}")
-    report_lines.append(f"Data Error:          {stats['Data']} / Internal Error: {stats['Error']}")
-    report_lines.append("="*40)
-    report_lines.append("【BUY SIGNALS】")
-    if not passed:
-        report_lines.append("No candidates passed all strict filters.")
-    else:
-        for i, (ticker, r) in enumerate(passed[:MAX_NOTIFICATIONS], 1):
-            posusd = r['posusd']
-            price = r['price']
-            estshares = r['estshares']
-            roundtripcostusd = TransactionCostModel.calculatetotalcostusd(posusd)
-            sharesstr = f"{estshares:.4f}" if ALLOWFRACTIONAL else f"{int(estshares)}"
-            report_lines.append(f"★ [{i}] {ticker} {r['score']}pt")
-            reportlines.append(f"   Entry: ${r['pivot']:.2f} / Price: ${price:.2f} / Shares est: {sharesstr}")
-            reportlines.append(f"   Pos(USD): ${posusd:,.2f} / RoundtripCost(USD): ${roundtripcostusd:,.2f}")
-            report_lines.append(f"   BT: {r['bt']['message']} Tight:{r['tightness']:.2f}")
-    report_lines.append("\n【ANALYSIS TOP 10 (RAW)】")
-    for i, (ticker, r) in enumerate(all_sorted[:10], 1):
-        tag = "✅OK"
-        if r.get('is_earnings'): tag = "❌EARN"
-        elif r.get('issectorweak'): tag = "❌SEC"
-        elif r['score'] < MIN_SCORE: tag = "❌SCOR"
-        report_lines.append(f"{i}. {ticker:5} {r['score']}pt | {tag}")
-        reportlines.append(f"   Tight:{r['tightness']:.2f} WR:{r['bt']['winrate']:.0f}% PosUSD:{r['posusd']:.0f} Shares:{r.get('est_shares')}")
-    finalreport = "\n".join(reportlines)
-    logger.info("\n%s", final_report)
-    sendline(finalreport)
-
-if name == "main":
-    run_mission()
+    re
