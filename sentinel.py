@@ -3,22 +3,21 @@ import numpy as np
 import yfinance as yf
 import requests
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 
-# --- CONFIG (環境変数または直接入力) ---
-ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
-USER_ID = os.getenv("LINE_USER_ID")
+# --- CONFIG ---
+ACCESSTOKEN = os.getenv("LINECHANNELACCESSTOKEN")
+USERID = os.getenv("LINEUSER_ID")
 BUDGET_JPY = 350000 
 
 # --- テクニカル / リスク管理パラメータ ---
 MA_SHORT, MA_LONG = 50, 200
 MIN_SCORE = 85
 MAX_NOTIFICATIONS = 8
-ATR_STOP_MULT = 2.0  # 損切りはATRの2倍離す
+ATRSTOP_MULT = 2.0  # 損切りはATRの2倍離す
 
-# ★v21.1: セクター別・利確倍率（年率10%目標）
-# 成長株はリスクの3倍(1:3)、安定株は現実的な1.8倍(1:1.8)を狙う
+# セクター別・利確倍率
 AGGRESSIVE_SECTORS = [
     'Semi', 'AI', 'Soft', 'Sec', 'EV', 'Crypto', 
     'Cloud', 'Ad', 'Service', 'Platform', 'Bet'
@@ -49,8 +48,7 @@ def get_current_fx_rate():
     try:
         data = yf.download("JPY=X", period="1d", progress=False)
         if not data.empty:
-            c = data['Close']
-            return float(c.iloc[-1]) if not isinstance(c, pd.DataFrame) else float(c.iloc[-1, 0])
+            return float(data['Close'].iloc[-1])
         return 155.0
     except: return 155.0
 
@@ -59,8 +57,7 @@ def check_market_trend():
     try:
         spy = yf.download("SPY", period="300d", progress=False)
         if spy.empty or len(spy) < 200: return True, "Data Limited"
-        c = spy['Close']
-        if isinstance(c, pd.DataFrame): c = c.iloc[:, 0]
+        c = spy['Close'].squeeze()
         cur = float(c.iloc[-1])
         ma200 = float(c.rolling(200).mean().iloc[-1])
         return (True, "Bull Market") if cur > ma200 else (False, f"Bear Market (${cur:.0f}<MA200)")
@@ -72,7 +69,13 @@ def is_earnings_near(ticker):
         tk = yf.Ticker(ticker)
         cal = tk.calendar
         if cal is None or (isinstance(cal, pd.DataFrame) and cal.empty): return False
-        date_val = cal.get('Earnings Date')[0] if isinstance(cal, dict) else cal.iloc[0,0]
+        
+        # 構造に合わせた取得
+        if isinstance(cal, dict) and 'Earnings Date' in cal:
+            date_val = cal['Earnings Date'][0]
+        else:
+            date_val = cal.iloc[0,0]
+            
         days = (pd.to_datetime(date_val).date() - datetime.now().date()).days
         return abs(days) <= 5
     except: return False
@@ -83,8 +86,7 @@ def sector_is_strong(sector):
         etf = SECTOR_ETF.get(sector)
         if not etf or etf == 'CRYPTO': return True
         df = yf.download(etf, period="250d", progress=False)
-        c = df['Close']
-        if isinstance(c, pd.DataFrame): c = c.iloc[:, 0]
+        c = df['Close'].squeeze()
         ma200 = c.rolling(200).mean()
         return ma200.iloc[-1] > ma200.iloc[-10]
     except: return True
@@ -96,9 +98,11 @@ class StrategicAnalyzer:
     def analyze_ticker(t, df, sector, max_price_usd):
         if len(df) < MA_LONG: return None
         try:
-            c = df['Close']; h = df['High']; l = df['Low']; v = df['Volume']
-            if isinstance(c, pd.DataFrame): 
-                c, h, l, v = c.iloc[:,0], h.iloc[:,0], l.iloc[:,0], v.iloc[:,0]
+            # yfinanceのマルチインデックス/シングルインデックス両対応
+            c = df['Close'].squeeze()
+            h = df['High'].squeeze()
+            l = df['Low'].squeeze()
+            v = df['Volume'].squeeze()
         except: return None
 
         current_price = float(c.iloc[-1])
@@ -114,6 +118,7 @@ class StrategicAnalyzer:
         atr14 = tr.rolling(14).mean().iloc[-1]
         if atr14 == 0 or np.isnan(atr14): return None
         
+        # VCP: 直近5日の高低差がATRに対してタイトか
         tightness = float((h.iloc[-5:].max() - l.iloc[-5:].min()) / atr14)
         if tightness > 3.0: return None
 
@@ -122,7 +127,7 @@ class StrategicAnalyzer:
         ma20 = c.rolling(20).mean().iloc[-1]
         velocity = "HIGH" if ma5 > ma20 * 1.01 else "SLOW"
 
-        # スコアリング & 内訳生成
+        # スコアリング
         score = 65
         reasons = ["基礎65"]
         
@@ -153,13 +158,16 @@ class StrategicAnalyzer:
         }
 
 def send_line(msg):
-    if not ACCESS_TOKEN or not USER_ID:
+    if not ACCESSTOKEN or not USERID:
         print("\n--- LINEメッセージ (未設定) ---\n", msg)
         return
     url = "https://api.line.me/v2/bot/message/push"
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {ACCESS_TOKEN}"}
-    payload = {"to": USER_ID, "messages": [{"type": "text", "text": msg}]}
-    requests.post(url, headers=headers, json=payload)
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {ACCESSTOKEN}"}
+    payload = {"to": USERID, "messages": [{"type": "text", "text": msg}]}
+    try:
+        requests.post(url, headers=headers, json=payload, timeout=10)
+    except:
+        print("LINE送信エラー")
 
 def run_mission():
     print(f"🛡️ Sentinel v21.1 - 起動中...")
@@ -173,7 +181,8 @@ def run_mission():
     max_p = (BUDGET_JPY / fx) * 0.9
     
     print(f"🛰️ 銘柄スキャン開始... FX: {fx:.2f}")
-    all_data = yf.download(list(TICKERS.keys()), period="300d", progress=False, group_by='ticker')
+    ticker_list = list(TICKERS.keys())
+    alldata = yf.download(ticker_list, period="300d", progress=False, group_by='ticker')
     
     results = []
     for t, sec in TICKERS.items():
@@ -181,11 +190,13 @@ def run_mission():
         if not sector_is_strong(sec): continue
         
         try:
-            df_t = all_data[t] if len(TICKERS) > 1 else all_data
-            res = StrategicAnalyzer.analyze_ticker(t, df_t, sec, max_p)
+            # yfinanceの一括ダウンロードデータの取得
+            dft = alldata[t] if len(ticker_list) > 1 else alldata
+            res = StrategicAnalyzer.analyze_ticker(t, dft, sec, max_p)
             if res and res['score'] >= MIN_SCORE:
                 results.append((t, res))
-        except: continue
+        except Exception as e:
+            continue
     
     results.sort(key=lambda x: x[1]['score'], reverse=True)
     results = results[:MAX_NOTIFICATIONS]
