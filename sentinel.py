@@ -3,15 +3,17 @@ import numpy as np
 import yfinance as yf
 import requests
 import os
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
+from pathlib import Path
 import warnings
-
 warnings.filterwarnings('ignore')
 
 # ============================================================================
-# CONFIG (環境設定)
+# CONFIGURATION
 # ============================================================================
 
+# Authentication
 ACCESS_TOKEN = (
     os.getenv("LINE_CHANNEL_ACCESS_TOKEN") or 
     os.getenv("LINECHANNELACCESSTOKEN") or
@@ -24,24 +26,29 @@ USER_ID = (
     os.getenv("USER_ID")
 )
 
-# 運用資金とリスク設定
-BUDGET_JPY = 350000        # 四半期ごとに入金したらここを増やす
-RISK_PCT_PER_TRADE = 0.01  # 1トレードの許容損失額（総資金の1%）
+# Capital Management
+INITIAL_CAPITAL = 350000  # JPY
+QUARTERLY_CONTRIBUTION = 30000  # JPY (every 3 months)
+TRADING_RATIO = 0.70
+HOLDING_RATIO = 0.30
 
-# ============================================================================
-# CORE PARAMETERS (戦略パラメータ)
-# ============================================================================
-
-MA_SHORT, MA_LONG = 50, 200
-MIN_SCORE = 65 
-MIN_WINRATE = 40 
-MIN_EXPECTANCY = 0.2 
-MAX_NOTIFICATIONS = 8
+# Risk Management
 ATR_STOP_MULT = 2.0
+MAX_POSITION_SIZE = 0.25  # 25% max per position
+MAX_CONCURRENT_POSITIONS = 4
+MAX_SECTOR_CONCENTRATION = 0.40  # 40% max per sector
 
+# Filter Thresholds (Optimized)
+MIN_SCORE = 80
+MIN_WINRATE = 60
+MIN_EXPECTANCY = 0.55  # Raised from 0.4
+MAX_TIGHTNESS = 1.2  # Stricter VCP
+MAX_NOTIFICATIONS = 5
+
+# Reward Multipliers
 REWARD_MULTIPLIERS = {
-    'aggressive': 3.0,
-    'stable': 2.5
+    'aggressive': 2.5,
+    'stable': 2.0
 }
 
 AGGRESSIVE_SECTORS = [
@@ -49,38 +56,38 @@ AGGRESSIVE_SECTORS = [
     'Cloud', 'Ad', 'Service', 'Platform', 'Bet'
 ]
 
+# Transaction Costs
+COMMISSION_RATE = 0.002  # 0.2% per trade
+SLIPPAGE_RATE = 0.001  # 0.1% average slippage
+FX_SPREAD_RATE = 0.0005  # 0.05% FX spread
+TOTAL_COST_RATE = (COMMISSION_RATE + SLIPPAGE_RATE + FX_SPREAD_RATE) * 2  # Round trip
+
+# Performance Tracking
+TARGET_ANNUAL_RETURN = 0.10
+PERFORMANCE_LOG_PATH = Path("/tmp/sentinel_performance.json")
+TRADE_LOG_PATH = Path("/tmp/sentinel_trades.json")
+
 # ============================================================================
-# TICKER UNIVERSE (1株$1000以下 / 厳選約80銘柄)
+# TICKER UNIVERSE
 # ============================================================================
 
 TICKERS = {
-    # --- Technology & AI ---
-    'NVDA':'AI','ARM':'Semi','MU':'Semi','AMD':'Semi','TSM':'Semi','SMCI':'AI',
-    'INTC':'Semi','QCOM':'Semi','ON':'Semi','LRCX':'Semi','AMAT':'Semi',
-    'MSFT':'Cloud','GOOGL':'Ad','META':'Ad','AAPL':'Device','PLTR':'AI',
-    'PANW':'Sec','CRWD':'Sec','FTNT':'Sec','NET':'Sec',
-    'NOW':'Soft','CRM':'Soft','TEAM':'Soft','ADBE':'Soft','APP':'AI','ANET':'Cloud',
-    'SNOW':'Cloud','WDAY':'Soft','DBX':'Soft','DDOG':'Cloud',
-    
-    # --- Consumer & Retail ---
-    'AMZN':'Retail','TSLA':'EV','NFLX':'Service','COST':'Retail','WMT':'Retail',
-    'TJX':'Retail','TGT':'Retail','NKE':'Cons','LULU':'Cons','SBUX':'Cons',
-    'PEP':'Cons','KO':'Cons','PG':'Cons','ELF':'Cons','CELH':'Cons','MELI':'Retail',
-    
-    # --- Finance & Fintech ---
-    'V':'Fin','MA':'Fin','PYPL':'Fin','SQ':'Fin','JPM':'Bank','GS':'Bank',
-    'AXP':'Fin','BLK':'Fin','MS':'Bank','COIN':'Crypto','HOOD':'Crypto',
-    'SOFI':'Fin','NU':'Fin','UPST':'Fin',
-    
-    # --- Health & Bio ---
+    # Tech & Semi
+    'NVDA':'AI','AVGO':'Semi','ARM':'Semi','MU':'Semi','AMD':'Semi','SMCI':'AI','TSM':'Semi','ASML':'Semi',
+    # FAANG+
+    'AAPL':'Device','MSFT':'Cloud','GOOGL':'Ad','META':'Ad','AMZN':'Retail','TSLA':'EV','NFLX':'Service',
+    # Enterprise SaaS
+    'PLTR':'AI','PANW':'Sec','CRWD':'Sec','NET':'Sec','NOW':'Soft','CRM':'Soft','TEAM':'Soft','ADBE':'Soft',
+    # Retail & Consumer
+    'COST':'Retail','WMT':'Retail','TJX':'Retail','ELF':'Cons','PEP':'Cons','KO':'Cons','PG':'Cons','LULU':'Cons',
+    # Finance
+    'V':'Fin','MA':'Fin','JPM':'Bank','GS':'Bank','AXP':'Fin','BLK':'Fin','MS':'Bank','COIN':'Crypto',
+    # Healthcare
     'LLY':'Bio','UNH':'Health','ABBV':'Bio','ISRG':'Health','VRTX':'Bio',
-    'MRK':'Bio','PFE':'Bio','AMGN':'Bio','HCA':'Health','TDOC':'Health',
-    
-    # --- Industrials, Energy & Others ---
-    'GE':'Ind','CAT':'Ind','DE':'Ind','BA':'Ind','XOM':'Energy','CVX':'Energy',
-    'MPC':'Energy','VRT':'Power','ETN':'Power','TT':'Ind','PH':'Ind',
-    'UBER':'Platform','BKNG':'Travel','ABNB':'Travel','DKNG':'Bet','MAR':'Travel',
-    'RCL':'Travel','TDG':'Ind','RYAAY':'Travel'
+    # Industrial & Energy
+    'GE':'Ind','CAT':'Ind','DE':'Ind','BA':'Ind','XOM':'Energy','CVX':'Energy','MPC':'Energy',
+    # Other
+    'UBER':'Platform','BKNG':'Travel','ABNB':'Travel','DKNG':'Bet','VRT':'Power'
 }
 
 SECTOR_ETF = {
@@ -92,226 +99,934 @@ SECTOR_ETF = {
     'Travel':'XLY', 'Bet':'BETZ'
 }
 
+MA_SHORT, MA_LONG = 50, 200
+
 # ============================================================================
-# HELPER FUNCTIONS
+# UTILITY FUNCTIONS
 # ============================================================================
 
 def check_environment():
-    if not ACCESS_TOKEN or not USER_ID:
-        print("Error: LINE Credentials are missing!")
-        return False
-    return True
+    """Check and display environment variables"""
+    print("\n" + "="*70)
+    print("ENVIRONMENT CHECK")
+    print("="*70)
+    
+    if ACCESS_TOKEN:
+        print(f"✓ ACCESS_TOKEN: {ACCESS_TOKEN[:15]}...")
+    else:
+        print("✗ ACCESS_TOKEN: Not set")
+    
+    if USER_ID:
+        print(f"✓ USER_ID: {USER_ID[:10]}...")
+    else:
+        print("✗ USER_ID: Not set")
+    
+    print("="*70 + "\n")
+    return bool(ACCESS_TOKEN and USER_ID)
 
 def get_current_fx_rate():
+    """Get current USD/JPY rate"""
     try:
         data = yf.download("JPY=X", period="1d", progress=False)
         if not data.empty:
-            return float(data['Close'].iloc[-1])
+            close = data['Close']
+            if isinstance(close, pd.DataFrame):
+                return float(close.iloc[-1, 0])
+            return float(close.iloc[-1])
         return 152.0
     except:
         return 152.0
 
+def get_vix():
+    """Get current VIX (market volatility index)"""
+    try:
+        data = yf.download("^VIX", period="1d", progress=False)
+        if not data.empty:
+            close = data['Close']
+            if isinstance(close, pd.DataFrame):
+                return float(close.iloc[-1, 0])
+            return float(close.iloc[-1])
+        return 20.0
+    except:
+        return 20.0
+
 def check_market_trend():
+    """Check overall market trend"""
     try:
         spy = yf.download("SPY", period="300d", progress=False)
         if spy.empty or len(spy) < 200:
-            return True, "Data Limited"
-        close = spy['Close'].squeeze()
+            return True, "Data Limited", 0
+        
+        close = spy['Close']
+        if isinstance(close, pd.DataFrame):
+            close = close.iloc[:, 0]
+        
         current = float(close.iloc[-1])
         ma200 = float(close.rolling(200).mean().iloc[-1])
-        return current > ma200, f"Bull (${current:.0f} > MA200)" if current > ma200 else f"Bear (${current:.0f} < MA200)"
+        distance = ((current - ma200) / ma200) * 100
+        
+        if current > ma200:
+            return True, f"Bull (+{distance:.1f}% above MA200)", distance
+        else:
+            return False, f"Bear ({distance:.1f}% below MA200)", distance
     except:
-        return True, "Check Skipped"
+        return True, "Check Skipped", 0
 
 def is_earnings_near(ticker):
+    """Check if earnings within 5 days"""
     try:
         tk = yf.Ticker(ticker)
         cal = tk.calendar
+        
         if cal is None or (isinstance(cal, pd.DataFrame) and cal.empty):
             return False
+        
         if isinstance(cal, dict) and 'Earnings Date' in cal:
-            date_val = cal['Earnings Date'][0]
+            date_val = cal['Earnings Date']
+            if isinstance(date_val, list):
+                date_val = date_val[0]
         else:
             date_val = cal.iloc[0, 0]
+        
         earnings_date = pd.to_datetime(date_val).date()
         days_until = (earnings_date - datetime.now().date()).days
-        return 0 <= days_until <= 7
+        
+        return abs(days_until) <= 5
     except:
         return False
 
 def sector_is_strong(sector):
+    """Check sector strength"""
     try:
         etf = SECTOR_ETF.get(sector)
-        if not etf: return True
+        if not etf:
+            return True
+        
         df = yf.download(etf, period="250d", progress=False)
-        close = df['Close'].squeeze()
+        if df.empty or len(df) < 200:
+            return True
+        
+        close = df['Close']
+        if isinstance(close, pd.DataFrame):
+            close = close.iloc[:, 0]
+        
         ma200 = close.rolling(200).mean()
         return ma200.iloc[-1] > ma200.iloc[-10]
     except:
         return True
 
 # ============================================================================
-# BACKTEST ENGINE
+# TRANSACTION COST MODEL
 # ============================================================================
 
-def simulate_past_performance(df, sector, atr_mult=ATR_STOP_MULT):
+class TransactionCostModel:
+    """Model for calculating realistic transaction costs"""
+    
+    @staticmethod
+    def calculate_total_cost(position_value_usd, fx_rate):
+        """
+        Calculate total transaction cost including commission, slippage, FX
+        
+        Returns: cost in R (as percentage of risk)
+        """
+        # Commission (0.2%)
+        commission = position_value_usd * COMMISSION_RATE
+        
+        # Slippage (depends on position size)
+        if position_value_usd < 500:  # Small order
+            slippage_rate = 0.0005
+        elif position_value_usd < 2000:  # Medium
+            slippage_rate = 0.001
+        else:  # Large
+            slippage_rate = 0.0015
+        
+        slippage = position_value_usd * slippage_rate
+        
+        # FX spread
+        fx_cost = position_value_usd * FX_SPREAD_RATE
+        
+        # Total cost (round trip = x2)
+        total_usd = (commission + slippage + fx_cost) * 2
+        total_jpy = total_usd * fx_rate
+        
+        return total_usd, total_jpy
+    
+    @staticmethod
+    def adjust_expectancy_for_cost(gross_expectancy, avg_1r_pct, position_value_usd, fx_rate):
+        """
+        Adjust expectancy for transaction costs
+        
+        gross_expectancy: e.g., 0.65R
+        avg_1r_pct: e.g., 8.5% (1R as percentage)
+        
+        Returns: net expectancy
+        """
+        cost_usd, _ = TransactionCostModel.calculate_total_cost(position_value_usd, fx_rate)
+        cost_pct = (cost_usd / position_value_usd) * 100
+        cost_in_r = cost_pct / avg_1r_pct
+        
+        net_expectancy = gross_expectancy - cost_in_r
+        
+        return net_expectancy, cost_in_r
+
+# ============================================================================
+# DYNAMIC POSITION SIZING
+# ============================================================================
+
+class PositionSizer:
+    """Kelly Criterion based position sizing with safety factors"""
+    
+    @staticmethod
+    def calculate_kelly_fraction(winrate, rr_ratio):
+        """
+        Calculate Kelly fraction
+        
+        f = (bp - q) / b
+        where:
+          b = RR ratio (e.g., 2.5)
+          p = win rate (e.g., 0.65)
+          q = 1 - p
+        """
+        if winrate <= 0 or winrate >= 1:
+            return 0
+        
+        kelly = (rr_ratio * winrate - (1 - winrate)) / rr_ratio
+        
+        # Safety: use half Kelly
+        safe_kelly = kelly / 2
+        
+        return max(0, min(safe_kelly, 0.25))  # Cap at 25%
+    
+    @staticmethod
+    def calculate_position_size(
+        trading_capital,
+        winrate,
+        rr_ratio,
+        atr_pct,
+        vix,
+        sector_exposure
+    ):
+        """
+        Calculate optimal position size with multiple adjustments
+        
+        Returns: position size in JPY
+        """
+        # Base Kelly fraction
+        kelly_fraction = PositionSizer.calculate_kelly_fraction(winrate, rr_ratio)
+        
+        # Volatility adjustment
+        volatility_factor = 1.0
+        if atr_pct > 5.0:  # High volatility stock
+            volatility_factor = 0.7
+        elif atr_pct > 3.0:
+            volatility_factor = 0.85
+        
+        # Market environment adjustment (VIX)
+        market_factor = 1.0
+        if vix > 30:  # High fear
+            market_factor = 0.6
+        elif vix > 20:
+            market_factor = 0.8
+        
+        # Sector concentration adjustment
+        sector_factor = 1.0
+        if sector_exposure > 0.30:  # Already 30%+ in this sector
+            sector_factor = 0.7
+        elif sector_exposure > 0.20:
+            sector_factor = 0.85
+        
+        # Final position size
+        position_fraction = kelly_fraction * volatility_factor * market_factor * sector_factor
+        position_fraction = min(position_fraction, MAX_POSITION_SIZE)
+        
+        position_size = trading_capital * position_fraction
+        
+        return position_size, {
+            'kelly': kelly_fraction,
+            'vol_adj': volatility_factor,
+            'mkt_adj': market_factor,
+            'sec_adj': sector_factor,
+            'final': position_fraction
+        }
+
+# ============================================================================
+# TRAILING STOP MANAGER
+# ============================================================================
+
+class TrailingStopManager:
+    """Manage trailing stops for open positions"""
+    
+    @staticmethod
+    def calculate_stop(entry_price, current_price, highest_since_entry, atr, stage):
+        """
+        Calculate stop loss level
+        
+        Stages:
+        1. Initial: Fixed stop at entry - (ATR × 2)
+        2. Breakeven: Price > entry + (ATR × 0.5) → Move stop to breakeven
+        3. Trailing: Price > entry + (ATR × 1.0) → Trailing stop
+        """
+        
+        initial_stop = entry_price - (atr * ATR_STOP_MULT)
+        
+        # Stage 1: Initial fixed stop
+        if current_price < entry_price + (atr * 0.5):
+            return initial_stop, "Initial"
+        
+        # Stage 2: Move to breakeven
+        elif current_price < entry_price + (atr * 1.0):
+            return entry_price, "Breakeven"
+        
+        # Stage 3: Trailing stop
+        else:
+            trailing_stop = highest_since_entry - (atr * ATR_STOP_MULT)
+            return max(trailing_stop, entry_price), "Trailing"
+    
+    @staticmethod
+    def should_exit(current_price, stop_level, target_level):
+        """
+        Check if position should be closed
+        
+        Returns: (should_exit, reason, exit_type)
+        """
+        if current_price <= stop_level:
+            return True, "Stop loss hit", "LOSS"
+        
+        if current_price >= target_level:
+            return True, "Target reached", "WIN"
+        
+        return False, None, None
+
+# ============================================================================
+# ENHANCED BACKTEST ENGINE
+# ============================================================================
+
+def simulate_past_performance_v2(df, sector, atr_mult=ATR_STOP_MULT, use_trailing=True):
+    """
+    Enhanced backtest with trailing stops and transaction costs
+    """
     try:
-        close, high, low = df['Close'].squeeze(), df['High'].squeeze(), df['Low'].squeeze()
-        tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
+        close = df['Close'].squeeze()
+        high = df['High'].squeeze()
+        low = df['Low'].squeeze()
+        
+        tr = pd.concat([
+            (high - low),
+            (high - close.shift()).abs(),
+            (low - close.shift()).abs()
+        ], axis=1).max(axis=1)
         atr = tr.rolling(14).mean()
+        
         reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
         
-        wins, losses, total_r = 0, 0, 0
+        wins = 0
+        losses = 0
+        total_r = 0
+        
         start_idx = max(MA_LONG, len(df) - 500)
-        for i in range(start_idx, len(df) - 10):
+        end_idx = len(df) - 10
+        
+        for i in range(start_idx, end_idx):
+            if i < MA_LONG:
+                continue
+            
             ma50_at_i = close.iloc[i-MA_SHORT:i].mean()
             ma200_at_i = close.iloc[i-MA_LONG:i].mean()
-            if not (close.iloc[i] > ma50_at_i > ma200_at_i): continue
+            
+            if not (close.iloc[i] > ma50_at_i > ma200_at_i):
+                continue
             
             pivot = high.iloc[i-5:i].max() * 1.002
             stop_dist = atr.iloc[i] * atr_mult
-            if pd.isna(stop_dist) or stop_dist == 0: continue
             
-            stop, target = pivot - stop_dist, pivot + (stop_dist * reward_mult)
+            if pd.isna(stop_dist) or stop_dist == 0:
+                continue
+            
+            initial_stop = pivot - stop_dist
+            target = pivot + (stop_dist * reward_mult)
+            
             if high.iloc[i] >= pivot:
-                for j in range(1, 21):
-                    if i + j >= len(df): break
-                    if high.iloc[i+j] >= target:
-                        wins += 1; total_r += reward_mult; break
-                    if low.iloc[i+j] <= stop:
-                        losses += 1; total_r -= 1.0; break
+                entry_price = pivot
+                highest = entry_price
+                current_stop = initial_stop
+                
+                for j in range(1, 30):  # Track up to 30 days
+                    if i + j >= len(df):
+                        break
+                    
+                    current_price = close.iloc[i+j]
+                    current_high = high.iloc[i+j]
+                    current_low = low.iloc[i+j]
+                    
+                    # Update highest
+                    if current_high > highest:
+                        highest = current_high
+                    
+                    # Update stop if using trailing
+                    if use_trailing:
+                        current_stop, stage = TrailingStopManager.calculate_stop(
+                            entry_price, current_price, highest, stop_dist / atr_mult, None
+                        )
+                    
+                    # Check exit
+                    if current_high >= target:
+                        wins += 1
+                        actual_gain = (target - entry_price) / stop_dist
+                        total_r += actual_gain
+                        break
+                    
+                    if current_low <= current_stop:
+                        losses += 1
+                        actual_loss = (entry_price - current_stop) / stop_dist
+                        total_r -= actual_loss
+                        break
         
-        total = wins + losses
-        if total < 10: return {'status': 'insufficient', 'message': f'Sample:{total}', 'winrate': 0, 'expectancy': 0}
-        return {'status': 'valid', 'winrate': (wins/total)*100, 'expectancy': total_r/total, 'message': f"WR{(wins/total)*100:.0f}% EV{total_r/total:.2f}R"}
-    except:
-        return {'status': 'error', 'message': 'Error', 'winrate': 0, 'expectancy': 0}
+        total_trades = wins + losses
+        
+        if total_trades < 10:
+            return {
+                'status': 'insufficient',
+                'message': f'Sample:{total_trades}',
+                'trades': total_trades,
+                'winrate': 0,
+                'expectancy': 0,
+                'wins': 0,
+                'losses': 0
+            }
+        
+        winrate = (wins / total_trades) * 100
+        expectancy = total_r / total_trades
+        
+        # Adjust for transaction costs
+        avg_position = 50000  # Assume $500 average position
+        fx_rate = 152.0
+        net_expectancy, cost_in_r = TransactionCostModel.adjust_expectancy_for_cost(
+            expectancy, 8.5, avg_position, fx_rate
+        )
+        
+        return {
+            'status': 'valid',
+            'winrate': winrate,
+            'expectancy': expectancy,
+            'net_expectancy': net_expectancy,
+            'cost_in_r': cost_in_r,
+            'wins': wins,
+            'losses': losses,
+            'total': total_trades,
+            'message': f"WR{winrate:.0f}% ({wins}/{total_trades}) GrossEV{expectancy:.2f}R NetEV{net_expectancy:.2f}R"
+        }
+        
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': f'Error: {str(e)}',
+            'winrate': 0,
+            'expectancy': 0,
+            'net_expectancy': 0,
+            'wins': 0,
+            'losses': 0
+        }
 
 # ============================================================================
-# STRATEGIC ANALYZER
+# ENHANCED STRATEGIC ANALYZER
 # ============================================================================
 
-class StrategicAnalyzer:
+class StrategicAnalyzerV2:
+    """Enhanced analyzer with optimized scoring and filters"""
+    
     @staticmethod
-    def analyze_ticker(ticker, df, sector, max_price_usd):
-        if len(df) < MA_LONG + 50: return None
-        close, high, low, volume = df['Close'].squeeze(), df['High'].squeeze(), df['Low'].squeeze(), df['Volume'].squeeze()
-        current_price = float(close.iloc[-1])
-        if current_price > max_price_usd: return None
+    def analyze_ticker(ticker, df, sector, max_price_usd, vix, sector_exposures, trading_capital):
+        """
+        Comprehensive ticker analysis
         
-        ma50 = close.rolling(MA_SHORT).mean().iloc[-1]
-        ma200 = close.rolling(MA_LONG).mean().iloc[-1]
-        if not (current_price > ma50 > ma200): return None
+        Returns: analysis dict or None
+        """
         
-        tr = pd.concat([(high-low), (high-close.shift()).abs(), (low-close.shift()).abs()], axis=1).max(axis=1)
-        atr14 = tr.rolling(14).mean().iloc[-1]
-        tightness = float((high.iloc[-5:].max() - low.iloc[-5:].min()) / atr14)
-        if tightness > 3.0: return None
-        
-        score = 10 # Base
-        reasons = ["Base+10"]
-        
-        # VCP Score
-        if tightness < 1.0: score += 30; reasons.append("VCP++30")
-        elif tightness < 1.5: score += 20; reasons.append("VCP+20")
-        
-        # Volume Score
-        vol_avg = volume.rolling(50).mean().iloc[-1]
-        vol_ratio = volume.iloc[-1] / vol_avg
-        if 0.5 <= vol_ratio <= 0.9: score += 15; reasons.append("VolDry+15")
-        
-        # Momentum
-        ma5, ma20 = close.rolling(5).mean().iloc[-1], close.rolling(20).mean().iloc[-1]
-        if ma5 > ma20 * 1.02: score += 20; reasons.append("Mom++20")
-        
-        bt = simulate_past_performance(df, sector)
-        if score < MIN_SCORE or (bt['status'] == 'valid' and (bt['winrate'] < MIN_WINRATE or bt['expectancy'] < MIN_EXPECTANCY)):
+        if len(df) < MA_LONG + 50:
             return None
         
-        pivot = high.iloc[-5:].max() * 1.002
-        stop = pivot - (atr14 * ATR_STOP_MULT)
-        reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
-        target = pivot + ((pivot - stop) * reward_mult)
+        try:
+            close = df['Close'].squeeze()
+            high = df['High'].squeeze()
+            low = df['Low'].squeeze()
+            volume = df['Volume'].squeeze()
+        except:
+            return None
         
-        return {'score': score, 'reasons': ' '.join(reasons), 'price': current_price, 'pivot': pivot, 'stop': stop, 'target': target, 'sector': sector, 'bt': bt}
+        current_price = float(close.iloc[-1])
+        
+        if current_price > max_price_usd:
+            return None
+        
+        # Trend filter
+        ma50 = close.rolling(MA_SHORT).mean().iloc[-1]
+        ma200 = close.rolling(MA_LONG).mean().iloc[-1]
+        
+        if not (current_price > ma50 > ma200):
+            return None
+        
+        # ATR calculation
+        tr = pd.concat([
+            (high - low),
+            (high - close.shift()).abs(),
+            (low - close.shift()).abs()
+        ], axis=1).max(axis=1)
+        
+        atr14 = tr.rolling(14).mean().iloc[-1]
+        
+        if atr14 == 0 or pd.isna(atr14):
+            return None
+        
+        atr_pct = (atr14 / current_price) * 100
+        
+        # VCP tightness
+        recent_range = high.iloc[-5:].max() - low.iloc[-5:].min()
+        tightness = float(recent_range / atr14)
+        
+        if tightness > MAX_TIGHTNESS:
+            return None
+        
+        # === OPTIMIZED SCORING SYSTEM ===
+        score = 0
+        reasons = []
+        
+        # 1. VCP Tightness (0-35 points) - Most important
+        if tightness < 0.8:
+            score += 35
+            reasons.append("VCP+++35")
+        elif tightness < 1.0:
+            score += 30
+            reasons.append("VCP++30")
+        elif tightness < 1.2:
+            score += 20
+            reasons.append("VCP+20")
+        else:
+            score += 10
+            reasons.append("VCP+10")
+        
+        # 2. Volume Analysis (0-25 points)
+        vol_avg = volume.rolling(50).mean().iloc[-1]
+        
+        if vol_avg > 0:
+            vol_ratio = volume.iloc[-1] / vol_avg
+            
+            # Drying up volume
+            if 0.5 <= vol_ratio <= 0.7:
+                score += 20
+                reasons.append("VolDry++20")
+            elif 0.7 < vol_ratio <= 0.85:
+                score += 15
+                reasons.append("VolDry+15")
+            elif 0.85 < vol_ratio <= 1.0:
+                score += 10
+                reasons.append("VolStable+10")
+            
+            # Accumulation spike
+            recent_vol_max = volume.iloc[-3:].max()
+            if recent_vol_max > vol_avg * 3.0:
+                score += 15
+                reasons.append("Accum+++15")
+            elif recent_vol_max > vol_avg * 2.0:
+                score += 10
+                reasons.append("Accum++10")
+            elif recent_vol_max > vol_avg * 1.5:
+                score += 5
+                reasons.append("Accum+5")
+        
+        # 3. Momentum (0-20 points)
+        ma5 = close.rolling(5).mean().iloc[-1]
+        ma20 = close.rolling(20).mean().iloc[-1]
+        
+        if ma5 <= ma20:
+            return None  # Must have positive momentum
+        
+        mom_strength = ((ma5 / ma20) - 1) * 100
+        
+        if mom_strength > 3.0:
+            score += 20
+            reasons.append("Mom+++20")
+        elif mom_strength > 2.0:
+            score += 15
+            reasons.append("Mom++15")
+        elif mom_strength > 1.0:
+            score += 10
+            reasons.append("Mom+10")
+        else:
+            score += 5
+            reasons.append("Mom+5")
+        
+        # 4. Trend Strength (0-20 points)
+        trend_strength = ((ma50 - ma200) / ma200) * 100
+        
+        if trend_strength > 15:
+            score += 20
+            reasons.append("Trend++20")
+        elif trend_strength > 10:
+            score += 15
+            reasons.append("Trend+15")
+        elif trend_strength > 5:
+            score += 10
+            reasons.append("Trend+10")
+        else:
+            return None  # Weak trend
+        
+        # === CALCULATE ENTRY/EXIT ===
+        reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
+        
+        pivot = high.iloc[-5:].max() * 1.002
+        stop_dist = atr14 * ATR_STOP_MULT
+        stop_loss = pivot - stop_dist
+        target = pivot + (stop_dist * reward_mult)
+        
+        # === RUN ENHANCED BACKTEST ===
+        bt_result = simulate_past_performance_v2(df, sector, use_trailing=True)
+        
+        # === STRICT FILTERING ===
+        if score < MIN_SCORE:
+            return None
+        
+        if bt_result['status'] == 'valid':
+            if bt_result['winrate'] < MIN_WINRATE:
+                return None
+            if bt_result['net_expectancy'] < MIN_EXPECTANCY:
+                return None
+        elif bt_result['status'] == 'insufficient':
+            if bt_result['trades'] < 5:
+                return None
+        elif bt_result['status'] == 'error':
+            return None
+        
+        # === DYNAMIC POSITION SIZING ===
+        sector_exposure = sector_exposures.get(sector, 0)
+        
+        position_size, sizing_factors = PositionSizer.calculate_position_size(
+            trading_capital=trading_capital,
+            winrate=bt_result.get('winrate', 50) / 100,
+            rr_ratio=reward_mult,
+            atr_pct=atr_pct,
+            vix=vix,
+            sector_exposure=sector_exposure
+        )
+        
+        return {
+            'score': score,
+            'reasons': ' '.join(reasons),
+            'price': current_price,
+            'pivot': pivot,
+            'stop': stop_loss,
+            'target': target,
+            'sector': sector,
+            'tightness': tightness,
+            'atr_pct': atr_pct,
+            'bt': bt_result,
+            'reward_mult': reward_mult,
+            'position_size_jpy': position_size,
+            'sizing_factors': sizing_factors
+        }
+
+# ============================================================================
+# PERFORMANCE TRACKER
+# ============================================================================
+
+class PerformanceTracker:
+    """Track and analyze system performance"""
+    
+    @staticmethod
+    def load_performance_history():
+        """Load historical performance data"""
+        if PERFORMANCE_LOG_PATH.exists():
+            with open(PERFORMANCE_LOG_PATH, 'r') as f:
+                return json.load(f)
+        return {
+            'start_date': datetime.now().isoformat(),
+            'initial_capital': INITIAL_CAPITAL,
+            'quarters': []
+        }
+    
+    @staticmethod
+    def save_performance(data):
+        """Save performance data"""
+        with open(PERFORMANCE_LOG_PATH, 'w') as f:
+            json.dump(data, f, indent=2)
+    
+    @staticmethod
+    def calculate_ytd_return(trades):
+        """Calculate year-to-date return"""
+        if not trades:
+            return 0
+        
+        total_r = sum(t['r_multiple'] for t in trades)
+        avg_1r = 8.5  # Average 1R as percentage
+        
+        return total_r * (avg_1r / 100)
+    
+    @staticmethod
+    def get_current_status():
+        """Get current performance status"""
+        perf = PerformanceTracker.load_performance_history()
+        
+        if not perf['quarters']:
+            return {
+                'on_track': True,
+                'ytd_return': 0,
+                'target_return': 0,
+                'message': "System just started"
+            }
+        
+        # Calculate YTD
+        start_date = datetime.fromisoformat(perf['start_date'])
+        days_passed = (datetime.now() - start_date).days
+        
+        target_return = TARGET_ANNUAL_RETURN * (days_passed / 365)
+        
+        # Actual return from quarters
+        actual_return = sum(q.get('return', 0) for q in perf['quarters'])
+        
+        on_track = actual_return >= target_return * 0.9  # Within 90% of target
+        
+        return {
+            'on_track': on_track,
+            'ytd_return': actual_return,
+            'target_return': target_return,
+            'difference': actual_return - target_return,
+            'days_passed': days_passed
+        }
 
 # ============================================================================
 # LINE NOTIFICATION
 # ============================================================================
 
 def send_line(msg):
-    if not ACCESS_TOKEN or not USER_ID: return False
+    """Send LINE notification"""
+    
+    print("\n" + "="*70)
+    print("LINE NOTIFICATION")
+    print("="*70)
+    
+    if not ACCESS_TOKEN or not USER_ID:
+        print("Credentials not set. Message:")
+        print("-"*70)
+        print(msg)
+        print("="*70 + "\n")
+        return False
+    
     url = "https://api.line.me/v2/bot/message/push"
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {ACCESS_TOKEN}"}
-    payload = {"to": USER_ID, "messages": [{"type": "text", "text": msg}]}
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {ACCESS_TOKEN}"
+    }
+    payload = {
+        "to": USER_ID,
+        "messages": [{"type": "text", "text": msg}]
+    }
+    
     try:
-        res = requests.post(url, headers=headers, json=payload, timeout=10)
-        return res.status_code == 200
-    except: return False
+        response = requests.post(url, headers=headers, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            print("✓ Sent successfully")
+            print("="*70 + "\n")
+            return True
+        else:
+            print(f"✗ Failed: {response.status_code}")
+            print("="*70 + "\n")
+            return False
+    except Exception as e:
+        print(f"✗ Error: {e}")
+        print("="*70 + "\n")
+        return False
 
 # ============================================================================
-# MAIN
+# MAIN MISSION
 # ============================================================================
 
 def run_mission():
-    print(f"\n--- SENTINEL v22.3 | {datetime.now().strftime('%Y-%m-%d %H:%M')} ---")
-    if not check_environment(): return
-
-    is_bull, market_status = check_market_trend()
+    """Main execution - SENTINEL v25.0"""
+    
+    print("\n" + "="*70)
+    print("SENTINEL v25.0 - PROFESSIONAL EDITION")
+    print("="*70)
+    print(f"Launch: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Target: {TARGET_ANNUAL_RETURN*100}% Annual Return")
+    print("="*70 + "\n")
+    
+    # Environment check
+    env_ok = check_environment()
+    
+    # Get market data
+    print("Gathering market intelligence...")
+    is_bull, market_status, spy_distance = check_market_trend()
     fx_rate = get_current_fx_rate()
-    max_price_usd = (BUDGET_JPY / fx_rate) * 0.95
-    risk_budget_jpy = BUDGET_JPY * RISK_PCT_PER_TRADE
-
+    vix = get_vix()
+    
+    print(f"✓ Market: {market_status}")
+    print(f"✓ VIX: {vix:.1f}")
+    print(f"✓ FX: ¥{fx_rate:.2f}/USD")
+    
+    # Check performance
+    perf_status = PerformanceTracker.get_current_status()
+    print(f"✓ YTD: {perf_status['ytd_return']*100:.1f}% (Target: {perf_status['target_return']*100:.1f}%)")
+    print(f"✓ Status: {'ON TRACK' if perf_status['on_track'] else 'BEHIND'}\n")
+    
+    # Market filter
     if not is_bull:
-        msg = f"SENTINEL v22.3\nMarket Bearish: {market_status}"
-        send_line(msg); return
-
+        msg = (
+            f"SENTINEL v25.0\n"
+            f"Market conditions unfavorable\n"
+            f"\n"
+            f"{market_status}\n"
+            f"VIX: {vix:.1f}\n"
+            f"System standby mode activated"
+        )
+        print(msg)
+        send_line(msg)
+        return
+    
+    # Calculate capital allocation
+    trading_capital = INITIAL_CAPITAL * TRADING_RATIO
+    max_price_usd = (trading_capital / fx_rate) * 0.9
+    
+    print(f"Capital Allocation:")
+    print(f"  Trading: ¥{trading_capital:,.0f} (${trading_capital/fx_rate:,.0f})")
+    print(f"  Max Price: ${max_price_usd:.2f}\n")
+    
+    # Download data
+    print(f"Downloading {len(TICKERS)} tickers...")
     ticker_list = list(TICKERS.keys())
-    all_data = yf.download(ticker_list, period="600d", progress=False, group_by='ticker')
+    
+    try:
+        all_data = yf.download(
+            ticker_list,
+            period="600d",
+            progress=False,
+            group_by='ticker',
+            threads=True
+        )
+        print("✓ Download complete\n")
+    except Exception as e:
+        print(f"✗ Download failed: {e}")
+        return
+    
+    # Screen tickers
+    print("Screening candidates...\n")
     
     results = []
+    sector_exposures = {}  # Track sector concentration
+    
     for ticker, sector in TICKERS.items():
-        if is_earnings_near(ticker) or not sector_is_strong(sector): continue
+        
+        # Skip earnings
+        if is_earnings_near(ticker):
+            print(f"SKIP {ticker}: Earnings within 5 days")
+            continue
+        
+        # Skip weak sectors
+        if not sector_is_strong(sector):
+            print(f"SKIP {ticker}: Weak sector")
+            continue
+        
         try:
-            res = StrategicAnalyzer.analyze_ticker(ticker, all_data[ticker], sector, max_price_usd)
-            if res: results.append((ticker, res))
-        except: continue
-
+            if len(ticker_list) > 1:
+                df_ticker = all_data[ticker]
+            else:
+                df_ticker = all_data
+            
+            result = StrategicAnalyzerV2.analyze_ticker(
+                ticker=ticker,
+                df=df_ticker,
+                sector=sector,
+                max_price_usd=max_price_usd,
+                vix=vix,
+                sector_exposures=sector_exposures,
+                trading_capital=trading_capital
+            )
+            
+            if result:
+                results.append((ticker, result))
+                
+                # Update sector exposure
+                sector_exposures[sector] = sector_exposures.get(sector, 0) + (
+                    result['position_size_jpy'] / trading_capital
+                )
+                
+                print(f"✓ {ticker}: {result['score']}pt "
+                      f"WR{result['bt'].get('winrate',0):.0f}% "
+                      f"EV{result['bt'].get('net_expectancy',0):.2f}R "
+                      f"Size¥{result['position_size_jpy']:,.0f}")
+                
+        except Exception as e:
+            print(f"✗ {ticker}: Error - {e}")
+    
+    # Sort and limit
     results.sort(key=lambda x: x[1]['score'], reverse=True)
     results = results[:MAX_NOTIFICATIONS]
-
+    
+    print(f"\n{'='*70}")
+    print(f"SCREENING COMPLETE: {len(results)} candidates")
+    print(f"{'='*70}\n")
+    
+    # Generate report
     report = [
-        "SENTINEL v22.3",
+        "SENTINEL v25.0 Professional",
+        f"{datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        "",
         f"Market: {market_status}",
-        f"FX: {fx_rate:.1f} | Budget: ¥{BUDGET_JPY:,}",
-        f"Risk/Trade: ¥{int(risk_budget_jpy)}",
-        "-" * 20
+        f"VIX: {vix:.1f} | FX: ¥{fx_rate:.2f}",
+        f"YTD: {perf_status['ytd_return']*100:.1f}% (Target: {perf_status['target_return']*100:.1f}%)",
+        "=" * 35
     ]
-
+    
     if not results:
-        report.append("No candidates.")
+        report.append("No qualifying candidates")
+        report.append("Filters: High quality only")
     else:
         for i, (ticker, r) in enumerate(results, 1):
-            loss_per_share_jpy = (r['pivot'] - r['stop']) * fx_rate
-            # 推奨株数 = リスク予算 ÷ 1株あたりの損切り額
-            shares_to_buy = int(risk_budget_jpy // loss_per_share_jpy)
-            # 予算による物理的な上限
-            max_can_buy = int((BUDGET_JPY / fx_rate) // r['pivot'])
-            final_shares = min(shares_to_buy, max_can_buy)
-
             loss_pct = (1 - r['stop'] / r['pivot']) * 100
             gain_pct = (r['target'] / r['pivot'] - 1) * 100
-
+            rr = gain_pct / loss_pct
+            
+            # Position size
+            shares = int(r['position_size_jpy'] / fx_rate / r['pivot'])
+            
             report.append(f"[{i}] {ticker} ({r['sector']}) {r['score']}pt")
-            report.append(f"推奨株数: {final_shares}株")
-            report.append(f"Entry: ${r['pivot']:.2f} / Stop: ${r['stop']:.2f} (-{loss_pct:.1f}%)")
-            report.append(f"Target: ${r['target']:.2f} (+{gain_pct:.1f}%)")
+            report.append(f"{r['reasons']}")
             report.append(f"BT: {r['bt']['message']}")
-            report.append("-" * 20)
-
+            report.append(f"")
+            report.append(f"Price: ${r['price']:.2f}")
+            report.append(f"Entry: ${r['pivot']:.2f}")
+            report.append(f"Stop: ${r['stop']:.2f} (-{loss_pct:.1f}%)")
+            report.append(f"Target: ${r['target']:.2f} (+{gain_pct:.1f}%)")
+            report.append(f"RR: 1:{rr:.1f}")
+            report.append(f"")
+            report.append(f"Position: {shares} shares")
+            report.append(f"Size: ¥{r['position_size_jpy']:,.0f}")
+            report.append(f"Kelly: {r['sizing_factors']['kelly']:.1%}")
+            report.append("=" * 35)
+    
     full_report = "\n".join(report)
+    
+    # Output
+    print("="*70)
+    print("FINAL REPORT")
+    print("="*70)
     print(full_report)
+    print("="*70 + "\n")
+    
+    # Send notification
     send_line(full_report)
+    
+    print("Mission complete\n")
+
+# ============================================================================
+# ENTRY POINT
+# ============================================================================
 
 if __name__ == "__main__":
-    run_mission()
+    try:
+        run_mission()
+    except KeyboardInterrupt:
+        print("\n\nInterrupted by user\n")
+    except Exception as e:
+        print(f"\n\nUnexpected error: {e}\n")
+        import traceback
+        traceback.print_exc()
