@@ -1,22 +1,34 @@
 #!/usr/bin/env python3
 # SENTINEL v25.1 - Full Robust Version (Shares-based)
 # Requirements: pandas, numpy, yfinance, requests
-# Usage: python sentinel_full.py
+# Usage: python sentinel.py
 
-import pandas as pd
-import numpy as np
-import yfinance as yf
-import requests
 import os
 import time
 import logging
 from datetime import datetime
 from pathlib import Path
+
+import pandas as pd
+import numpy as np
+import yfinance as yf
+import requests
 import warnings
 
 warnings.filterwarnings('ignore')
+
+# ---------------------------
+# Logging
+# ---------------------------
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger("SENTINEL")
+logger.setLevel(logging.DEBUG)  # DEBUG にして詳細ログを出す
+
+# Optional file log for debugging
+fh = logging.FileHandler("sentinel_debug.log")
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+logger.addHandler(fh)
 
 # ---------------------------
 # CONFIG
@@ -342,7 +354,8 @@ class StrategicAnalyzerV2:
             tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
             atr14 = tr.rolling(14, min_periods=7).mean().iloc[-1]
             if pd.isna(atr14) or atr14 <= 0:
-                atr14 = max((high - low).rolling(14, min_periods=7).mean().iloc[-1] if not pd.isna((high - low).rolling(14, min_periods=7).mean().iloc[-1]) else 0.0, 1e-6)
+                alt = (high - low).rolling(14, min_periods=7).mean().iloc[-1]
+                atr14 = max(alt if not pd.isna(alt) else 0.0, 1e-6)
             atr_pct = atr14 / curr if curr > 0 else 0.0
             tightness = (high.iloc[-5:].max() - low.iloc[-5:].min()) / (atr14 if atr14 > 0 else 1.0)
             max_tightness = MAX_TIGHTNESS_BASE
@@ -417,12 +430,17 @@ def send_line(msg):
     if not ACCESS_TOKEN or not USER_ID:
         logger.debug("LINE credentials missing; skipping send.")
         return
+    url = "https://api.line.me/v2/bot/message/push"
+    headers = {"Content-Type":"application/json", "Authorization":f"Bearer {ACCESS_TOKEN}"}
+    payload = {"to": USER_ID, "messages":[{"type":"text", "text":msg}]}
     try:
-        requests.post("https://api.line.me/v2/bot/message/push",
-                      headers={"Content-Type":"application/json", "Authorization":f"Bearer {ACCESS_TOKEN}"},
-                      json={"to":USER_ID, "messages":[{"type":"text", "text":msg}]}, timeout=10)
+        resp = requests.post(url, headers=headers, json=payload, timeout=10)
+        if resp.status_code == 200:
+            logger.info("LINE push succeeded.")
+        else:
+            logger.warning("LINE push failed status=%d body=%s", resp.status_code, resp.text)
     except Exception as e:
-        logger.warning("LINE send failed: %s", e)
+        logger.exception("LINE send failed: %s", e)
 
 # ---------------------------
 # Main mission
