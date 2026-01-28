@@ -487,4 +487,36 @@ def run_mission():
     report_lines.append("【STATISTICS】")
     report_lines.append(f"Analyzed: {len(TICKERS)} tickers")
     report_lines.append(f"Blocked by Earnings: {stats['Earnings']}")
-    re
+    report_lines.append(f"Blocked by Sector:   {stats['Sector']}")
+    report_lines.append(f"Blocked by Trend:    {stats['Trend']}")
+    report_lines.append(f"VCP/Score Pass:      {len(all_sorted)}")
+    report_lines.append(f"Data Error:          {stats['Data']} / Internal Error: {stats['Error']}")
+    report_lines.append("="*40)
+    report_lines.append("【BUY SIGNALS】")
+    if not passed:
+        report_lines.append("No candidates passed all strict filters.")
+    else:
+        for i, (ticker, r) in enumerate(passed[:MAX_NOTIFICATIONS], 1):
+            pos_usd = r['pos_usd']
+            price = r['price']
+            est_shares = r['est_shares']
+            roundtrip_cost_usd = TransactionCostModel.calculate_total_cost_usd(pos_usd)
+            shares_str = f"{est_shares:.4f}" if ALLOW_FRACTIONAL else f"{int(est_shares)}"
+            report_lines.append(f"★ [{i}] {ticker} {r['score']}pt")
+            report_lines.append(f"   Entry: ${r['pivot']:.2f} / Price: ${price:.2f} / Shares est: {shares_str}")
+            report_lines.append(f"   Pos(USD): ${pos_usd:,.2f} / RoundtripCost(USD): ${roundtrip_cost_usd:,.2f}")
+            report_lines.append(f"   BT: {r['bt']['message']} Tight:{r['tightness']:.2f}")
+    report_lines.append("\n【ANALYSIS TOP 10 (RAW)】")
+    for i, (ticker, r) in enumerate(all_sorted[:10], 1):
+        tag = "✅OK"
+        if r.get('is_earnings'): tag = "❌EARN"
+        elif r.get('is_sector_weak'): tag = "❌SEC"
+        elif r['score'] < MIN_SCORE: tag = "❌SCOR"
+        report_lines.append(f"{i}. {ticker:5} {r['score']}pt | {tag}")
+        report_lines.append(f"   Tight:{r['tightness']:.2f} WR:{r['bt']['winrate']:.0f}% PosUSD:{r['pos_usd']:.0f} Shares:{r.get('est_shares')}")
+    final_report = "\n".join(report_lines)
+    logger.info("\n%s", final_report)
+    send_line(final_report)
+
+if __name__ == "__main__":
+    run_mission()
