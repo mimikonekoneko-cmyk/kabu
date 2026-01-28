@@ -38,12 +38,15 @@ MAX_POSITION_SIZE = 0.25  # 25% max per position
 MAX_CONCURRENT_POSITIONS = 4
 MAX_SECTOR_CONCENTRATION = 0.40  # 40% max per sector
 
-# Filter Thresholds (Optimized)
-MIN_SCORE = 80
-MIN_WINRATE = 60
-MIN_EXPECTANCY = 0.55  # Raised from 0.4
-MAX_TIGHTNESS = 1.2  # Stricter VCP
+# Filter Thresholds - v25.1 BALANCED
+MIN_SCORE = 75          # Balanced for weekly opportunities
+MIN_WINRATE = 55        # 55% is still excellent
+MIN_EXPECTANCY = 0.45   # Net expectancy after costs
+MAX_TIGHTNESS = 1.5     # Allow slightly looser VCP
 MAX_NOTIFICATIONS = 5
+
+# Liquidity Filter
+MIN_DAILY_VOLUME_USD = 10_000_000  # $10M minimum daily volume
 
 # Reward Multipliers
 REWARD_MULTIPLIERS = {
@@ -52,8 +55,8 @@ REWARD_MULTIPLIERS = {
 }
 
 AGGRESSIVE_SECTORS = [
-    'Semi', 'AI', 'Soft', 'Sec', 'EV', 'Crypto', 
-    'Cloud', 'Ad', 'Service', 'Platform', 'Bet'
+    'Semi', 'AI', 'Soft', 'Sec', 'Auto', 'Crypto', 
+    'Cloud', 'Ad', 'Service', 'Platform', 'Bet', 'Fintech'
 ]
 
 # Transaction Costs
@@ -68,35 +71,148 @@ PERFORMANCE_LOG_PATH = Path("/tmp/sentinel_performance.json")
 TRADE_LOG_PATH = Path("/tmp/sentinel_trades.json")
 
 # ============================================================================
-# TICKER UNIVERSE
+# TICKER UNIVERSE v25.1 FINAL (92 TICKERS)
 # ============================================================================
 
 TICKERS = {
-    # Tech & Semi
-    'NVDA':'AI','AVGO':'Semi','ARM':'Semi','MU':'Semi','AMD':'Semi','SMCI':'AI','TSM':'Semi','ASML':'Semi',
-    # FAANG+
-    'AAPL':'Device','MSFT':'Cloud','GOOGL':'Ad','META':'Ad','AMZN':'Retail','TSLA':'EV','NFLX':'Service',
-    # Enterprise SaaS
-    'PLTR':'AI','PANW':'Sec','CRWD':'Sec','NET':'Sec','NOW':'Soft','CRM':'Soft','TEAM':'Soft','ADBE':'Soft',
-    # Retail & Consumer
-    'COST':'Retail','WMT':'Retail','TJX':'Retail','ELF':'Cons','PEP':'Cons','KO':'Cons','PG':'Cons','LULU':'Cons',
-    # Finance
-    'V':'Fin','MA':'Fin','JPM':'Bank','GS':'Bank','AXP':'Fin','BLK':'Fin','MS':'Bank','COIN':'Crypto',
-    # Healthcare
-    'LLY':'Bio','UNH':'Health','ABBV':'Bio','ISRG':'Health','VRTX':'Bio',
-    # Industrial & Energy
-    'GE':'Ind','CAT':'Ind','DE':'Ind','BA':'Ind','XOM':'Energy','CVX':'Energy','MPC':'Energy',
-    # Other
-    'UBER':'Platform','BKNG':'Travel','ABNB':'Travel','DKNG':'Bet','VRT':'Power'
+    # ========================================
+    # SEMICONDUCTORS (12)
+    # ========================================
+    'NVDA':'AI',        # GPU leader
+    'AMD':'Semi',       # CPU/GPU
+    'AVGO':'Semi',      # Broadcom - diversified chips
+    'TSM':'Semi',       # Foundry leader
+    'ASML':'Semi',      # EUV equipment monopoly
+    'MU':'Semi',        # Memory
+    'ARM':'Semi',       # Mobile CPU architecture
+    'INTC':'Semi',      # Legacy + recovery play
+    'QCOM':'Semi',      # Mobile chips
+    'ON':'Semi',        # Automotive/Industrial
+    'LRCX':'Semi',      # Equipment
+    'AMAT':'Semi',      # Equipment
+    
+    # ========================================
+    # AI & ENTERPRISE SOFTWARE (15)
+    # ========================================
+    'MSFT':'Cloud',     # Azure + Office + AI
+    'GOOGL':'Ad',       # Search + Cloud + AI
+    'META':'Ad',        # Social + AI
+    'PLTR':'AI',        # Data analytics
+    'NOW':'Soft',       # IT workflow
+    'CRM':'Soft',       # Salesforce
+    'ADBE':'Soft',      # Creative Cloud
+    'SNOW':'Cloud',     # Data warehouse
+    'DDOG':'Cloud',     # Monitoring
+    'WDAY':'Soft',      # HR software
+    'TEAM':'Soft',      # Atlassian - collaboration
+    'ANET':'Cloud',     # Data center networking
+    'ZS':'Sec',         # Zscaler - cloud security
+    'MDB':'Cloud',      # MongoDB
+    'SHOP':'Retail',    # Shopify - E-commerce platform
+    
+    # ========================================
+    # CYBERSECURITY (5)
+    # ========================================
+    'PANW':'Sec',       # Palo Alto - leader
+    'CRWD':'Sec',       # CrowdStrike - EDR
+    'FTNT':'Sec',       # Fortinet - firewall
+    'NET':'Sec',        # Cloudflare - CDN/security
+    'OKTA':'Sec',       # Identity management
+    
+    # ========================================
+    # CONSUMER & RETAIL (17)
+    # ========================================
+    'AAPL':'Device',    # iPhone/Services
+    'TSLA':'Auto',      # EV + Energy
+    'AMZN':'Retail',    # E-commerce + AWS
+    'NFLX':'Service',   # Streaming
+    'COST':'Retail',    # Wholesale
+    'WMT':'Retail',     # Walmart
+    'TJX':'Retail',     # Off-price retail
+    'TGT':'Retail',     # Target
+    'NKE':'Cons',       # Nike - athletic
+    'LULU':'Cons',      # Lululemon - athleisure
+    'SBUX':'Cons',      # Starbucks
+    'PEP':'Cons',       # Pepsi
+    'KO':'Cons',        # Coca-Cola
+    'PG':'Cons',        # Procter & Gamble
+    'ELF':'Cons',       # e.l.f. Beauty
+    'CELH':'Cons',      # Celsius - energy drinks
+    'MELI':'Retail',    # MercadoLibre - LatAm e-commerce
+    
+    # ========================================
+    # FINANCE & FINTECH (12)
+    # ========================================
+    'V':'Fin',          # Visa
+    'MA':'Fin',         # Mastercard
+    'PYPL':'Fintech',   # PayPal
+    'SQ':'Fintech',     # Block (Square)
+    'JPM':'Bank',       # JP Morgan
+    'GS':'Bank',        # Goldman Sachs
+    'MS':'Bank',        # Morgan Stanley
+    'AXP':'Fin',        # American Express
+    'BLK':'Fin',        # BlackRock - asset management
+    'COIN':'Crypto',    # Coinbase
+    'SOFI':'Fintech',   # SoFi - digital banking
+    'NU':'Fintech',     # Nubank - LatAm neobank
+    
+    # ========================================
+    # HEALTHCARE & BIOTECH (10)
+    # ========================================
+    'LLY':'Bio',        # Eli Lilly - GLP-1 drugs
+    'UNH':'Health',     # UnitedHealth - insurance
+    'ABBV':'Bio',       # AbbVie - pharma
+    'ISRG':'Health',    # Intuitive Surgical - robotics
+    'VRTX':'Bio',       # Vertex - rare disease
+    'MRK':'Bio',        # Merck
+    'PFE':'Bio',        # Pfizer
+    'AMGN':'Bio',       # Amgen
+    'HCA':'Health',     # HCA Healthcare
+    'TDOC':'Health',    # Teladoc - telehealth
+    
+    # ========================================
+    # INDUSTRIALS, ENERGY & POWER (12)
+    # ========================================
+    'GE':'Ind',         # GE Aerospace
+    'CAT':'Ind',        # Caterpillar
+    'DE':'Ind',         # Deere
+    'BA':'Ind',         # Boeing
+    'ETN':'Power',      # Eaton - electrical
+    'VRT':'Power',      # Vertiv - data center power
+    'TT':'Ind',         # Trane - HVAC
+    'PH':'Ind',         # Parker Hannifin
+    'TDG':'Ind',        # TransDigm - aerospace
+    'XOM':'Energy',     # Exxon
+    'CVX':'Energy',     # Chevron
+    'MPC':'Energy',     # Marathon Petroleum
+    
+    # ========================================
+    # TRAVEL & LEISURE (6)
+    # ========================================
+    'UBER':'Platform',  # Uber
+    'BKNG':'Travel',    # Booking.com
+    'ABNB':'Travel',    # Airbnb
+    'MAR':'Travel',     # Marriott
+    'RCL':'Travel',     # Royal Caribbean
+    'DKNG':'Bet',       # DraftKings
+    
+    # ========================================
+    # EMERGING & HIGH GROWTH (3)
+    # ========================================
+    'RBLX':'Service',   # Roblox - metaverse/gaming
+    'DASH':'Service',   # DoorDash - food delivery
+    'SMCI':'AI',        # Super Micro - AI infrastructure (高リスク)
 }
+
+# Total: 92 tickers
 
 SECTOR_ETF = {
     'Energy':'XLE', 'Semi':'SOXX', 'Bank':'XLF', 'Retail':'XRT',
     'Soft':'IGV', 'AI':'QQQ', 'Fin':'VFH', 'Device':'QQQ',
     'Cloud':'QQQ', 'Ad':'QQQ', 'Service':'QQQ', 'Sec':'HACK',
     'Cons':'XLP', 'Bio':'IBB', 'Health':'XLV', 'Ind':'XLI',
-    'EV':'IDRV', 'Crypto':'BTC-USD', 'Power':'XLI', 'Platform':'QQQ',
-    'Travel':'XLY', 'Bet':'BETZ'
+    'Auto':'CARZ', 'Crypto':'BTC-USD', 'Power':'XLI', 'Platform':'QQQ',
+    'Travel':'XLY', 'Bet':'BETZ', 'Fintech':'ARKF'
 }
 
 MA_SHORT, MA_LONG = 50, 200
@@ -227,7 +343,7 @@ class TransactionCostModel:
         """
         Calculate total transaction cost including commission, slippage, FX
         
-        Returns: cost in R (as percentage of risk)
+        Returns: cost in USD and JPY
         """
         # Commission (0.2%)
         commission = position_value_usd * COMMISSION_RATE
@@ -256,10 +372,7 @@ class TransactionCostModel:
         """
         Adjust expectancy for transaction costs
         
-        gross_expectancy: e.g., 0.65R
-        avg_1r_pct: e.g., 8.5% (1R as percentage)
-        
-        Returns: net expectancy
+        Returns: net expectancy and cost in R
         """
         cost_usd, _ = TransactionCostModel.calculate_total_cost(position_value_usd, fx_rate)
         cost_pct = (cost_usd / position_value_usd) * 100
@@ -278,15 +391,7 @@ class PositionSizer:
     
     @staticmethod
     def calculate_kelly_fraction(winrate, rr_ratio):
-        """
-        Calculate Kelly fraction
-        
-        f = (bp - q) / b
-        where:
-          b = RR ratio (e.g., 2.5)
-          p = win rate (e.g., 0.65)
-          q = 1 - p
-        """
+        """Calculate Kelly fraction"""
         if winrate <= 0 or winrate >= 1:
             return 0
         
@@ -306,11 +411,8 @@ class PositionSizer:
         vix,
         sector_exposure
     ):
-        """
-        Calculate optimal position size with multiple adjustments
+        """Calculate optimal position size with multiple adjustments"""
         
-        Returns: position size in JPY
-        """
         # Base Kelly fraction
         kelly_fraction = PositionSizer.calculate_kelly_fraction(winrate, rr_ratio)
         
@@ -358,14 +460,7 @@ class TrailingStopManager:
     
     @staticmethod
     def calculate_stop(entry_price, current_price, highest_since_entry, atr, stage):
-        """
-        Calculate stop loss level
-        
-        Stages:
-        1. Initial: Fixed stop at entry - (ATR × 2)
-        2. Breakeven: Price > entry + (ATR × 0.5) → Move stop to breakeven
-        3. Trailing: Price > entry + (ATR × 1.0) → Trailing stop
-        """
+        """Calculate stop loss level"""
         
         initial_stop = entry_price - (atr * ATR_STOP_MULT)
         
@@ -384,11 +479,7 @@ class TrailingStopManager:
     
     @staticmethod
     def should_exit(current_price, stop_level, target_level):
-        """
-        Check if position should be closed
-        
-        Returns: (should_exit, reason, exit_type)
-        """
+        """Check if position should be closed"""
         if current_price <= stop_level:
             return True, "Stop loss hit", "LOSS"
         
@@ -402,9 +493,7 @@ class TrailingStopManager:
 # ============================================================================
 
 def simulate_past_performance_v2(df, sector, atr_mult=ATR_STOP_MULT, use_trailing=True):
-    """
-    Enhanced backtest with trailing stops and transaction costs
-    """
+    """Enhanced backtest with trailing stops and transaction costs"""
     try:
         close = df['Close'].squeeze()
         high = df['High'].squeeze()
@@ -450,7 +539,7 @@ def simulate_past_performance_v2(df, sector, atr_mult=ATR_STOP_MULT, use_trailin
                 highest = entry_price
                 current_stop = initial_stop
                 
-                for j in range(1, 30):  # Track up to 30 days
+                for j in range(1, 30):
                     if i + j >= len(df):
                         break
                     
@@ -536,11 +625,7 @@ class StrategicAnalyzerV2:
     
     @staticmethod
     def analyze_ticker(ticker, df, sector, max_price_usd, vix, sector_exposures, trading_capital):
-        """
-        Comprehensive ticker analysis
-        
-        Returns: analysis dict or None
-        """
+        """Comprehensive ticker analysis with liquidity filter"""
         
         if len(df) < MA_LONG + 50:
             return None
@@ -555,7 +640,16 @@ class StrategicAnalyzerV2:
         
         current_price = float(close.iloc[-1])
         
+        # Price filter
         if current_price > max_price_usd:
+            return None
+        
+        # === LIQUIDITY FILTER (NEW) ===
+        avg_volume = volume.rolling(50).mean().iloc[-1]
+        avg_dollar_volume = avg_volume * current_price
+        
+        if avg_dollar_volume < MIN_DAILY_VOLUME_USD:
+            print(f"  SKIP {ticker}: Low liquidity (${avg_dollar_volume/1e6:.1f}M/day)")
             return None
         
         # Trend filter
@@ -590,7 +684,7 @@ class StrategicAnalyzerV2:
         score = 0
         reasons = []
         
-        # 1. VCP Tightness (0-35 points) - Most important
+        # 1. VCP Tightness (0-35 points)
         if tightness < 0.8:
             score += 35
             reasons.append("VCP+++35")
@@ -610,7 +704,6 @@ class StrategicAnalyzerV2:
         if vol_avg > 0:
             vol_ratio = volume.iloc[-1] / vol_avg
             
-            # Drying up volume
             if 0.5 <= vol_ratio <= 0.7:
                 score += 20
                 reasons.append("VolDry++20")
@@ -621,7 +714,6 @@ class StrategicAnalyzerV2:
                 score += 10
                 reasons.append("VolStable+10")
             
-            # Accumulation spike
             recent_vol_max = volume.iloc[-3:].max()
             if recent_vol_max > vol_avg * 3.0:
                 score += 15
@@ -721,7 +813,8 @@ class StrategicAnalyzerV2:
             'bt': bt_result,
             'reward_mult': reward_mult,
             'position_size_jpy': position_size,
-            'sizing_factors': sizing_factors
+            'sizing_factors': sizing_factors,
+            'liquidity_usd': avg_dollar_volume
         }
 
 # ============================================================================
@@ -750,17 +843,6 @@ class PerformanceTracker:
             json.dump(data, f, indent=2)
     
     @staticmethod
-    def calculate_ytd_return(trades):
-        """Calculate year-to-date return"""
-        if not trades:
-            return 0
-        
-        total_r = sum(t['r_multiple'] for t in trades)
-        avg_1r = 8.5  # Average 1R as percentage
-        
-        return total_r * (avg_1r / 100)
-    
-    @staticmethod
     def get_current_status():
         """Get current performance status"""
         perf = PerformanceTracker.load_performance_history()
@@ -773,16 +855,13 @@ class PerformanceTracker:
                 'message': "System just started"
             }
         
-        # Calculate YTD
         start_date = datetime.fromisoformat(perf['start_date'])
         days_passed = (datetime.now() - start_date).days
         
         target_return = TARGET_ANNUAL_RETURN * (days_passed / 365)
-        
-        # Actual return from quarters
         actual_return = sum(q.get('return', 0) for q in perf['quarters'])
         
-        on_track = actual_return >= target_return * 0.9  # Within 90% of target
+        on_track = actual_return >= target_return * 0.9
         
         return {
             'on_track': on_track,
@@ -841,12 +920,13 @@ def send_line(msg):
 # ============================================================================
 
 def run_mission():
-    """Main execution - SENTINEL v25.0"""
+    """Main execution - SENTINEL v25.1 FINAL"""
     
     print("\n" + "="*70)
-    print("SENTINEL v25.0 - PROFESSIONAL EDITION")
+    print("SENTINEL v25.1 FINAL - PROFESSIONAL EDITION")
     print("="*70)
     print(f"Launch: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Tickers: {len(TICKERS)} curated stocks")
     print(f"Target: {TARGET_ANNUAL_RETURN*100}% Annual Return")
     print("="*70 + "\n")
     
@@ -871,7 +951,7 @@ def run_mission():
     # Market filter
     if not is_bull:
         msg = (
-            f"SENTINEL v25.0\n"
+            f"SENTINEL v25.1\n"
             f"Market conditions unfavorable\n"
             f"\n"
             f"{market_status}\n"
@@ -911,18 +991,23 @@ def run_mission():
     print("Screening candidates...\n")
     
     results = []
-    sector_exposures = {}  # Track sector concentration
+    sector_exposures = {}
+    skipped_earnings = 0
+    skipped_sector = 0
+    skipped_liquidity = 0
     
     for ticker, sector in TICKERS.items():
         
         # Skip earnings
         if is_earnings_near(ticker):
-            print(f"SKIP {ticker}: Earnings within 5 days")
+            skipped_earnings += 1
+            print(f"  SKIP {ticker}: Earnings within 5 days")
             continue
         
         # Skip weak sectors
         if not sector_is_strong(sector):
-            print(f"SKIP {ticker}: Weak sector")
+            skipped_sector += 1
+            print(f"  SKIP {ticker}: Weak sector")
             continue
         
         try:
@@ -949,25 +1034,29 @@ def run_mission():
                     result['position_size_jpy'] / trading_capital
                 )
                 
-                print(f"✓ {ticker}: {result['score']}pt "
+                print(f"  ✓ {ticker}: {result['score']}pt "
                       f"WR{result['bt'].get('winrate',0):.0f}% "
                       f"EV{result['bt'].get('net_expectancy',0):.2f}R "
                       f"Size¥{result['position_size_jpy']:,.0f}")
                 
         except Exception as e:
-            print(f"✗ {ticker}: Error - {e}")
+            print(f"  ✗ {ticker}: Error - {e}")
     
     # Sort and limit
     results.sort(key=lambda x: x[1]['score'], reverse=True)
     results = results[:MAX_NOTIFICATIONS]
     
     print(f"\n{'='*70}")
-    print(f"SCREENING COMPLETE: {len(results)} candidates")
+    print(f"SCREENING COMPLETE")
+    print(f"{'='*70}")
+    print(f"Analyzed: {len(TICKERS)} tickers")
+    print(f"Candidates: {len(results)}")
+    print(f"Filtered: Earnings={skipped_earnings}, Sector={skipped_sector}")
     print(f"{'='*70}\n")
     
     # Generate report
     report = [
-        "SENTINEL v25.0 Professional",
+        "SENTINEL v25.1 Final",
         f"{datetime.now().strftime('%Y-%m-%d %H:%M')}",
         "",
         f"Market: {market_status}",
@@ -978,14 +1067,14 @@ def run_mission():
     
     if not results:
         report.append("No qualifying candidates")
-        report.append("Filters: High quality only")
+        report.append("Filters: High quality + liquidity")
+        report.append(f"Analyzed: {len(TICKERS)} stocks")
     else:
         for i, (ticker, r) in enumerate(results, 1):
             loss_pct = (1 - r['stop'] / r['pivot']) * 100
             gain_pct = (r['target'] / r['pivot'] - 1) * 100
             rr = gain_pct / loss_pct
             
-            # Position size
             shares = int(r['position_size_jpy'] / fx_rate / r['pivot'])
             
             report.append(f"[{i}] {ticker} ({r['sector']}) {r['score']}pt")
@@ -1001,6 +1090,7 @@ def run_mission():
             report.append(f"Position: {shares} shares")
             report.append(f"Size: ¥{r['position_size_jpy']:,.0f}")
             report.append(f"Kelly: {r['sizing_factors']['kelly']:.1%}")
+            report.append(f"Liquidity: ${r['liquidity_usd']/1e6:.1f}M/day")
             report.append("=" * 35)
     
     full_report = "\n".join(report)
