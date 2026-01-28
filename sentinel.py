@@ -1,31 +1,3 @@
-
-# CONFIG (環境変数の柔軟な読み取り)
-# ============================================================================
-
-# パターン1: LINE_CHANNEL_ACCESSTOKEN (アンダースコアあり)
-# パターン2: LINECHANNELACCESSTOKEN (アンダースコアなし)
-ACCESS_TOKEN = (
-    os.getenv("LINE_CHANNEL_ACCESSTOKEN") or 
-    os.getenv("LINECHANNELACCESSTOKEN")
-)
-
-USER_ID = (
-    os.getenv("LINE_USER_ID") or 
-    os.getenv("LINEUSER_ID")
-)
-
-BUDGET_JPY = 350000
-
-# デバッグ用（起動時にチェック）
-if __name__ == "__main__":
-    print("\n" + "="*60)
-    print("🔐 環境変数チェック")
-    print("="*60)
-    print(f"ACCESS_TOKEN: {'✅ 設定済み' if ACCESS_TOKEN else '❌ 未設定'}")
-    print(f"USER_ID: {'✅ 設定済み' if USER_ID else '❌ 未設定'}")
-    print("="*60 + "\n")
-🎯 さらに確実にするための改善版
-以下の完全修正版を使ってください：
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -36,12 +8,11 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ============================================================================
-# CONFIG (柔軟な環境変数読み取り)
+# CONFIG
 # ============================================================================
 
-# 複数の環境変数名パターンに対応
 ACCESS_TOKEN = (
-    os.getenv("LINE_CHANNEL_ACCESSTOKEN") or 
+    os.getenv("LINE_CHANNEL_ACCESS_TOKEN") or 
     os.getenv("LINECHANNELACCESSTOKEN") or
     os.getenv("ACCESS_TOKEN")
 )
@@ -55,42 +26,7 @@ USER_ID = (
 BUDGET_JPY = 350000
 
 # ============================================================================
-# 起動時の環境変数チェック
-# ============================================================================
-
-def check_environment():
-    """起動時に環境変数を確認"""
-    print("\n" + "="*60)
-    print("🔐 環境変数チェック")
-    print("="*60)
-    
-    if ACCESS_TOKEN:
-        # トークンの最初の10文字だけ表示（セキュリティ）
-        masked_token = ACCESS_TOKEN[:10] + "..." if len(ACCESS_TOKEN) > 10 else "***"
-        print(f"✅ ACCESS_TOKEN: {masked_token}")
-    else:
-        print("❌ ACCESS_TOKEN: 未設定")
-        print("   以下の環境変数名を確認してください:")
-        print("   - LINE_CHANNEL_ACCESSTOKEN")
-        print("   - LINECHANNELACCESSTOKEN")
-        print("   - ACCESS_TOKEN")
-    
-    if USER_ID:
-        masked_user = USER_ID[:5] + "..." if len(USER_ID) > 5 else "***"
-        print(f"✅ USER_ID: {masked_user}")
-    else:
-        print("❌ USER_ID: 未設定")
-        print("   以下の環境変数名を確認してください:")
-        print("   - LINE_USER_ID")
-        print("   - LINEUSER_ID")
-        print("   - USER_ID")
-    
-    print("="*60 + "\n")
-    
-    return bool(ACCESS_TOKEN and USER_ID)
-
-# ============================================================================
-# テクニカルパラメータ（前回と同じ）
+# CORE PARAMETERS
 # ============================================================================
 
 MA_SHORT, MA_LONG = 50, 200
@@ -109,6 +45,10 @@ AGGRESSIVE_SECTORS = [
     'Semi', 'AI', 'Soft', 'Sec', 'EV', 'Crypto', 
     'Cloud', 'Ad', 'Service', 'Platform', 'Bet'
 ]
+
+# ============================================================================
+# TICKER UNIVERSE
+# ============================================================================
 
 TICKERS = {
     'NVDA':'AI','AVGO':'Semi','ARM':'Semi','MU':'Semi','AMD':'Semi','SMCI':'AI','TSM':'Semi','ASML':'Semi',
@@ -131,10 +71,33 @@ SECTOR_ETF = {
 }
 
 # ============================================================================
-# ヘルパー関数（前回と同じ）
+# HELPER FUNCTIONS
 # ============================================================================
 
+def check_environment():
+    """Check environment variables"""
+    print("\n" + "="*60)
+    print("Environment Check")
+    print("="*60)
+    
+    if ACCESS_TOKEN:
+        masked_token = ACCESS_TOKEN[:10] + "..." if len(ACCESS_TOKEN) > 10 else "***"
+        print(f"ACCESS_TOKEN: {masked_token}")
+    else:
+        print("ACCESS_TOKEN: Not set")
+    
+    if USER_ID:
+        masked_user = USER_ID[:5] + "..." if len(USER_ID) > 5 else "***"
+        print(f"USER_ID: {masked_user}")
+    else:
+        print("USER_ID: Not set")
+    
+    print("="*60 + "\n")
+    
+    return bool(ACCESS_TOKEN and USER_ID)
+
 def get_current_fx_rate():
+    """Get current USD/JPY rate"""
     try:
         data = yf.download("JPY=X", period="1d", progress=False)
         if not data.empty:
@@ -147,10 +110,11 @@ def get_current_fx_rate():
         return 155.0
 
 def check_market_trend():
+    """Check overall market trend using SPY"""
     try:
         spy = yf.download("SPY", period="300d", progress=False)
         if spy.empty or len(spy) < 200:
-            return True, "データ不足"
+            return True, "Data Limited"
         
         close = spy['Close']
         if isinstance(close, pd.DataFrame):
@@ -160,13 +124,14 @@ def check_market_trend():
         ma200 = float(close.rolling(200).mean().iloc[-1])
         
         if current > ma200:
-            return True, f"強気 (${current:.0f} > MA200)"
+            return True, f"Bull (${current:.0f} > MA200)"
         else:
-            return False, f"弱気 (${current:.0f} < ${ma200:.0f})"
+            return False, f"Bear (${current:.0f} < ${ma200:.0f})"
     except:
-        return True, "判定スキップ"
+        return True, "Check Skipped"
 
 def is_earnings_near(ticker):
+    """Check if earnings announcement is within 5 days"""
     try:
         tk = yf.Ticker(ticker)
         cal = tk.calendar
@@ -189,6 +154,7 @@ def is_earnings_near(ticker):
         return False
 
 def sector_is_strong(sector):
+    """Check if sector ETF is in uptrend"""
     try:
         etf = SECTOR_ETF.get(sector)
         if not etf:
@@ -208,10 +174,14 @@ def sector_is_strong(sector):
         return True
 
 # ============================================================================
-# バックテスト関数（前回と同じ）
+# BACKTEST ENGINE
 # ============================================================================
 
 def simulate_past_performance(df, sector, atr_mult=ATR_STOP_MULT):
+    """
+    Backtest the strategy on historical data
+    No look-ahead bias
+    """
     try:
         close = df['Close'].squeeze()
         high = df['High'].squeeze()
@@ -272,7 +242,7 @@ def simulate_past_performance(df, sector, atr_mult=ATR_STOP_MULT):
         if total_trades < 10:
             return {
                 'status': 'insufficient',
-                'message': 'サンプル不足',
+                'message': 'Insufficient samples',
                 'trades': total_trades
             }
         
@@ -286,23 +256,27 @@ def simulate_past_performance(df, sector, atr_mult=ATR_STOP_MULT):
             'wins': wins,
             'losses': losses,
             'total': total_trades,
-            'message': f"勝率{winrate:.0f}% ({wins}/{total_trades}) 期待値{expectancy:.2f}R"
+            'message': f"WR{winrate:.0f}% ({wins}/{total_trades}) EV{expectancy:.2f}R"
         }
         
     except Exception as e:
         return {
             'status': 'error',
-            'message': f'検証エラー: {str(e)}'
+            'message': f'Error: {str(e)}'
         }
 
 # ============================================================================
-# 分析エンジン（前回と同じ）
+# STRATEGIC ANALYZER
 # ============================================================================
 
 class StrategicAnalyzer:
     
     @staticmethod
     def analyze_ticker(ticker, df, sector, max_price_usd):
+        """
+        Analyze a ticker for entry opportunity
+        100-point scoring system
+        """
         if len(df) < MA_LONG + 50:
             return None
         
@@ -345,19 +319,21 @@ class StrategicAnalyzer:
         score = 0
         reasons = []
         
+        # VCP Tightness (max 30 points)
         if tightness < 1.0:
             score += 30
-            reasons.append("VCP超タイト+30")
+            reasons.append("VCP++30")
         elif tightness < 1.5:
             score += 20
-            reasons.append("VCPタイト+20")
+            reasons.append("VCP+20")
         elif tightness < 2.0:
             score += 10
-            reasons.append("VCP良好+10")
+            reasons.append("VCP+10")
         else:
             score += 5
-            reasons.append("VCP許容+5")
+            reasons.append("VCP+5")
         
+        # Volume Analysis (max 25 points)
         vol_avg = volume.rolling(50).mean().iloc[-1]
         
         if vol_avg > 0:
@@ -365,46 +341,50 @@ class StrategicAnalyzer:
             
             if 0.5 <= vol_ratio <= 0.9:
                 score += 15
-                reasons.append("売り枯れ+15")
+                reasons.append("VolDry+15")
             elif 0.9 < vol_ratio <= 1.1:
                 score += 10
-                reasons.append("出来高安定+10")
+                reasons.append("VolStable+10")
             
             recent_vol_max = volume.iloc[-3:].max()
             if recent_vol_max > vol_avg * 2.0:
                 score += 10
-                reasons.append("強い買い集め+10")
+                reasons.append("Accumulation++10")
             elif recent_vol_max > vol_avg * 1.5:
                 score += 5
-                reasons.append("買い集め+5")
+                reasons.append("Accumulation+5")
         
+        # Momentum (max 20 points)
         ma5 = close.rolling(5).mean().iloc[-1]
         ma20 = close.rolling(20).mean().iloc[-1]
         
         if ma5 > ma20 * 1.02:
             score += 20
-            reasons.append("強い上昇モメンタム+20")
+            reasons.append("Momentum++20")
         elif ma5 > ma20 * 1.01:
             score += 15
-            reasons.append("上昇モメンタム+15")
+            reasons.append("Momentum+15")
         elif ma5 > ma20:
             score += 10
-            reasons.append("モメンタム良好+10")
+            reasons.append("Momentum+10")
         
+        # Trend Strength (max 15 points)
         trend_strength = (ma50 - ma200) / ma200 * 100
         if trend_strength > 10:
             score += 15
-            reasons.append("強いトレンド+15")
+            reasons.append("Trend++15")
         elif trend_strength > 5:
             score += 10
-            reasons.append("トレンド良好+10")
+            reasons.append("Trend+10")
         else:
             score += 5
-            reasons.append("トレンド形成中+5")
+            reasons.append("Trend+5")
         
+        # Baseline (10 points)
         score += 10
-        reasons.append("基礎評価+10")
+        reasons.append("Base+10")
         
+        # Calculate entry/exit levels
         reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
         
         pivot = high.iloc[-5:].max() * 1.002
@@ -412,8 +392,10 @@ class StrategicAnalyzer:
         stop_loss = pivot - stop_dist
         target = pivot + (stop_dist * reward_mult)
         
+        # Run backtest
         bt_result = simulate_past_performance(df, sector)
         
+        # Filter by backtest results
         if bt_result['status'] == 'valid':
             if bt_result['winrate'] < MIN_WINRATE:
                 return None
@@ -435,44 +417,42 @@ class StrategicAnalyzer:
         }
 
 # ============================================================================
-# LINE通知（改善版）
+# LINE NOTIFICATION
 # ============================================================================
 
 def send_line(msg):
-    """LINE通知送信（詳細なデバッグ情報付き）"""
+    """Send LINE notification with detailed logging"""
     
     print("\n" + "="*60)
-    print("📤 LINE送信試行")
+    print("LINE Notification")
     print("="*60)
     
-    # 認証情報チェック
     if not ACCESS_TOKEN:
-        print("❌ ACCESS_TOKEN が未設定です")
-        print("以下の環境変数を確認してください:")
-        print("  - LINE_CHANNEL_ACCESSTOKEN")
+        print("ERROR: ACCESS_TOKEN not set")
+        print("Check environment variables:")
+        print("  - LINE_CHANNEL_ACCESS_TOKEN")
         print("  - LINECHANNELACCESSTOKEN")
         print("  - ACCESS_TOKEN")
         print("="*60)
-        print("📄 送信予定だったメッセージ:")
-        print("─"*60)
+        print("Message content:")
+        print("-"*60)
         print(msg)
         print("="*60 + "\n")
         return False
     
     if not USER_ID:
-        print("❌ USER_ID が未設定です")
-        print("以下の環境変数を確認してください:")
+        print("ERROR: USER_ID not set")
+        print("Check environment variables:")
         print("  - LINE_USER_ID")
         print("  - LINEUSER_ID")
         print("  - USER_ID")
         print("="*60)
-        print("📄 送信予定だったメッセージ:")
-        print("─"*60)
+        print("Message content:")
+        print("-"*60)
         print(msg)
         print("="*60 + "\n")
         return False
     
-    # LINE APIリクエスト
     url = "https://api.line.me/v2/bot/message/push"
     headers = {
         "Content-Type": "application/json",
@@ -484,78 +464,79 @@ def send_line(msg):
     }
     
     try:
-        print(f"📡 送信先: {url}")
-        print(f"👤 USER_ID: {USER_ID[:10]}...")
+        print(f"Sending to: {url}")
+        print(f"USER_ID: {USER_ID[:10]}...")
         
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         
-        print(f"📊 ステータスコード: {response.status_code}")
+        print(f"Status Code: {response.status_code}")
         
         if response.status_code == 200:
-            print("✅ LINE送信成功！")
+            print("SUCCESS: LINE notification sent")
             print("="*60 + "\n")
             return True
         else:
-            print(f"❌ LINE送信失敗")
-            print(f"レスポンス: {response.text}")
+            print(f"FAILED: LINE notification")
+            print(f"Response: {response.text}")
             print("="*60 + "\n")
             return False
             
     except requests.exceptions.Timeout:
-        print("❌ タイムアウトエラー（10秒以内に応答なし）")
+        print("ERROR: Timeout (no response within 10 seconds)")
         print("="*60 + "\n")
         return False
     except Exception as e:
-        print(f"❌ 予期しないエラー: {e}")
+        print(f"ERROR: {e}")
         print("="*60 + "\n")
         return False
 
 # ============================================================================
-# メイン実行
+# MAIN MISSION
 # ============================================================================
 
 def run_mission():
+    """Main execution function"""
     
     print("\n" + "="*60)
-    print("🛡️  SENTINEL v22.1 - Debug Edition")
+    print("SENTINEL v22.1 - Production Ready")
     print("="*60)
-    print(f"⏰ 起動時刻: {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
+    print(f"Launch Time: {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
     print("="*60 + "\n")
     
-    # 環境変数チェック
+    # Check environment
     env_ok = check_environment()
     
     if not env_ok:
-        print("⚠️  LINE認証情報が未設定のため、コンソール出力のみで続行します\n")
+        print("WARNING: LINE credentials not set. Console output only.\n")
     
-    # 市場環境チェック
-    print("📊 市場環境を確認中...")
+    # Market check
+    print("Checking market conditions...")
     is_bull, market_status = check_market_trend()
     
     if not is_bull:
         msg = (
-            f"🛑 Sentinel v22.1\n"
-            f"市場環境が悪化しているため待機します\n"
+            f"SENTINEL v22.1\n"
+            f"Market conditions unfavorable. Standby mode.\n"
             f"\n"
-            f"📊 Market Status: {market_status}\n"
-            f"⏰ {datetime.now().strftime('%Y/%m/%d %H:%M')}"
+            f"Market Status: {market_status}\n"
+            f"Time: {datetime.now().strftime('%Y/%m/%d %H:%M')}"
         )
         print(msg)
         send_line(msg)
         return
     
-    print(f"✅ 市場環境: {market_status}\n")
+    print(f"Market Status: {market_status}\n")
     
-    # 為替レート取得
-    print("💱 為替レートを取得中...")
+    # Get FX rate
+    print("Fetching FX rate...")
     fx_rate = get_current_fx_rate()
     max_price_usd = (BUDGET_JPY / fx_rate) * 0.9
     
-    print(f"✅ FX Rate: ¥{fx_rate:.2f}/USD")
-    print(f"✅ 最大購入価格: ${max_price_usd:.2f}\n")
+    print(f"FX Rate: JPY {fx_rate:.2f}/USD")
+    print(f"Max Price: ${max_price_usd:.2f}\n")
     
-    # データダウンロード
-    print(f"📡 {len(TICKERS)}銘柄のデータをダウンロード中...")
+    # Download data
+    print(f"Downloading data for {len(TICKERS)} tickers...")
     ticker_list = list(TICKERS.keys())
     
     try:
@@ -566,13 +547,13 @@ def run_mission():
             group_by='ticker',
             threads=True
         )
-        print("✅ ダウンロード完了\n")
+        print("Download complete\n")
     except Exception as e:
-        print(f"❌ データ取得エラー: {e}")
+        print(f"ERROR: Data download failed - {e}")
         return
     
-    # 銘柄分析
-    print("🔍 銘柄スクリーニング開始...\n")
+    # Analyze tickers
+    print("Starting ticker screening...\n")
     
     results = []
     analyzed_count = 0
@@ -582,11 +563,11 @@ def run_mission():
         analyzed_count += 1
         
         if is_earnings_near(ticker):
-            print(f"⏭️  {ticker}: 決算前後のためスキップ")
+            print(f"SKIP {ticker}: Earnings nearby")
             continue
         
         if not sector_is_strong(sector):
-            print(f"⏭️  {ticker}: セクター弱気のためスキップ")
+            print(f"SKIP {ticker}: Weak sector")
             continue
         
         try:
@@ -602,43 +583,43 @@ def run_mission():
             if result:
                 if result['score'] >= MIN_SCORE:
                     results.append((ticker, result))
-                    print(f"✅ {ticker}: {result['score']}点 - 候補に追加")
+                    print(f"OK {ticker}: {result['score']} points - Added")
                 else:
                     filtered_count += 1
-                    print(f"⚠️  {ticker}: {result['score']}点 - スコア不足")
+                    print(f"LOW {ticker}: {result['score']} points - Filtered")
             else:
                 filtered_count += 1
                 
         except Exception as e:
-            print(f"❌ {ticker}: 分析エラー - {e}")
+            print(f"ERROR {ticker}: Analysis failed - {e}")
             continue
     
-    # 結果の並び替え
+    # Sort results
     results.sort(key=lambda x: x[1]['score'], reverse=True)
     results = results[:MAX_NOTIFICATIONS]
     
     print(f"\n{'='*60}")
-    print(f"📊 スクリーニング結果")
+    print(f"Screening Results")
     print(f"{'='*60}")
-    print(f"分析銘柄: {analyzed_count}")
-    print(f"候補検出: {len(results)}")
-    print(f"フィルター: {filtered_count}")
+    print(f"Analyzed: {analyzed_count}")
+    print(f"Candidates: {len(results)}")
+    print(f"Filtered: {filtered_count}")
     print(f"{'='*60}\n")
     
-    # レポート生成
+    # Generate report
     report_lines = [
-        "🛡️ Sentinel v22.1 Debug",
-        f"📅 {datetime.now().strftime('%Y/%m/%d %H:%M')}",
-        f"📊 Market: {market_status}",
-        f"💵 $1 = ¥{fx_rate:.2f}",
-        "─" * 30
+        "SENTINEL v22.1",
+        f"{datetime.now().strftime('%Y/%m/%d %H:%M')}",
+        f"Market: {market_status}",
+        f"FX: JPY{fx_rate:.2f}/USD",
+        "-" * 30
     ]
     
     if not results:
-        report_lines.append("⚠️ 現在、条件に合致する銘柄はありません")
+        report_lines.append("No candidates match criteria")
         report_lines.append("")
-        report_lines.append(f"分析: {analyzed_count}銘柄")
-        report_lines.append(f"除外: {filtered_count}銘柄")
+        report_lines.append(f"Analyzed: {analyzed_count}")
+        report_lines.append(f"Filtered: {filtered_count}")
     else:
         for i, (ticker, r) in enumerate(results, 1):
             loss_pct = (1 - r['stop'] / r['pivot']) * 100
@@ -647,34 +628,32 @@ def run_mission():
             
             bt_info = r['bt']['message'] if r['bt']['status'] == 'valid' else r['bt']['message']
             
-            report_lines.append(
-                f"[{i}] {ticker} ({r['sector']}) {r['score']}点"
-            )
-            report_lines.append(f"└ {r['reasons']}")
-            report_lines.append(f"📈 {bt_info}")
-            report_lines.append(f"現在: ${r['price']:.2f}")
-            report_lines.append(f"入値: ${r['pivot']:.2f}")
-            report_lines.append(f"損切: ${r['stop']:.2f} (-{loss_pct:.1f}%)")
-            report_lines.append(f"利確: ${r['target']:.2f} (+{gain_pct:.1f}%)")
-            report_lines.append(f"⚖️  RR比 1:{risk_reward:.1f}")
-            report_lines.append("─" * 30)
+            report_lines.append(f"[{i}] {ticker} ({r['sector']}) {r['score']}pt")
+            report_lines.append(f"{r['reasons']}")
+            report_lines.append(f"BT: {bt_info}")
+            report_lines.append(f"Price: ${r['price']:.2f}")
+            report_lines.append(f"Entry: ${r['pivot']:.2f}")
+            report_lines.append(f"Stop: ${r['stop']:.2f} (-{loss_pct:.1f}%)")
+            report_lines.append(f"Target: ${r['target']:.2f} (+{gain_pct:.1f}%)")
+            report_lines.append(f"RR: 1:{risk_reward:.1f}")
+            report_lines.append("-" * 30)
     
     full_report = "\n".join(report_lines)
     
-    # 出力
+    # Output
     print("\n" + "="*60)
-    print("📋 最終レポート")
+    print("Final Report")
     print("="*60)
     print(full_report)
     print("="*60 + "\n")
     
-    # LINE送信
+    # Send LINE notification
     send_success = send_line(full_report)
     
     if send_success:
-        print("✅ 全処理完了\n")
+        print("All processes completed successfully\n")
     else:
-        print("⚠️  LINE送信は失敗しましたが分析は完了しました\n")
+        print("Analysis completed (LINE notification failed)\n")
 
 # ============================================================================
 # ENTRY POINT
@@ -684,8 +663,8 @@ if __name__ == "__main__":
     try:
         run_mission()
     except KeyboardInterrupt:
-        print("\n\n⚠️  ユーザーにより中断されました\n")
+        print("\n\nProcess interrupted by user\n")
     except Exception as e:
-        print(f"\n\n❌ 予期しないエラー: {e}\n")
+        print(f"\n\nUnexpected error: {e}\n")
         import traceback
         traceback.print_exc()
