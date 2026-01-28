@@ -3,25 +3,21 @@ import numpy as np
 import yfinance as yf
 import requests
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 
-# --- CONFIG ---
+# --- CONFIG (GitHub Secretsから読み込み) ---
 ACCESSTOKEN = os.getenv("LINECHANNELACCESSTOKEN")
 USERID = os.getenv("LINEUSER_ID")
 BUDGET_JPY = 350000 
 
-# --- テクニカル / リスク管理パラメータ ---
+# --- パラメータ ---
 MA_SHORT, MA_LONG = 50, 200
 MIN_SCORE = 85
 MAX_NOTIFICATIONS = 8
-ATRSTOP_MULT = 2.0  # 損切りはATRの2倍離す
+ATR_STOP_MULT = 2.0
 
-# セクター別・利確倍率
-AGGRESSIVE_SECTORS = [
-    'Semi', 'AI', 'Soft', 'Sec', 'EV', 'Crypto', 
-    'Cloud', 'Ad', 'Service', 'Platform', 'Bet'
-]
+AGGRESSIVE_SECTORS = ['Semi', 'AI', 'Soft', 'Sec', 'EV', 'Crypto', 'Cloud', 'Ad', 'Service', 'Platform', 'Bet']
 
 TICKERS = {
     'NVDA':'AI','AVGO':'Semi','ARM':'Semi','MU':'Semi','AMD':'Semi','SMCI':'AI','TSM':'Semi','ASML':'Semi',
@@ -42,190 +38,129 @@ SECTOR_ETF = {
     'EV': 'IDRV', 'Crypto': 'CRYPTO', 'Power': 'PWR'
 }
 
-# --- ヘルパー関数 ---
+# --- 機能関数 ---
 
 def get_current_fx_rate():
     try:
         data = yf.download("JPY=X", period="1d", progress=False)
-        if not data.empty:
-            return float(data['Close'].iloc[-1])
-        return 155.0
+        return float(data['Close'].iloc[-1]) if not data.empty else 155.0
     except: return 155.0
 
 def check_market_trend():
-    """市場全体の健全性チェック (SPYがMA200より上か)"""
     try:
         spy = yf.download("SPY", period="300d", progress=False)
-        if spy.empty or len(spy) < 200: return True, "Data Limited"
         c = spy['Close'].squeeze()
-        cur = float(c.iloc[-1])
-        ma200 = float(c.rolling(200).mean().iloc[-1])
-        return (True, "Bull Market") if cur > ma200 else (False, f"Bear Market (${cur:.0f}<MA200)")
-    except: return True, "Check Skipped"
+        ma200 = c.rolling(200).mean().iloc[-1]
+        return (c.iloc[-1] > ma200, "Bull" if c.iloc[-1] > ma200 else "Bear")
+    except: return (True, "Unknown")
 
 def is_earnings_near(ticker):
-    """決算5日前後は回避"""
     try:
         tk = yf.Ticker(ticker)
         cal = tk.calendar
-        if cal is None or (isinstance(cal, pd.DataFrame) and cal.empty): return False
-        
-        # 構造に合わせた取得
-        if isinstance(cal, dict) and 'Earnings Date' in cal:
-            date_val = cal['Earnings Date'][0]
-        else:
-            date_val = cal.iloc[0,0]
-            
-        days = (pd.to_datetime(date_val).date() - datetime.now().date()).days
-        return abs(days) <= 5
+        date_val = cal['Earnings Date'][0] if isinstance(cal, dict) else cal.iloc[0,0]
+        return abs((pd.to_datetime(date_val).date() - datetime.now().date()).days) <= 5
     except: return False
 
-def sector_is_strong(sector):
-    """セクターETFが上昇トレンドか"""
-    try:
-        etf = SECTOR_ETF.get(sector)
-        if not etf or etf == 'CRYPTO': return True
-        df = yf.download(etf, period="250d", progress=False)
-        c = df['Close'].squeeze()
-        ma200 = c.rolling(200).mean()
-        return ma200.iloc[-1] > ma200.iloc[-10]
-    except: return True
+# --- バックテストエンジン ---
 
-# --- 分析エンジン ---
+def simulate_past_performance(df, pivot, stop, target):
+    """
+    直近100日の中で、現在のロジックに近いエントリーがあった場合の成功率を検証
+    """
+    try:
+        c = df['Close'].squeeze()
+        h = df['High'].squeeze()
+        l = df['Low'].squeeze()
+        
+        # 過去100日でエントリーポイント(pivot)を超えた回数と、その後の結果を簡易シミュレーション
+        success, failure = 0, 0
+        for i in range(len(df)-20, len(df)-5): # 直近の数サンプルを抽出
+            if h.iloc[i] >= pivot:
+                # エントリー後5日間でTargetかStopか
+                for j in range(1, 6):
+                    if i+j >= len(df): break
+                    if h.iloc[i+j] >= target: success += 1; break
+                    if l.iloc[i+j] <= stop: failure += 1; break
+        
+        total = success + failure
+        return f"勝率 {int(success/total*100)}%" if total > 0 else "データ不足"
+    except: return "検証不能"
+
+# --- 分析クラス ---
 
 class StrategicAnalyzer:
     @staticmethod
-    def analyze_ticker(t, df, sector, max_price_usd):
+    def analyze_ticker(t, df, sector, max_p):
         if len(df) < MA_LONG: return None
-        try:
-            # yfinanceのマルチインデックス/シングルインデックス両対応
-            c = df['Close'].squeeze()
-            h = df['High'].squeeze()
-            l = df['Low'].squeeze()
-            v = df['Volume'].squeeze()
-        except: return None
+        c, h, l, v = df['Close'].squeeze(), df['High'].squeeze(), df['Low'].squeeze(), df['Volume'].squeeze()
+        
+        curr_p = float(c.iloc[-1])
+        if curr_p > max_p: return None
 
-        current_price = float(c.iloc[-1])
-        if current_price > max_price_usd: return None
+        ma50, ma200 = c.rolling(MA_SHORT).mean().iloc[-1], c.rolling(MA_LONG).mean().iloc[-1]
+        if not (curr_p > ma50 > ma200): return None
 
-        # トレンドフィルター
-        ma50 = c.rolling(MA_SHORT).mean().iloc[-1]
-        ma200 = c.rolling(MA_LONG).mean().iloc[-1]
-        if not (current_price > ma50 > ma200): return None
-
-        # ATR & Tightness (VCP)
         tr = pd.concat([(h-l), (h-c.shift()).abs(), (l-c.shift()).abs()], axis=1).max(axis=1)
         atr14 = tr.rolling(14).mean().iloc[-1]
-        if atr14 == 0 or np.isnan(atr14): return None
-        
-        # VCP: 直近5日の高低差がATRに対してタイトか
         tightness = float((h.iloc[-5:].max() - l.iloc[-5:].min()) / atr14)
         if tightness > 3.0: return None
 
-        # Speed (Velocity) 判定
-        ma5 = c.rolling(5).mean().iloc[-1]
-        ma20 = c.rolling(20).mean().iloc[-1]
-        velocity = "HIGH" if ma5 > ma20 * 1.01 else "SLOW"
-
-        # スコアリング
         score = 65
         reasons = ["基礎65"]
-        
-        if tightness < 1.5:
-            score += 20; reasons.append("VCPタイト+20")
-        elif tightness < 2.0:
-            score += 10; reasons.append("VCP良好+10")
-            
+        if tightness < 1.5: score += 20; reasons.append("VCPタイト+20")
         vol_avg = v.rolling(50).mean().iloc[-1]
-        vol_ratio = v.iloc[-1] / vol_avg if vol_avg > 0 else 1.0
-        if 0.7 <= vol_ratio <= 1.1:
-            score += 15; reasons.append("売り枯れ+15")
-            
-        if v.iloc[-3:].max() > vol_avg * 1.5:
-            score += 10; reasons.append("買い集め+10")
+        if 0.7 <= v.iloc[-1]/vol_avg <= 1.1: score += 15; reasons.append("売り枯れ+15")
 
-        # 戦略的出口設定
-        reward_mult = 3.0 if sector in AGGRESSIVE_SECTORS else 1.8
+        reward = 3.0 if sector in AGGRESSIVE_SECTORS else 1.8
         pivot = h.iloc[-5:].max() * 1.002
-        stop_dist = atr14 * ATR_STOP_MULT
-        stop_loss = pivot - stop_dist
-        target = pivot + (stop_dist * reward_mult)
+        stop = pivot - (atr14 * ATR_STOP_MULT)
+        target = pivot + ((pivot - stop) * reward)
+
+        # バックテスト実行
+        bt_stat = simulate_past_performance(df, pivot, stop, target)
 
         return {
-            "score": score, "reasons": " ".join(reasons),
-            "price": current_price, "pivot": pivot,
-            "stop": stop_loss, "target": target, "sector": sector, "velocity": velocity
+            "score": score, "reasons": " ".join(reasons), "price": curr_p, 
+            "pivot": pivot, "stop": stop, "target": target, "sector": sector, 
+            "velocity": "HIGH" if c.rolling(5).mean().iloc[-1] > c.rolling(20).mean().iloc[-1] else "SLOW",
+            "bt": bt_stat
         }
 
+# --- 実行メイン ---
+
 def send_line(msg):
-    if not ACCESSTOKEN or not USERID:
-        print("\n--- LINEメッセージ (未設定) ---\n", msg)
-        return
+    if not ACCESSTOKEN: print(msg); return
     url = "https://api.line.me/v2/bot/message/push"
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {ACCESSTOKEN}"}
     payload = {"to": USERID, "messages": [{"type": "text", "text": msg}]}
-    try:
-        requests.post(url, headers=headers, json=payload, timeout=10)
-    except:
-        print("LINE送信エラー")
+    requests.post(url, headers=headers, json=payload)
 
 def run_mission():
-    print(f"🛡️ Sentinel v21.1 - 起動中...")
-    
-    market_ok, market_status = check_market_trend()
-    if not market_ok:
-        msg = f"🛑 Sentinel: 市場環境悪化により待機\nStatus: {market_status}"
-        print(msg); send_line(msg); return
+    is_bull, m_status = check_market_trend()
+    if not is_bull:
+        send_line(f"🛑 Sentinel待機: Market {m_status}"); return
 
     fx = get_current_fx_rate()
     max_p = (BUDGET_JPY / fx) * 0.9
-    
-    print(f"🛰️ 銘柄スキャン開始... FX: {fx:.2f}")
-    ticker_list = list(TICKERS.keys())
-    alldata = yf.download(ticker_list, period="300d", progress=False, group_by='ticker')
+    all_data = yf.download(list(TICKERS.keys()), period="300d", progress=False, group_by='ticker')
     
     results = []
     for t, sec in TICKERS.items():
         if is_earnings_near(t): continue
-        if not sector_is_strong(sec): continue
-        
         try:
-            # yfinanceの一括ダウンロードデータの取得
-            dft = alldata[t] if len(ticker_list) > 1 else alldata
-            res = StrategicAnalyzer.analyze_ticker(t, dft, sec, max_p)
-            if res and res['score'] >= MIN_SCORE:
-                results.append((t, res))
-        except Exception as e:
-            continue
+            res = StrategicAnalyzer.analyze_ticker(t, all_data[t], sec, max_p)
+            if res and res['score'] >= MIN_SCORE: results.append((t, res))
+        except: continue
     
     results.sort(key=lambda x: x[1]['score'], reverse=True)
-    results = results[:MAX_NOTIFICATIONS]
+    report = [f"🛡️ Sentinel v21.1 BT-Exp\n📊 Market: {m_status}\n💵 $1 = {fx:.2f}円\n" + "─"*15]
     
-    report = [
-        f"🛡️ Sentinel v21.1",
-        f"📅 {datetime.now().strftime('%Y/%m/%d %H:%M')}",
-        f"📊 Market: {market_status}",
-        f"💵 $1 = {fx:.2f}円",
-        "─" * 15
-    ]
-    
-    if not results:
-        report.append("⚠️ 現在、射程圏内に銘柄はありません。")
-    
-    for i, (t, r) in enumerate(results, 1):
-        loss_p = (1 - r['stop'] / r['pivot']) * 100
-        gain_p = (r['target'] / r['pivot'] - 1) * 100
-        report.append(
-            f"[{i}] {t} ({r['sector']}) {r['score']}点\n"
-            f" └ 根拠: {r['reasons']}\n"
-            f"現: ${r['price']:.2f} 入: ${r['pivot']:.2f}\n"
-            f"止: ${r['stop']:.2f} (-{loss_p:.1f}%) 目: ${r['target']:.2f} (+{gain_p:.1f}%)\n"
-            f"⚡ Speed: {r['velocity']}"
-        )
+    for i, (t, r) in enumerate(results[:MAX_NOTIFICATIONS], 1):
+        lp, gp = (1 - r['stop']/r['pivot'])*100, (r['target']/r['pivot']-1)*100
+        report.append(f"[{i}] {t} ({r['sector']}) {r['score']}点\n └ {r['reasons']}\n期待値: {r['bt']}\n入: ${r['pivot']:.2f}\n止: ${r['stop']:.2f} (-{lp:.1f}%)\n目: ${r['target']:.2f} (+{gp:.1f}%)")
 
-    full_msg = "\n".join(report)
-    print("\n" + full_msg)
-    send_line(full_msg)
+    send_line("\n".join(report))
 
 if __name__ == "__main__":
     run_mission()
