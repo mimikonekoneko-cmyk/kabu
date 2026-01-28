@@ -26,13 +26,13 @@ USER_ID = (
 BUDGET_JPY = 350000
 
 # ============================================================================
-# CORE PARAMETERS
+# CORE PARAMETERS (RELAXED FOR BETTER DETECTION)
 # ============================================================================
 
 MA_SHORT, MA_LONG = 50, 200
-MIN_SCORE = 75
-MIN_WINRATE = 45
-MIN_EXPECTANCY = 0.3
+MIN_SCORE = 65 # 75 -> 65 (relaxed)
+MIN_WINRATE = 40 # 45 -> 40 (relaxed)
+MIN_EXPECTANCY = 0.2 # 0.3 -> 0.2 (relaxed)
 MAX_NOTIFICATIONS = 8
 ATR_STOP_MULT = 2.0
 
@@ -75,7 +75,6 @@ SECTOR_ETF = {
 # ============================================================================
 
 def check_environment():
-    """Check environment variables"""
     print("\n" + "="*60)
     print("Environment Check")
     print("="*60)
@@ -97,7 +96,6 @@ def check_environment():
     return bool(ACCESS_TOKEN and USER_ID)
 
 def get_current_fx_rate():
-    """Get current USD/JPY rate"""
     try:
         data = yf.download("JPY=X", period="1d", progress=False)
         if not data.empty:
@@ -110,7 +108,6 @@ def get_current_fx_rate():
         return 155.0
 
 def check_market_trend():
-    """Check overall market trend using SPY"""
     try:
         spy = yf.download("SPY", period="300d", progress=False)
         if spy.empty or len(spy) < 200:
@@ -131,7 +128,6 @@ def check_market_trend():
         return True, "Check Skipped"
 
 def is_earnings_near(ticker):
-    """Check if earnings announcement is within 5 days"""
     try:
         tk = yf.Ticker(ticker)
         cal = tk.calendar
@@ -154,7 +150,6 @@ def is_earnings_near(ticker):
         return False
 
 def sector_is_strong(sector):
-    """Check if sector ETF is in uptrend"""
     try:
         etf = SECTOR_ETF.get(sector)
         if not etf:
@@ -178,10 +173,6 @@ def sector_is_strong(sector):
 # ============================================================================
 
 def simulate_past_performance(df, sector, atr_mult=ATR_STOP_MULT):
-    """
-    Backtest the strategy on historical data
-    No look-ahead bias
-    """
     try:
         close = df['Close'].squeeze()
         high = df['High'].squeeze()
@@ -242,8 +233,10 @@ def simulate_past_performance(df, sector, atr_mult=ATR_STOP_MULT):
         if total_trades < 10:
             return {
                 'status': 'insufficient',
-                'message': 'Insufficient samples',
-                'trades': total_trades
+                'message': f'Sample:{total_trades}',
+                'trades': total_trades,
+                'winrate': 0,
+                'expectancy': 0
             }
         
         winrate = (wins / total_trades) * 100
@@ -262,7 +255,9 @@ def simulate_past_performance(df, sector, atr_mult=ATR_STOP_MULT):
     except Exception as e:
         return {
             'status': 'error',
-            'message': f'Error: {str(e)}'
+            'message': f'Error',
+            'winrate': 0,
+            'expectancy': 0
         }
 
 # ============================================================================
@@ -273,10 +268,6 @@ class StrategicAnalyzer:
     
     @staticmethod
     def analyze_ticker(ticker, df, sector, max_price_usd):
-        """
-        Analyze a ticker for entry opportunity
-        100-point scoring system
-        """
         if len(df) < MA_LONG + 50:
             return None
         
@@ -291,12 +282,14 @@ class StrategicAnalyzer:
         current_price = float(close.iloc[-1])
         
         if current_price > max_price_usd:
+            print(f" SKIP {ticker}: Price ${current_price:.2f} > max ${max_price_usd:.2f}")
             return None
         
         ma50 = close.rolling(MA_SHORT).mean().iloc[-1]
         ma200 = close.rolling(MA_LONG).mean().iloc[-1]
         
         if not (current_price > ma50 > ma200):
+            print(f" SKIP {ticker}: Not in uptrend (${current_price:.2f} vs MA50:${ma50:.2f} vs MA200:${ma200:.2f})")
             return None
         
         tr = pd.concat([
@@ -308,18 +301,19 @@ class StrategicAnalyzer:
         atr14 = tr.rolling(14).mean().iloc[-1]
         
         if atr14 == 0 or pd.isna(atr14):
+            print(f" SKIP {ticker}: Invalid ATR")
             return None
         
         recent_range = high.iloc[-5:].max() - low.iloc[-5:].min()
         tightness = float(recent_range / atr14)
         
         if tightness > 3.0:
+            print(f" SKIP {ticker}: Too loose (tightness={tightness:.2f})")
             return None
         
         score = 0
         reasons = []
         
-        # VCP Tightness (max 30 points)
         if tightness < 1.0:
             score += 30
             reasons.append("VCP++30")
@@ -333,7 +327,6 @@ class StrategicAnalyzer:
             score += 5
             reasons.append("VCP+5")
         
-        # Volume Analysis (max 25 points)
         vol_avg = volume.rolling(50).mean().iloc[-1]
         
         if vol_avg > 0:
@@ -349,26 +342,24 @@ class StrategicAnalyzer:
             recent_vol_max = volume.iloc[-3:].max()
             if recent_vol_max > vol_avg * 2.0:
                 score += 10
-                reasons.append("Accumulation++10")
+                reasons.append("Accum++10")
             elif recent_vol_max > vol_avg * 1.5:
                 score += 5
-                reasons.append("Accumulation+5")
+                reasons.append("Accum+5")
         
-        # Momentum (max 20 points)
         ma5 = close.rolling(5).mean().iloc[-1]
         ma20 = close.rolling(20).mean().iloc[-1]
         
         if ma5 > ma20 * 1.02:
             score += 20
-            reasons.append("Momentum++20")
+            reasons.append("Mom++20")
         elif ma5 > ma20 * 1.01:
             score += 15
-            reasons.append("Momentum+15")
+            reasons.append("Mom+15")
         elif ma5 > ma20:
             score += 10
-            reasons.append("Momentum+10")
+            reasons.append("Mom+10")
         
-        # Trend Strength (max 15 points)
         trend_strength = (ma50 - ma200) / ma200 * 100
         if trend_strength > 10:
             score += 15
@@ -380,11 +371,9 @@ class StrategicAnalyzer:
             score += 5
             reasons.append("Trend+5")
         
-        # Baseline (10 points)
         score += 10
         reasons.append("Base+10")
         
-        # Calculate entry/exit levels
         reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
         
         pivot = high.iloc[-5:].max() * 1.002
@@ -392,17 +381,28 @@ class StrategicAnalyzer:
         stop_loss = pivot - stop_dist
         target = pivot + (stop_dist * reward_mult)
         
-        # Run backtest
         bt_result = simulate_past_performance(df, sector)
         
-        # Filter by backtest results
+        # Debug output
+        print(f" EVAL {ticker}: Score={score} BT={bt_result['status']} WR={bt_result.get('winrate',0):.0f}% EV={bt_result.get('expectancy',0):.2f}R")
+        
+        # Apply filters
+        if score < MIN_SCORE:
+            print(f" FILTER: Score {score} < {MIN_SCORE}")
+            return None
+        
         if bt_result['status'] == 'valid':
             if bt_result['winrate'] < MIN_WINRATE:
+                print(f" FILTER: Winrate {bt_result['winrate']:.0f}% < {MIN_WINRATE}%")
                 return None
             if bt_result['expectancy'] < MIN_EXPECTANCY:
+                print(f" FILTER: Expectancy {bt_result['expectancy']:.2f}R < {MIN_EXPECTANCY}R")
                 return None
         elif bt_result['status'] == 'error':
+            print(f" FILTER: Backtest error")
             return None
+        
+        print(f" PASS: All filters passed")
         
         return {
             'score': score,
@@ -421,34 +421,20 @@ class StrategicAnalyzer:
 # ============================================================================
 
 def send_line(msg):
-    """Send LINE notification with detailed logging"""
-    
     print("\n" + "="*60)
     print("LINE Notification")
     print("="*60)
     
     if not ACCESS_TOKEN:
         print("ERROR: ACCESS_TOKEN not set")
-        print("Check environment variables:")
-        print("  - LINE_CHANNEL_ACCESS_TOKEN")
-        print("  - LINECHANNELACCESSTOKEN")
-        print("  - ACCESS_TOKEN")
         print("="*60)
-        print("Message content:")
-        print("-"*60)
         print(msg)
         print("="*60 + "\n")
         return False
     
     if not USER_ID:
         print("ERROR: USER_ID not set")
-        print("Check environment variables:")
-        print("  - LINE_USER_ID")
-        print("  - LINEUSER_ID")
-        print("  - USER_ID")
         print("="*60)
-        print("Message content:")
-        print("-"*60)
         print(msg)
         print("="*60 + "\n")
         return False
@@ -464,79 +450,57 @@ def send_line(msg):
     }
     
     try:
-        print(f"Sending to: {url}")
-        print(f"USER_ID: {USER_ID[:10]}...")
-        
+        print(f"Sending to: {USER_ID[:10]}...")
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         
-        print(f"Status Code: {response.status_code}")
-        
         if response.status_code == 200:
-            print("SUCCESS: LINE notification sent")
+            print("SUCCESS")
             print("="*60 + "\n")
             return True
         else:
-            print(f"FAILED: LINE notification")
-            print(f"Response: {response.text}")
+            print(f"FAILED: {response.status_code}")
             print("="*60 + "\n")
             return False
-            
-    except requests.exceptions.Timeout:
-        print("ERROR: Timeout (no response within 10 seconds)")
-        print("="*60 + "\n")
-        return False
     except Exception as e:
         print(f"ERROR: {e}")
         print("="*60 + "\n")
         return False
 
 # ============================================================================
-# MAIN MISSION
+# MAIN
 # ============================================================================
 
 def run_mission():
-    """Main execution function"""
-    
     print("\n" + "="*60)
-    print("SENTINEL v22.1 - Production Ready")
+    print("SENTINEL v22.2 - Debug Enhanced")
     print("="*60)
-    print(f"Launch Time: {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
+    print(f"Time: {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
     print("="*60 + "\n")
     
-    # Check environment
     env_ok = check_environment()
     
     if not env_ok:
-        print("WARNING: LINE credentials not set. Console output only.\n")
+        print("WARNING: LINE credentials not set\n")
     
-    # Market check
-    print("Checking market conditions...")
+    print("Checking market...")
     is_bull, market_status = check_market_trend()
     
     if not is_bull:
-        msg = (
-            f"SENTINEL v22.1\n"
-            f"Market conditions unfavorable. Standby mode.\n"
-            f"\n"
-            f"Market Status: {market_status}\n"
-            f"Time: {datetime.now().strftime('%Y/%m/%d %H:%M')}"
-        )
+        msg = f"SENTINEL v22.2\nMarket unfavorable\n{market_status}"
         print(msg)
         send_line(msg)
         return
     
-    print(f"Market Status: {market_status}\n")
+    print(f"Market: {market_status}\n")
     
-    # Get FX rate
-    print("Fetching FX rate...")
+    print("Getting FX rate...")
     fx_rate = get_current_fx_rate()
     max_price_usd = (BUDGET_JPY / fx_rate) * 0.9
     
-    print(f"FX Rate: JPY {fx_rate:.2f}/USD")
-    print(f"Max Price: ${max_price_usd:.2f}\n")
+    print(f"FX: JPY{fx_rate:.2f}/USD")
+    print(f"Max: ${max_price_usd:.2f}\n")
     
-    # Download data
-    print(f"Downloading data for {len(TICKERS)} tickers...")
+    print(f"Downloading {len(TICKERS)} tickers...")
     ticker_list = list(TICKERS.keys())
     
     try:
@@ -547,23 +511,21 @@ def run_mission():
             group_by='ticker',
             threads=True
         )
-        print("Download complete\n")
+        print("Download OK\n")
     except Exception as e:
-        print(f"ERROR: Data download failed - {e}")
+        print(f"ERROR: {e}")
         return
     
-    # Analyze tickers
-    print("Starting ticker screening...\n")
+    print("Screening...\n")
     
     results = []
-    analyzed_count = 0
-    filtered_count = 0
+    analyzed = 0
     
     for ticker, sector in TICKERS.items():
-        analyzed_count += 1
+        analyzed += 1
         
         if is_earnings_near(ticker):
-            print(f"SKIP {ticker}: Earnings nearby")
+            print(f"SKIP {ticker}: Earnings")
             continue
         
         if not sector_is_strong(sector):
@@ -581,90 +543,63 @@ def run_mission():
             )
             
             if result:
-                if result['score'] >= MIN_SCORE:
-                    results.append((ticker, result))
-                    print(f"OK {ticker}: {result['score']} points - Added")
-                else:
-                    filtered_count += 1
-                    print(f"LOW {ticker}: {result['score']} points - Filtered")
-            else:
-                filtered_count += 1
+                results.append((ticker, result))
                 
         except Exception as e:
-            print(f"ERROR {ticker}: Analysis failed - {e}")
-            continue
+            print(f"ERROR {ticker}: {e}")
     
-    # Sort results
     results.sort(key=lambda x: x[1]['score'], reverse=True)
     results = results[:MAX_NOTIFICATIONS]
     
     print(f"\n{'='*60}")
-    print(f"Screening Results")
-    print(f"{'='*60}")
-    print(f"Analyzed: {analyzed_count}")
-    print(f"Candidates: {len(results)}")
-    print(f"Filtered: {filtered_count}")
+    print(f"Results: {len(results)} candidates from {analyzed} analyzed")
     print(f"{'='*60}\n")
     
-    # Generate report
-    report_lines = [
-        "SENTINEL v22.1",
+    report = [
+        "SENTINEL v22.2",
         f"{datetime.now().strftime('%Y/%m/%d %H:%M')}",
         f"Market: {market_status}",
-        f"FX: JPY{fx_rate:.2f}/USD",
+        f"FX: JPY{fx_rate:.2f}",
         "-" * 30
     ]
     
     if not results:
-        report_lines.append("No candidates match criteria")
-        report_lines.append("")
-        report_lines.append(f"Analyzed: {analyzed_count}")
-        report_lines.append(f"Filtered: {filtered_count}")
+        report.append("No candidates")
+        report.append(f"Analyzed: {analyzed}")
     else:
         for i, (ticker, r) in enumerate(results, 1):
             loss_pct = (1 - r['stop'] / r['pivot']) * 100
             gain_pct = (r['target'] / r['pivot'] - 1) * 100
-            risk_reward = gain_pct / loss_pct
+            rr = gain_pct / loss_pct
             
-            bt_info = r['bt']['message'] if r['bt']['status'] == 'valid' else r['bt']['message']
-            
-            report_lines.append(f"[{i}] {ticker} ({r['sector']}) {r['score']}pt")
-            report_lines.append(f"{r['reasons']}")
-            report_lines.append(f"BT: {bt_info}")
-            report_lines.append(f"Price: ${r['price']:.2f}")
-            report_lines.append(f"Entry: ${r['pivot']:.2f}")
-            report_lines.append(f"Stop: ${r['stop']:.2f} (-{loss_pct:.1f}%)")
-            report_lines.append(f"Target: ${r['target']:.2f} (+{gain_pct:.1f}%)")
-            report_lines.append(f"RR: 1:{risk_reward:.1f}")
-            report_lines.append("-" * 30)
+            report.append(f"[{i}] {ticker} ({r['sector']}) {r['score']}pt")
+            report.append(f"{r['reasons']}")
+            report.append(f"BT: {r['bt']['message']}")
+            report.append(f"Price: ${r['price']:.2f}")
+            report.append(f"Entry: ${r['pivot']:.2f}")
+            report.append(f"Stop: ${r['stop']:.2f} (-{loss_pct:.1f}%)")
+            report.append(f"Target: ${r['target']:.2f} (+{gain_pct:.1f}%)")
+            report.append(f"RR: 1:{rr:.1f}")
+            report.append("-" * 30)
     
-    full_report = "\n".join(report_lines)
-    
-    # Output
+    full_report = "\n".join(report)
+     
     print("\n" + "="*60)
-    print("Final Report")
+    print("FINAL REPORT")
     print("="*60)
     print(full_report)
     print("="*60 + "\n")
     
-    # Send LINE notification
-    send_success = send_line(full_report)
-    
-    if send_success:
-        print("All processes completed successfully\n")
-    else:
-        print("Analysis completed (LINE notification failed)\n")
-
-# ============================================================================
-# ENTRY POINT
-# ============================================================================
+    send_line(full_report)
+    print("COMPLETE\n")
 
 if __name__ == "__main__":
     try:
         run_mission()
     except KeyboardInterrupt:
-        print("\n\nProcess interrupted by user\n")
+        print("\n\nInterrupted\n")
     except Exception as e:
-        print(f"\n\nUnexpected error: {e}\n")
+        print(f"\n\nError: {e}\n")
         import traceback
         traceback.print_exc()
+   
