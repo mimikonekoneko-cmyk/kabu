@@ -48,6 +48,9 @@ ATR_STOP_MULT = 2.0
 MAX_POSITION_SIZE = 0.25
 MAX_SECTOR_CONCENTRATION = 0.40
 
+# Minimum position size to ensure high-value stocks are tradeable
+MIN_POSITION_USD = 500  # Minimum $500 per position
+
 MAX_TIGHTNESS_BASE = 2.0
 MAX_NOTIFICATIONS = 10
 MIN_DAILY_VOLUME_USD = 10_000_000
@@ -610,6 +613,12 @@ class PositionSizer:
             s_f = 0.7 if sec_exp > MAX_SECTOR_CONCENTRATION else 1.0
             final_frac = min(kelly * v_f * m_f * s_f, MAX_POSITION_SIZE)
             pos_val = cap_usd * final_frac
+            
+            # Apply minimum position size
+            if pos_val > 0 and pos_val < MIN_POSITION_USD:
+                pos_val = MIN_POSITION_USD
+                final_frac = pos_val / cap_usd
+            
             return pos_val, final_frac
         except Exception:
             return 0.0, 0.0
@@ -969,8 +978,18 @@ def run_mission():
         top = passed_core[0]
         ticker = top[0]
         r = top[1]
+        
+        actual_shares = int(r['est_shares'])
+        actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+        
         report_lines.append(f"🎯 TODAY'S TOP PRIORITY: {ticker}")
         report_lines.append(f"   Score: {r['quality']['total_score']}/100 (Tech:{r['quality']['tech_score']} RR:{r['quality']['rr_score']} Inst:{r['quality']['inst_score']})")
+        
+        if actual_shares > 0:
+            report_lines.append(f"   {actual_shares}株 @ ${r['price']:.2f} = ${actual_cost:.0f}")
+        else:
+            report_lines.append(f"   ⚠️ 1株未満 (${r['price']:.2f})")
+        
         report_lines.append(f"   Why Now: {r['why_now']}")
         report_lines.append("")
     
@@ -980,10 +999,20 @@ def run_mission():
             q = r['quality']
             vcp = r['vcp_analysis']
             inst = r['institutional']
+            
+            # Calculate actual buyable shares (integer only)
+            actual_shares = int(r['est_shares'])
+            actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+            
             report_lines.append(f"\n[{i}] {ticker} {q['total_score']}/100 | VCP:{vcp['maturity']}% {vcp['stage']}")
             report_lines.append(f"    Tech:{q['tech_score']} RR:{q['rr_score']} Inst:{q['inst_score']} | Risk:{inst['risk_score']}")
-            report_lines.append(f"    Entry: ${r['pivot']:.2f} / Now: ${r['price']:.2f} / Shares: {r['est_shares']:.4f}")
-            report_lines.append(f"    Position: ${r['pos_usd']:.0f} | BT: {r['bt']['message']} | T:{r['tightness']:.2f}")
+            
+            if actual_shares > 0:
+                report_lines.append(f"    {actual_shares}株 @ ${r['price']:.2f} = ${actual_cost:.0f} | Entry: ${r['pivot']:.2f}")
+            else:
+                report_lines.append(f"    ⚠️ 1株未満 (${r['price']:.2f}) | Entry: ${r['pivot']:.2f}")
+            
+            report_lines.append(f"    BT: {r['bt']['message']} | T:{r['tightness']:.2f}")
             report_lines.append(f"    💡 {r['why_now']}")
             if inst['alerts']:
                 report_lines.append(f"    ⚠️  {' | '.join(inst['alerts'][:3])}")
@@ -993,8 +1022,18 @@ def run_mission():
         for i, (ticker, r) in enumerate(passed_secondary[:5], 1):
             q = r['quality']
             vcp = r['vcp_analysis']
+            
+            actual_shares = int(r['est_shares'])
+            actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+            
             report_lines.append(f"\n[{i}] {ticker} {q['total_score']}/100 | VCP:{vcp['maturity']}% {vcp['stage']}")
-            report_lines.append(f"    Entry: ${r['pivot']:.2f} / Now: ${r['price']:.2f} | {r['why_now']}")
+            
+            if actual_shares > 0:
+                report_lines.append(f"    {actual_shares}株 @ ${r['price']:.2f} = ${actual_cost:.0f} | Entry: ${r['pivot']:.2f}")
+            else:
+                report_lines.append(f"    ⚠️ 1株未満 (${r['price']:.2f}) | Entry: ${r['pivot']:.2f}")
+            
+            report_lines.append(f"    {r['why_now']}")
     
     if passed_watch:
         report_lines.append("\n👁 WATCH - MONITORING")
