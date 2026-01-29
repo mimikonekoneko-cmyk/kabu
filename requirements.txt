@@ -1,5 +1,5 @@
+alpaca-trade-api
 pandas
 numpy
 yfinance
 requests
-alpaca-trade-api
