@@ -1068,5 +1068,3 @@ def run_mission():
 
 if __name__ == "__main__":
     run_mission()
-        import traceback
-        logger.error(traceback.format_exc())
