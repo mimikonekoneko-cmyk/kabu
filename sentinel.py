@@ -65,8 +65,8 @@ STAGE2_OUTPUT_TARGET = 100
 STAGE3_MIN_SCORE = 60  # SECONDARY tier or above
 
 # Performance
-MAX_WORKERS = 50  # Parallel threads
-REQUEST_DELAY = 0.05  # 50ms between requests (stay under 200/min limit)
+MAX_WORKERS = 10  # Parallel threads
+REQUEST_DELAY = 0.2  # 50ms between requests (stay under 200/min limit)
 
 CACHE_DIR = Path("./cache")
 CACHE_DIR.mkdir(exist_ok=True)
