@@ -9,25 +9,28 @@ jobs:
   run-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # 最新のv4を推奨
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # 最新のv5を推奨
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # requirements.txtがなくても直接インストールするように変更
-          pip install alpaca-trade-api pandas requests numpy　yfinance
+          # ↓ ここから全角スペースを除去し、必要なライブラリを網羅しました
+          pip install alpaca-trade-api pandas requests numpy yfinance beautifulsoup4
 
       - name: Run Script
         env:
-          # AlpacaのキーをGitHub Secretsから注入
+          # sentinel.py内の os.getenv 名に合わせて設定
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
-          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-          # LINEの設定（あなたが使っている変数名に合わせてください）
+          ALPACA_API_SECRET: ${{ secrets.ALPACA_API_SECRET }}
+          # LINE Notify用
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          # フォールバック用
+          ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          USER_ID: ${{ secrets.LINE_USER_ID }}
         run: python sentinel.py
