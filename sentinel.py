@@ -104,7 +104,7 @@ CACHE_DIR.mkdir(exist_ok=True)
 RESULTS_DIR = Path("./results_safe")
 RESULTS_DIR.mkdir(exist_ok=True)
 
-UNIVERSE_FILE = "us_stocks_universe.txt"
+UNIVERSE_FILE = "rakuten_universe.txt"
 
 # ---------------------------
 # Safe Request Session with Rate Limiting
