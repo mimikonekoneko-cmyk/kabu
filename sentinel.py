@@ -56,9 +56,9 @@ MAX_POSITION_SIZE = 0.25
 MIN_POSITION_USD = 500
 
 # Filtering thresholds
-STAGE1_MIN_PRICE = 10.0
-STAGE1_MAX_PRICE = 1000.0
-STAGE1_MIN_VOLUME_USD = 10_000_000  # $10M daily average
+STAGE1_MIN_PRICE = 5.0           # $10 → $5 (より寛容)
+STAGE1_MAX_PRICE = 2000.0        # $1000 → $2000
+STAGE1_MIN_VOLUME_USD = 1_000_000  # $10M → $1M (大幅緩和)
 STAGE1_OUTPUT_TARGET = 500
 
 STAGE2_MAX_TIGHTNESS = 2.5
@@ -132,16 +132,17 @@ def download_ticker_data(ticker: str, period: str = "1y", retry: int = RETRY_ATT
     Returns:
         DataFrame with OHLCV data or None
     """
+    # DISABLE CACHE FOR DEBUGGING
     # Try cache first
-    cached = load_from_cache(ticker, f"bars_{period}")
-    if cached is not None:
-        try:
-            df = pd.DataFrame(cached)
-            if not df.empty:
-                df.index = pd.to_datetime(df.index)
-                return df
-        except Exception:
-            pass
+    # cached = load_from_cache(ticker, f"bars_{period}")
+    # if cached is not None:
+    #     try:
+    #         df = pd.DataFrame(cached)
+    #         if not df.empty:
+    #             df.index = pd.to_datetime(df.index)
+    #             return df
+    #     except Exception:
+    #         pass
     
     # Download from Yahoo Finance
     for attempt in range(retry):
@@ -163,10 +164,10 @@ def download_ticker_data(ticker: str, period: str = "1y", retry: int = RETRY_ATT
             # Standardize column names
             data.columns = [col.lower().replace(' ', '_') for col in data.columns]
             
-            # Save to cache
-            cache_data = data.copy()
-            cache_data.index = cache_data.index.astype(str)  # JSON serializable
-            save_to_cache(ticker, cache_data.to_dict(), f"bars_{period}")
+            # Save to cache - DISABLED FOR DEBUGGING
+            # cache_data = data.copy()
+            # cache_data.index = cache_data.index.astype(str)  # JSON serializable
+            # save_to_cache(ticker, cache_data.to_dict(), f"bars_{period}")
             
             return data
             
@@ -182,12 +183,12 @@ def download_ticker_data(ticker: str, period: str = "1y", retry: int = RETRY_ATT
 # ---------------------------
 class Stage1Filter:
     """Fast screening based on price, volume, and basic trend"""
-
+    
     @staticmethod
     def screen_single(ticker: str) -> Optional[Dict]:
         """
         Quick screen for a single ticker
-
+        
         Criteria:
         - Price: $10-$1000
         - Volume: $10M+ daily average (last 20 days)
@@ -196,78 +197,52 @@ class Stage1Filter:
         try:
             # Download 1 year of data (enough for MA200)
             df = download_ticker_data(ticker, period="1y")
-
-            if df is None or len(df) < 200:
+            
+            if df is None:
+                logger.debug(f"{ticker}: データ取得失敗")
                 return None
-
-            # ---------------------------
-            # Extract OHLCV (SAFE)
-            # ---------------------------
-            close_col = (
-                'close'
-                if 'close' in df.columns
-                else 'adj_close'
-                if 'adj_close' in df.columns
-                else df.columns[3]
-            )
-            volume_col = (
-                'volume'
-                if 'volume' in df.columns
-                else df.columns[4]
-            )
-
-            # 🔑 CRITICAL FIX: dropna ONCE, together
-            ohlcv = df[[close_col, volume_col]].astype(float).dropna()
-
-            if len(ohlcv) < 200:
+            
+            if len(df) < 200:
+                logger.debug(f"{ticker}: データ不足 (len={len(df)})")
                 return None
-
-            close = ohlcv[close_col]
-            volume = ohlcv[volume_col]
-
-            # ---------------------------
+            
+            # Extract OHLCV
+            close_col = 'close' if 'close' in df.columns else 'adj_close' if 'adj_close' in df.columns else df.columns[3]
+            volume_col = 'volume' if 'volume' in df.columns else df.columns[4]
+            
+            close = df[close_col].astype(float).dropna()
+            volume = df[volume_col].astype(float).dropna()
+            
+            if len(close) < 200:
+                return None
+            
             # Current metrics
-            # ---------------------------
             current_price = float(close.iloc[-1])
-
+            
             # Average volume in USD (last 20 days)
-            avg_volume_usd = float(
-                (volume.tail(20) * close.tail(20)).mean()
-            )
-
-            # ---------------------------
+            recent_volume_usd = (volume.tail(20) * close.tail(20)).mean()
+            avg_volume_usd = float(recent_volume_usd)
+            
             # Price filter
-            # ---------------------------
-            if (
-                current_price < STAGE1_MIN_PRICE
-                or current_price > STAGE1_MAX_PRICE
-            ):
+            if current_price < STAGE1_MIN_PRICE or current_price > STAGE1_MAX_PRICE:
                 return None
-
-            # ---------------------------
-            # Volume filter
-            # ---------------------------
+            
+            # Volume filter - CRITICAL FIX
             if avg_volume_usd < STAGE1_MIN_VOLUME_USD:
+                logger.debug(f"{ticker}: 出来高不足 (${avg_volume_usd:,.0f} < ${STAGE1_MIN_VOLUME_USD:,.0f})")
                 return None
-
-            # ---------------------------
+            
             # Trend filter
-            # ---------------------------
-            ma50 = float(
-                close.rolling(50, min_periods=25).mean().iloc[-1]
-            )
-            ma200 = float(
-                close.rolling(200, min_periods=100).mean().iloc[-1]
-            )
-
-            trend_ok = (
-                current_price > ma50
-                or ma50 > ma200
-            )
-
+            ma50 = float(close.rolling(50, min_periods=25).mean().iloc[-1])
+            ma200 = float(close.rolling(200, min_periods=100).mean().iloc[-1]) if len(close) >= 100 else None
+            
+            trend_ok = current_price > ma50
+            if ma200 is not None:
+                trend_ok = trend_ok or ma50 > ma200
+            
             if not trend_ok:
                 return None
-
+            
             return {
                 'symbol': ticker,
                 'price': current_price,
@@ -276,47 +251,39 @@ class Stage1Filter:
                 'ma200': ma200,
                 'stage': 'STAGE1_PASS'
             }
-
+            
         except Exception as e:
             logger.debug(f"Stage1 error for {ticker}: {e}")
             return None
-
+    
     @staticmethod
     def screen_batch(symbols: List[str]) -> List[Dict]:
         """Screen multiple symbols in parallel"""
         results = []
-
+        
         logger.info(f"Stage 1: Screening {len(symbols)} symbols...")
-
+        
+        # Process in batches for better progress tracking
         if HAS_TQDM:
             pbar = tqdm(total=len(symbols), desc="Stage 1", unit="stocks")
-
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=MAX_WORKERS
-        ) as executor:
-            futures = {
-                executor.submit(Stage1Filter.screen_single, sym): sym
-                for sym in symbols
-            }
-
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = {executor.submit(Stage1Filter.screen_single, sym): sym for sym in symbols}
+            
             for future in concurrent.futures.as_completed(futures):
                 result = future.result()
                 if result:
                     results.append(result)
-
+                
                 if HAS_TQDM:
                     pbar.update(1)
-
+        
         if HAS_TQDM:
             pbar.close()
-
-        logger.info(
-            f"Stage 1 complete: "
-            f"{len(results)} / {len(symbols)} passed "
-            f"({len(results) / len(symbols) * 100:.1f}%)"
-        )
-
+        
+        logger.info(f"Stage 1 complete: {len(results)} / {len(symbols)} passed ({len(results)/len(symbols)*100:.1f}%)")
         return results
+
 
 # ---------------------------
 # Stage 2: VCP Analysis
@@ -725,8 +692,23 @@ def load_universe(filepath: str) -> List[str]:
     try:
         with open(filepath, 'r') as f:
             symbols = [line.strip().upper() for line in f if line.strip()]
+        
+        # Filter: US tickers only (not starting with digit, no dots)
+        us_symbols = []
+        for sym in symbols:
+            # Skip if starts with digit (Japanese stock codes)
+            if sym[0].isdigit():
+                logger.debug(f"Skipped {sym}: Japanese stock code")
+                continue
+            # Skip if contains dot (except valid US formats)
+            if '.' in sym and not sym.endswith(('.A', '.B')):
+                logger.debug(f"Skipped {sym}: Invalid format")
+                continue
+            us_symbols.append(sym)
+        
         logger.info(f"Loaded {len(symbols)} symbols from {filepath}")
-        return symbols
+        logger.info(f"Filtered to {len(us_symbols)} US tickers ({len(us_symbols)/len(symbols)*100:.1f}%)")
+        return us_symbols
     except FileNotFoundError:
         logger.error(f"Universe file not found: {filepath}")
         logger.info("Please create universe file using: python rakuten_csv_converter.py")
@@ -832,6 +814,18 @@ def run_pipeline():
     
     total_count = len(universe)
     logger.info(f"Universe size: {total_count} stocks")
+    
+    # DIAGNOSTIC MODE: Test first 10 symbols
+    if total_count > 100:
+        logger.info("🔍 DIAGNOSTIC MODE: Testing first 10 symbols...")
+        sample = universe[:10]
+        for sym in sample:
+            result = Stage1Filter.screen_single(sym)
+            if result:
+                logger.info(f"  ✅ {sym}: PASS - Price=${result['price']:.2f}, Vol=${result['volume_usd']:,.0f}")
+            else:
+                logger.info(f"  ❌ {sym}: FAIL (check debug log)")
+        logger.info("="*50)
     
     # Stage 1: Quick Screen
     stage1 = Stage1Filter()
