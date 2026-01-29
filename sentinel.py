@@ -1,1025 +1,1072 @@
 #!/usr/bin/env python3
-# SENTINEL v30.0 SAFE - BAN Risk Mitigation Edition
-# Multi-Source with Rate Limiting, Caching, and Fallback Strategies
+# SENTINEL v27.0 PRIORITIZED - FINAL VERSION
+# Multi-dimensional scoring with VCP maturity and institutional intelligence
+# Philosophy: "Price and volume are the cause, news is the result"
+# Target: 10% annual return by catching institutional accumulation BEFORE news
+# 
+# Requirements: pandas, numpy, yfinance, requests, beautifulsoup4
+# Usage: python sentinel_v27_prioritized.py
 
 import os
 import time
 import logging
-import random
 from datetime import datetime, timedelta
 from pathlib import Path
 import json
-import concurrent.futures
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass
-import warnings
 
 import pandas as pd
 import numpy as np
 import yfinance as yf
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-import alpaca_trade_api as tradeapi
-from cachetools import TTLCache, cached
+from bs4 import BeautifulSoup
+import warnings
 
 warnings.filterwarnings('ignore')
 
 # ---------------------------
-# Enhanced Logging
+# Logging
 # ---------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(message)s',
-    handlers=[
-        logging.FileHandler('sentinel_safe.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger("SENTINEL_SAFE")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger("SENTINEL")
+logger.setLevel(logging.DEBUG)
 
-# ---------------------------
-# SAFETY CONFIGURATION
-# ---------------------------
-# Rate limiting to avoid BAN
-MAX_REQUESTS_PER_MINUTE = 180  # Conservative limit (Yahoo Finance unofficial limit)
-MIN_REQUEST_INTERVAL = 0.5  # Minimum seconds between requests
-JITTER_RANGE = (0.1, 0.5)  # Random jitter to avoid pattern detection
-
-# Retry configuration
-MAX_RETRIES = 3
-RETRY_DELAY = 5  # seconds
-
-# Cache configuration
-CACHE_TTL_HOURS = 6  # Cache data for 6 hours
-MAX_CACHE_SIZE = 1000
-
-# Data source priorities (adjust based on reliability)
-DATA_SOURCE_PRIORITY = ['CACHE', 'ALPACA', 'YFINANCE_FALLBACK']
+fh = logging.FileHandler("sentinel_debug.log")
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+logger.addHandler(fh)
 
 # ---------------------------
-# API Configuration
+# CONFIG
 # ---------------------------
-# Alpaca
-ALPACA_API_KEY = os.getenv("ALPACA_API_KEY", "")
-ALPACA_API_SECRET = os.getenv("ALPACA_API_SECRET", "")
-ALPACA_BASE_URL = "https://paper-api.alpaca.markets"
+ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN") or os.getenv("ACCESS_TOKEN")
+USER_ID = os.getenv("LINE_USER_ID") or os.getenv("USER_ID")
 
-# Multiple Yahoo Finance alternatives (User-Agent rotation)
-USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
-]
+INITIAL_CAPITAL_JPY = 350_000
+TRADING_RATIO = 0.75
 
-# Free alternative data sources
-ALTERNATIVE_SOURCES = {
-    'tiingo': os.getenv("TIINGO_API_KEY", ""),
-    'finnhub': os.getenv("FINNHUB_API_KEY", ""),
-    'polygon': os.getenv("POLYGON_API_KEY", ""),
-}
+ATR_STOP_MULT = 2.0
+MAX_POSITION_SIZE = 0.25
+MAX_SECTOR_CONCENTRATION = 0.40
 
-# Trading parameters (conservative)
-INITIAL_CAPITAL = 100000
-RISK_PER_TRADE = 0.01
-MIN_HISTORY_DAYS = 100
+# Minimum position size to ensure high-value stocks are tradeable
+MIN_POSITION_USD = 500  # Minimum $500 per position
 
-# Volume thresholds (adjusted for safety)
-MIN_DAILY_VOLUME = 500000  # 500k shares (more realistic)
-MIN_DOLLAR_VOLUME = 2000000  # $2M
+MAX_TIGHTNESS_BASE = 2.0
+MAX_NOTIFICATIONS = 10
+MIN_DAILY_VOLUME_USD = 10_000_000
 
-# Filtering thresholds
-STAGE1_MIN_PRICE = 5.0
-STAGE1_MAX_PRICE = 300.0
+COMMISSION_RATE = 0.002
+SLIPPAGE_RATE = 0.001
+FX_SPREAD_RATE = 0.0005
 
-# Performance
-MAX_WORKERS = 4  # Reduced for safety
-MAX_SYMBOLS_PER_RUN = 200  # Limit total symbols analyzed
+REWARD_MULTIPLIERS = {'aggressive': 2.5, 'stable': 2.0}
+AGGRESSIVE_SECTORS = ['Semi', 'AI', 'Soft', 'Sec', 'Auto', 'Crypto', 'Cloud', 'Ad', 'Service', 'Platform', 'Bet', 'Fintech']
 
-# Paths
-CACHE_DIR = Path("./cache_safe")
+ALLOW_FRACTIONAL = True
+
+CACHE_DIR = Path("./cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
-RESULTS_DIR = Path("./results_safe")
-RESULTS_DIR.mkdir(exist_ok=True)
-
-UNIVERSE_FILE = "rakuten_universe.txt"
-
 # ---------------------------
-# Safe Request Session with Rate Limiting
+# TICKER UNIVERSE
 # ---------------------------
-class SafeRequestSession:
-    """Safe HTTP session with rate limiting and retry logic"""
-    
-    _last_request_time = 0
-    _request_count = 0
-    _minute_start = time.time()
-    
-    @classmethod
-    def create_session(cls):
-        """Create a safe HTTP session"""
-        session = requests.Session()
-        
-        # Configure retry strategy
-        retry_strategy = Retry(
-            total=MAX_RETRIES,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET", "POST"]
-        )
-        
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        
-        # Rotate User-Agent
-        session.headers.update({
-            'User-Agent': random.choice(USER_AGENTS),
-            'Accept': 'application/json',
-            'Accept-Encoding': 'gzip, deflate'
-        })
-        
-        return session
-    
-    @classmethod
-    def rate_limit(cls):
-        """Enforce rate limiting"""
-        current_time = time.time()
-        
-        # Reset counter every minute
-        if current_time - cls._minute_start > 60:
-            cls._request_count = 0
-            cls._minute_start = current_time
-        
-        # Check rate limit
-        if cls._request_count >= MAX_REQUESTS_PER_MINUTE:
-            sleep_time = 60 - (current_time - cls._minute_start) + 1
-            logger.warning(f"Rate limit reached. Sleeping for {sleep_time:.1f} seconds")
-            time.sleep(sleep_time)
-            cls._request_count = 0
-            cls._minute_start = time.time()
-        
-        # Enforce minimum interval
-        time_since_last = current_time - cls._last_request_time
-        if time_since_last < MIN_REQUEST_INTERVAL:
-            sleep_time = MIN_REQUEST_INTERVAL - time_since_last
-            time.sleep(sleep_time)
-        
-        # Add random jitter
-        jitter = random.uniform(*JITTER_RANGE)
-        time.sleep(jitter)
-        
-        cls._last_request_time = time.time()
-        cls._request_count += 1
+TICKERS = {
+    'NVDA':'AI', 'AMD':'Semi', 'AVGO':'Semi', 'TSM':'Semi', 'ASML':'Semi', 'MU':'Semi',
+    'ARM':'Semi', 'INTC':'Semi', 'QCOM':'Semi', 'ON':'Semi', 'LRCX':'Semi', 'AMAT':'Semi',
+    'MSFT':'Cloud', 'GOOGL':'Ad', 'META':'Ad', 'PLTR':'AI', 'NOW':'Soft', 'CRM':'Soft',
+    'ADBE':'Soft', 'SNOW':'Cloud', 'DDOG':'Cloud', 'WDAY':'Soft', 'TEAM':'Soft',
+    'ANET':'Cloud', 'ZS':'Sec', 'MDB':'Cloud', 'SHOP':'Retail', 'PANW':'Sec',
+    'CRWD':'Sec', 'FTNT':'Sec', 'NET':'Sec', 'OKTA':'Sec', 'AAPL':'Device',
+    'TSLA':'Auto', 'AMZN':'Retail', 'NFLX':'Service', 'COST':'Retail', 'WMT':'Retail',
+    'TJX':'Retail', 'TGT':'Retail', 'NKE':'Cons', 'LULU':'Cons', 'SBUX':'Cons',
+    'PEP':'Cons', 'KO':'Cons', 'PG':'Cons', 'ELF':'Cons', 'CELH':'Cons', 'MELI':'Retail',
+    'V':'Fin', 'MA':'Fin', 'PYPL':'Fintech', 'SQ':'Fintech', 'JPM':'Bank', 'GS':'Bank',
+    'MS':'Bank', 'AXP':'Fin', 'BLK':'Fin', 'COIN':'Crypto', 'SOFI':'Fintech', 'NU':'Fintech',
+    'LLY':'Bio', 'UNH':'Health', 'ABBV':'Bio', 'ISRG':'Health', 'VRTX':'Bio', 'MRK':'Bio',
+    'PFE':'Bio', 'AMGN':'Bio', 'HCA':'Health', 'TDOC':'Health', 'GE':'Ind', 'CAT':'Ind',
+    'DE':'Ind', 'BA':'Ind', 'ETN':'Power', 'VRT':'Power', 'TT':'Ind', 'PH':'Ind',
+    'TDG':'Ind', 'XOM':'Energy', 'CVX':'Energy', 'MPC':'Energy', 'UBER':'Platform',
+    'BKNG':'Travel', 'ABNB':'Travel', 'MAR':'Travel', 'RCL':'Travel', 'DKNG':'Bet',
+    'RBLX':'Service', 'DASH':'Service', 'SMCI':'AI'
+}
+
+SECTOR_ETF = {
+    'Energy':'XLE', 'Semi':'SOXX', 'Bank':'XLF', 'Retail':'XRT', 'Soft':'IGV', 'AI':'QQQ',
+    'Fin':'VFH', 'Device':'QQQ', 'Cloud':'QQQ', 'Ad':'QQQ', 'Service':'QQQ', 'Sec':'HACK',
+    'Cons':'XLP', 'Bio':'IBB', 'Health':'XLV', 'Ind':'XLI', 'Auto':'CARZ', 'Crypto':'BTC-USD',
+    'Power':'XLI', 'Platform':'QQQ', 'Travel':'XLY', 'Bet':'BETZ', 'Fintech':'ARKF'
+}
 
 # ---------------------------
-# Smart Cache System
+# VCP Maturity Analyzer
 # ---------------------------
-class SmartCache:
-    """Intelligent caching system to minimize API calls"""
-    
-    def __init__(self):
-        self.price_cache = TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL_HOURS * 3600)
-        self.volume_cache = TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL_HOURS * 3600)
-        self.historical_cache = TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL_HOURS * 3600)
-        
-        # Disk cache for persistence
-        self.cache_dir = CACHE_DIR
-        self.cache_dir.mkdir(exist_ok=True)
-    
-    def get_cached_price(self, symbol: str) -> Optional[float]:
-        """Get cached price data"""
-        cache_key = f"price_{symbol}"
-        return self.price_cache.get(cache_key)
-    
-    def set_cached_price(self, symbol: str, price: float):
-        """Cache price data"""
-        cache_key = f"price_{symbol}"
-        self.price_cache[cache_key] = price
-        
-        # Also save to disk
-        cache_file = self.cache_dir / f"price_{symbol}.json"
-        cache_data = {
-            'symbol': symbol,
-            'price': price,
-            'timestamp': datetime.now().isoformat()
-        }
-        with open(cache_file, 'w') as f:
-            json.dump(cache_data, f)
-    
-    def get_cached_historical(self, symbol: str, days: int) -> Optional[pd.DataFrame]:
-        """Get cached historical data"""
-        cache_key = f"hist_{symbol}_{days}"
-        return self.historical_cache.get(cache_key)
-    
-    def set_cached_historical(self, symbol: str, days: int, data: pd.DataFrame):
-        """Cache historical data"""
-        cache_key = f"hist_{symbol}_{days}"
-        self.historical_cache[cache_key] = data
-        
-        # Save to disk (compressed)
-        cache_file = self.cache_dir / f"hist_{symbol}_{days}.parquet"
+class VCPAnalyzer:
+    @staticmethod
+    def calculate_vcp_maturity(df, result):
         try:
-            data.to_parquet(cache_file, compression='gzip')
-        except Exception as e:
-            logger.debug(f"Failed to save cache to parquet: {e}")
-    
-    def load_disk_cache(self):
-        """Load cache from disk on startup"""
-        logger.info("Loading disk cache...")
-        loaded = 0
-        
-        for cache_file in self.cache_dir.glob("price_*.json"):
-            try:
-                with open(cache_file, 'r') as f:
-                    data = json.load(f)
-                    symbol = data['symbol']
-                    price = data['price']
-                    timestamp = datetime.fromisoformat(data['timestamp'])
-                    
-                    # Check if cache is still valid
-                    if (datetime.now() - timestamp).total_seconds() < CACHE_TTL_HOURS * 3600:
-                        self.set_cached_price(symbol, price)
-                        loaded += 1
-            except Exception as e:
-                logger.debug(f"Failed to load cache {cache_file}: {e}")
-        
-        logger.info(f"Loaded {loaded} price records from disk cache")
-
-# ---------------------------
-# Safe Data Fetcher with Fallbacks
-# ---------------------------
-class SafeDataFetcher:
-    """Data fetcher with multiple fallbacks and BAN protection"""
-    
-    def __init__(self):
-        self.cache = SmartCache()
-        self.session = SafeRequestSession.create_session()
-        self.alpaca_client = None
-        self.request_stats = {
-            'total': 0,
-            'successful': 0,
-            'failed': 0,
-            'cached': 0
-        }
-        
-        # Initialize Alpaca if available
-        if ALPACA_API_KEY and ALPACA_API_SECRET:
-            try:
-                self.alpaca_client = tradeapi.REST(
-                    ALPACA_API_KEY,
-                    ALPACA_API_SECRET,
-                    base_url=ALPACA_BASE_URL,
-                    api_version='v2'
-                )
-                logger.info("Alpaca API connected")
-            except Exception as e:
-                logger.warning(f"Alpaca connection failed: {e}")
-        
-        # Load existing cache
-        self.cache.load_disk_cache()
-    
-    def get_stock_data_safe(self, symbol: str, days: int = 100) -> Optional[pd.DataFrame]:
-        """Safely get stock data with multiple fallbacks"""
-        self.request_stats['total'] += 1
-        
-        # 1. Check cache first
-        cached_data = self.cache.get_cached_historical(symbol, days)
-        if cached_data is not None:
-            self.request_stats['cached'] += 1
-            return cached_data
-        
-        # 2. Try Alpaca (most reliable, but limited volume)
-        if self.alpaca_client:
-            data = self._try_alpaca(symbol, days)
-            if data is not None:
-                self.cache.set_cached_historical(symbol, days, data)
-                return data
-        
-        # 3. Try Yahoo Finance with careful rate limiting
-        SafeRequestSession.rate_limit()
-        data = self._try_yfinance_safe(symbol, days)
-        
-        if data is not None:
-            self.cache.set_cached_historical(symbol, days, data)
-            self.request_stats['successful'] += 1
-            return data
-        
-        # 4. Final fallback to alternative sources
-        data = self._try_alternative_sources(symbol, days)
-        if data is not None:
-            self.cache.set_cached_historical(symbol, days, data)
-            return data
-        
-        self.request_stats['failed'] += 1
-        return None
-    
-    def _try_alpaca(self, symbol: str, days: int) -> Optional[pd.DataFrame]:
-        """Try Alpaca API"""
-        try:
-            end = datetime.now()
-            start = end - timedelta(days=days)
-            
-            bars = self.alpaca_client.get_bars(
-                symbol,
-                '1Day',
-                start=start.isoformat(),
-                end=end.isoformat(),
-                limit=min(days, 1000),
-                adjustment='all'
-            ).df
-            
-            if bars.empty:
-                return None
-            
-            # Standardize columns
-            bars.columns = [col.lower() for col in bars.columns]
-            
-            if 'close' in bars.columns and 'volume' in bars.columns:
-                bars['dollar_volume'] = bars['close'] * bars['volume']
-            
-            return bars
-            
-        except Exception as e:
-            logger.debug(f"Alpaca failed for {symbol}: {e}")
-            return None
-    
-    def _try_yfinance_safe(self, symbol: str, days: int) -> Optional[pd.DataFrame]:
-        """Safely try Yahoo Finance with error handling"""
-        for attempt in range(MAX_RETRIES):
-            try:
-                # Add delay between retries
-                if attempt > 0:
-                    time.sleep(RETRY_DELAY * attempt)
-                
-                ticker = yf.Ticker(symbol)
-                
-                # Limit data request size
-                end_date = datetime.now()
-                start_date = end_date - timedelta(days=min(days, 365))  # Max 1 year
-                
-                data = ticker.history(
-                    start=start_date,
-                    end=end_date,
-                    interval='1d',
-                    timeout=10
-                )
-                
-                if data.empty:
-                    return None
-                
-                # Standardize columns
-                data.columns = [col.lower() for col in data.columns]
-                
-                if 'close' in data.columns and 'volume' in data.columns:
-                    data['dollar_volume'] = data['close'] * data['volume']
-                
-                return data
-                
-            except Exception as e:
-                logger.debug(f"YFinance attempt {attempt+1} failed for {symbol}: {e}")
-                
-                # Check for specific error conditions
-                error_str = str(e).lower()
-                if 'forbidden' in error_str or '429' in error_str:
-                    logger.warning(f"Possible rate limiting detected for {symbol}")
-                    time.sleep(30)  # Longer wait for rate limit
-                
-                if attempt == MAX_RETRIES - 1:
-                    logger.warning(f"All YFinance attempts failed for {symbol}")
-        
-        return None
-    
-    def _try_alternative_sources(self, symbol: str, days: int) -> Optional[pd.DataFrame]:
-        """Try alternative free data sources"""
-        # Tiingo (free tier available)
-        if ALTERNATIVE_SOURCES.get('tiingo'):
-            try:
-                url = f"https://api.tiingo.com/tiingo/daily/{symbol}/prices"
-                headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': f"Token {ALTERNATIVE_SOURCES['tiingo']}"
-                }
-                
-                end_date = datetime.now().strftime('%Y-%m-%d')
-                start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
-                
-                params = {
-                    'startDate': start_date,
-                    'endDate': end_date,
-                    'format': 'json',
-                    'resampleFreq': 'daily'
-                }
-                
-                SafeRequestSession.rate_limit()
-                response = self.session.get(url, headers=headers, params=params, timeout=15)
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if data:
-                        df = pd.DataFrame(data)
-                        df['date'] = pd.to_datetime(df['date'])
-                        df.set_index('date', inplace=True)
-                        
-                        # Rename columns
-                        column_map = {
-                            'open': 'open',
-                            'high': 'high',
-                            'low': 'low',
-                            'close': 'close',
-                            'volume': 'volume'
-                        }
-                        
-                        df.rename(columns=column_map, inplace=True)
-                        df['dollar_volume'] = df['close'] * df['volume']
-                        
-                        return df
-                        
-            except Exception as e:
-                logger.debug(f"Tiingo failed for {symbol}: {e}")
-        
-        return None
-    
-    def get_current_price_safe(self, symbol: str) -> Optional[float]:
-        """Safely get current price with caching"""
-        # Check cache first
-        cached_price = self.cache.get_cached_price(symbol)
-        if cached_price is not None:
-            return cached_price
-        
-        # Try to get price from available sources
-        price = None
-        
-        # Try Alpaca first
-        if self.alpaca_client:
-            try:
-                quote = self.alpaca_client.get_last_trade(symbol)
-                price = quote.price
-            except Exception:
-                pass
-        
-        # Fallback to Yahoo Finance
-        if price is None:
-            SafeRequestSession.rate_limit()
-            try:
-                ticker = yf.Ticker(symbol)
-                hist = ticker.history(period='1d', interval='1m', timeout=5)
-                if not hist.empty and 'close' in hist.columns:
-                    price = float(hist['close'].iloc[-1])
-            except Exception as e:
-                logger.debug(f"Price fetch failed for {symbol}: {e}")
-        
-        # Cache the result
-        if price is not None:
-            self.cache.set_cached_price(symbol, price)
-        
-        return price
-    
-    def get_volume_metrics_safe(self, symbol: str) -> Dict:
-        """Safely get volume metrics"""
-        data = self.get_stock_data_safe(symbol, days=60)
-        
-        metrics = {
-            'symbol': symbol,
-            'avg_volume': 0,
-            'avg_dollar_volume': 0,
-            'is_sufficient': False,
-            'data_source': 'none'
-        }
-        
-        if data is not None and not data.empty:
-            if 'volume' in data.columns:
-                recent_data = data.tail(20)
-                metrics['avg_volume'] = int(recent_data['volume'].mean())
-                metrics['data_source'] = 'cached' if self.request_stats['cached'] > 0 else 'api'
-            
-            if 'dollar_volume' in data.columns:
-                metrics['avg_dollar_volume'] = float(data['dollar_volume'].tail(20).mean())
-            
-            # Check sufficiency
-            metrics['is_sufficient'] = (
-                metrics['avg_volume'] >= MIN_DAILY_VOLUME or
-                metrics['avg_dollar_volume'] >= MIN_DOLLAR_VOLUME
-            )
-        
-        return metrics
-    
-    def print_stats(self):
-        """Print request statistics"""
-        logger.info("\n" + "="*60)
-        logger.info("REQUEST STATISTICS")
-        logger.info("="*60)
-        logger.info(f"Total requests: {self.request_stats['total']}")
-        logger.info(f"Successful: {self.request_stats['successful']}")
-        logger.info(f"Failed: {self.request_stats['failed']}")
-        logger.info(f"Cached hits: {self.request_stats['cached']}")
-        logger.info(f"Cache hit rate: {(self.request_stats['cached']/max(self.request_stats['total'],1)*100):.1f}%")
-        logger.info("="*60)
-
-# ---------------------------
-# Conservative Filter (Stage 1)
-# ---------------------------
-class ConservativeFilter:
-    """Conservative filtering to minimize API calls"""
-    
-    def __init__(self, data_fetcher: SafeDataFetcher):
-        self.data_fetcher = data_fetcher
-        self.pre_filter_cache = {}
-    
-    def pre_filter_symbol(self, symbol: str) -> bool:
-        """Quick pre-filter before detailed analysis"""
-        # Cache pre-filter results
-        if symbol in self.pre_filter_cache:
-            return self.pre_filter_cache[symbol]
-        
-        result = self._perform_pre_filter(symbol)
-        self.pre_filter_cache[symbol] = result
-        
-        return result
-    
-    def _perform_pre_filter(self, symbol: str) -> bool:
-        """Perform quick checks"""
-        try:
-            # Get current price (cached)
-            price = self.data_fetcher.get_current_price_safe(symbol)
-            if price is None:
-                return False
-            
-            # Price range check
-            if price < STAGE1_MIN_PRICE or price > STAGE1_MAX_PRICE:
-                return False
-            
-            # Quick volume check (use cached data if available)
-            volume_metrics = self.data_fetcher.get_volume_metrics_safe(symbol)
-            if not volume_metrics['is_sufficient']:
-                return False
-            
-            return True
-            
-        except Exception as e:
-            logger.debug(f"Pre-filter failed for {symbol}: {e}")
-            return False
-    
-    def detailed_filter(self, symbol: str) -> Optional[Dict]:
-        """Detailed filtering for pre-filtered symbols"""
-        try:
-            # Get historical data
-            data = self.data_fetcher.get_stock_data_safe(symbol, days=100)
-            
-            if data is None or len(data) < 50:
-                return None
-            
-            # Extract data
-            if 'close' not in data.columns:
-                return None
-            
-            close = data['close'].astype(float)
-            current_price = float(close.iloc[-1])
-            
-            # Trend check (conservative)
-            if len(close) >= 50:
-                ma50 = close.rolling(50, min_periods=25).mean().iloc[-1]
-                if current_price < ma50 * 0.93:  # Allow 7% below MA50
-                    return None
-            
-            # Volume confirmation
-            if 'volume' in data.columns:
-                recent_volume = data['volume'].tail(10).mean()
-                avg_volume = data['volume'].tail(50).mean()
-                
-                if recent_volume < avg_volume * 0.7:  # Volume drying up
-                    return None
-            
-            return {
-                'symbol': symbol,
-                'price': current_price,
-                'data': data,
-                'stage': 'STAGE1_PASS'
-            }
-            
-        except Exception as e:
-            logger.debug(f"Detailed filter failed for {symbol}: {e}")
-            return None
-    
-    def filter_batch(self, symbols: List[str]) -> List[Dict]:
-        """Filter batch of symbols with conservative approach"""
-        results = []
-        
-        logger.info(f"Stage 1: Pre-filtering {len(symbols)} symbols...")
-        
-        # First pass: Quick pre-filter
-        pre_filtered = []
-        for i, symbol in enumerate(symbols, 1):
-            if self.pre_filter_symbol(symbol):
-                pre_filtered.append(symbol)
-            
-            # Progress and rate limiting
-            if i % 20 == 0:
-                logger.info(f"Pre-filter progress: {i}/{len(symbols)}")
-                time.sleep(1)
-        
-        logger.info(f"Pre-filter passed: {len(pre_filtered)} symbols")
-        
-        # Second pass: Detailed filter on pre-filtered symbols
-        logger.info("Stage 1: Detailed filtering...")
-        
-        for i, symbol in enumerate(pre_filtered, 1):
-            result = self.detailed_filter(symbol)
-            if result:
-                results.append(result)
-            
-            # Conservative rate limiting
-            if i % 10 == 0:
-                logger.info(f"Detailed filter progress: {i}/{len(pre_filtered)}")
-                time.sleep(2)
-            else:
-                time.sleep(0.5)
-        
-        logger.info(f"Stage 1 complete: {len(results)} / {len(symbols)} passed")
-        return results
-
-# ---------------------------
-# Simplified VCP Analyzer (Stage 2)
-# ---------------------------
-class SimpleVCPAnalyzer:
-    """Simplified VCP analyzer for safety"""
-    
-    def __init__(self, data_fetcher: SafeDataFetcher):
-        self.data_fetcher = data_fetcher
-    
-    def analyze(self, stage1_result: Dict) -> Optional[Dict]:
-        """Simple VCP analysis"""
-        try:
-            symbol = stage1_result['symbol']
-            data = stage1_result['data']
-            
-            if data is None or len(data) < 60:
-                return None
-            
-            # Extract data
-            required_cols = ['high', 'low', 'close']
-            for col in required_cols:
-                if col not in data.columns:
-                    return None
-            
-            high = data['high'].astype(float)
-            low = data['low'].astype(float)
-            close = data['close'].astype(float)
-            
-            # Simple ATR calculation
-            tr = high - low
-            atr14 = tr.rolling(14, min_periods=7).mean().iloc[-1]
-            
-            if pd.isna(atr14) or atr14 <= 0:
-                return None
-            
-            # Tightness
-            recent_high = high.iloc[-5:].max()
-            recent_low = low.iloc[-5:].min()
-            tightness = (recent_high - recent_low) / atr14
-            
-            if tightness > 3.0:  # More lenient threshold
-                return None
-            
-            # Simple VCP score
             maturity = 0
             signals = []
             
-            if tightness < 2.0:
+            # 1. Volatility Contraction (40 pts)
+            tightness = result.get('tightness', 999)
+            if tightness < 1.0:
                 maturity += 40
+                signals.append("極度収縮")
+            elif tightness < 1.5:
+                maturity += 30
+                signals.append("強収縮")
+            elif tightness < 2.0:
+                maturity += 20
                 signals.append("収縮中")
             elif tightness < 2.5:
-                maturity += 30
+                maturity += 10
                 signals.append("軽度収縮")
             
-            # Check for higher lows
-            if len(close) >= 20:
-                recent_low_avg = low.iloc[-5:].mean()
-                prev_low_avg = low.iloc[-15:-5].mean()
-                if recent_low_avg > prev_low_avg:
-                    maturity += 20
-                    signals.append("底上げ")
-            
-            # Volume check
-            if 'volume' in data.columns:
-                volume = data['volume'].astype(float)
-                recent_vol = volume.iloc[-1]
-                avg_vol = volume.tail(20).mean()
+            # 2. Higher Lows (30 pts)
+            if 'Close' in df.columns and len(df) >= 20:
+                close = df['Close'].astype(float)
+                recent_lows = close.iloc[-20:].rolling(5).min()
                 
-                if recent_vol < avg_vol * 0.8:
-                    maturity += 20
-                    signals.append("出来高縮小")
+                if len(recent_lows) >= 10:
+                    if recent_lows.iloc[-1] > recent_lows.iloc[-10] > recent_lows.iloc[-20]:
+                        maturity += 30
+                        signals.append("切上完了")
+                    elif recent_lows.iloc[-1] > recent_lows.iloc[-10]:
+                        maturity += 20
+                        signals.append("切上中")
+                    elif recent_lows.iloc[-1] >= recent_lows.iloc[-5]:
+                        maturity += 10
+                        signals.append("底固め")
             
-            if maturity < 50:  # Lower threshold for safety
-                return None
+            # 3. Volume Drying (20 pts)
+            reasons = result.get('reasons', '')
+            if 'VolDry' in reasons:
+                maturity += 20
+                signals.append("出来高縮小")
             
-            # Entry and stop
-            pivot = recent_high * 1.01
-            stop = pivot - (atr14 * 2.5)  # Wider stop for safety
+            # 4. MA Structure (10 pts)
+            if 'Trend+' in reasons or 'Trend++' in reasons:
+                maturity += 10
+                signals.append("MA整列")
+            elif 'MA50+' in reasons or 'MA20+' in reasons:
+                maturity += 5
+                signals.append("MA形成中")
+            
+            # Stage determination
+            if maturity >= 85:
+                stage = "🔥爆発直前"
+                stage_en = "BREAKOUT_READY"
+            elif maturity >= 70:
+                stage = "⚡初動圏"
+                stage_en = "EARLY_STAGE"
+            elif maturity >= 50:
+                stage = "👁形成中"
+                stage_en = "FORMING"
+            elif maturity >= 30:
+                stage = "⏳準備段階"
+                stage_en = "PREPARING"
+            else:
+                stage = "❌未成熟"
+                stage_en = "IMMATURE"
             
             return {
-                'symbol': symbol,
-                'tightness': float(tightness),
-                'vcp_maturity': maturity,
-                'vcp_signals': signals,
-                'price': float(close.iloc[-1]),
-                'pivot': pivot,
-                'stop': stop,
-                'stage': 'STAGE2_PASS'
+                'maturity': maturity,
+                'stage': stage,
+                'stage_en': stage_en,
+                'signals': signals
             }
             
         except Exception as e:
-            logger.debug(f"VCP analysis failed for {stage1_result['symbol']}: {e}")
-            return None
+            logger.debug("VCP maturity calculation failed: %s", e)
+            return {
+                'maturity': 0,
+                'stage': '❌計算不可',
+                'stage_en': 'UNKNOWN',
+                'signals': []
+            }
+
 
 # ---------------------------
-# Portfolio Optimizer (Stage 3)
+# Comprehensive Signal Quality Scoring
 # ---------------------------
-class PortfolioOptimizer:
-    """Portfolio optimization with risk management"""
-    
+class SignalQuality:
     @staticmethod
-    def calculate_position_size(price: float, stop: float, portfolio_value: float) -> Tuple[int, float]:
-        """Calculate position size with Kelly criterion"""
-        try:
-            risk_per_share = price - stop
-            if risk_per_share <= 0:
-                return 0, 0.0
-            
-            # Conservative Kelly (half-Kelly)
-            kelly_fraction = 0.01  # Fixed 1% risk
-            
-            max_risk_amount = portfolio_value * kelly_fraction
-            shares_by_risk = max_risk_amount / risk_per_share
-            
-            # Convert to integer shares
-            shares = int(shares_by_risk)
-            
-            if shares < 1:
-                return 0, 0.0
-            
-            position_value = shares * price
-            position_percentage = position_value / portfolio_value
-            
-            return shares, position_percentage
-            
-        except Exception:
-            return 0, 0.0
-    
-    @staticmethod
-    def diversify_picks(picks: List[Dict], max_positions: int = 8) -> List[Dict]:
-        """Diversify picks across different sectors/characteristics"""
-        if len(picks) <= max_positions:
-            return picks
+    def calculate_comprehensive_score(result, vcp_analysis, inst_analysis):
+        # Technical Score (0-40) - Based on VCP maturity
+        tech_score = min(vcp_analysis['maturity'] * 0.4, 40)
         
-        # Simple diversification: pick top from different price ranges
-        picks_by_price = sorted(picks, key=lambda x: x['price'])
+        # Risk/Reward Score (0-30)
+        ev = result['bt'].get('net_expectancy', 0)
+        wr = result['bt'].get('winrate', 0) / 100.0
         
-        selected = []
-        price_ranges = [
-            (0, 50),    # Low price
-            (50, 150),  # Mid price
-            (150, 300)  # High price
-        ]
+        rr_score = 0
+        if ev > 0.6 and wr > 0.5:
+            rr_score = 30
+        elif ev > 0.4 and wr > 0.45:
+            rr_score = 25
+        elif ev > 0.3 and wr > 0.42:
+            rr_score = 20
+        elif ev > 0.2 and wr > 0.40:
+            rr_score = 15
+        elif ev > 0.1 and wr > 0.35:
+            rr_score = 10
+        elif ev > 0 and wr > 0.3:
+            rr_score = 5
         
-        for price_min, price_max in price_ranges:
-            in_range = [p for p in picks_by_price if price_min <= p['price'] < price_max]
-            if in_range:
-                selected.append(in_range[0])
-                if len(selected) >= max_positions:
-                    break
+        # Institutional Score (0-30)
+        risk_score = inst_analysis.get('risk_score', 0)
         
-        # Fill remaining slots with highest VCP maturity
-        remaining_slots = max_positions - len(selected)
-        if remaining_slots > 0:
-            remaining_picks = [p for p in picks if p not in selected]
-            remaining_picks.sort(key=lambda x: x['vcp_maturity'], reverse=True)
-            selected.extend(remaining_picks[:remaining_slots])
-        
-        return selected
-
-# ---------------------------
-# Main Safe Pipeline
-# ---------------------------
-def load_universe_safe(filepath: str) -> List[str]:
-    """Safely load universe with size limits"""
-    try:
-        with open(filepath, 'r') as f:
-            symbols = [line.strip().upper() for line in f if line.strip()]
-        
-        # Limit number of symbols for safety
-        if len(symbols) > MAX_SYMBOLS_PER_RUN:
-            logger.info(f"Limiting universe from {len(symbols)} to {MAX_SYMBOLS_PER_RUN} symbols")
-            symbols = symbols[:MAX_SYMBOLS_PER_RUN]
-        
-        logger.info(f"Loaded {len(symbols)} symbols from {filepath}")
-        
-        # Default symbols if file is empty
-        if not symbols:
-            symbols = ['SPY', 'QQQ', 'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA']
-            logger.info(f"Using default {len(symbols)} symbols")
-        
-        return symbols
-        
-    except FileNotFoundError:
-        logger.warning(f"Universe file {filepath} not found")
-        return ['SPY', 'QQQ', 'AAPL', 'MSFT']
-
-def run_safe_pipeline():
-    """Main safe pipeline with BAN protection"""
-    
-    start_time = time.time()
-    
-    logger.info("="*70)
-    logger.info("SENTINEL v30.0 SAFE - BAN Risk Mitigation Edition")
-    logger.info("="*70)
-    logger.info(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.info(f"Max symbols per run: {MAX_SYMBOLS_PER_RUN}")
-    logger.info(f"Rate limit: {MAX_REQUESTS_PER_MINUTE} requests/minute")
-    logger.info("="*70)
-    
-    # Initialize safe data fetcher
-    data_fetcher = SafeDataFetcher()
-    
-    # Load limited universe
-    universe = load_universe_safe(UNIVERSE_FILE)
-    
-    # Stage 1: Conservative filtering
-    logger.info("\n" + "="*60)
-    logger.info("STAGE 1: Conservative Filtering")
-    logger.info("="*60)
-    
-    stage1_filter = ConservativeFilter(data_fetcher)
-    stage1_results = stage1_filter.filter_batch(universe)
-    
-    if not stage1_results:
-        logger.error("No stocks passed Stage 1")
-        data_fetcher.print_stats()
-        return None
-    
-    # Stage 2: Simplified VCP analysis
-    logger.info("\n" + "="*60)
-    logger.info("STAGE 2: Simplified VCP Analysis")
-    logger.info("="*60)
-    
-    vcp_analyzer = SimpleVCPAnalyzer(data_fetcher)
-    stage2_results = []
-    
-    for i, candidate in enumerate(stage1_results, 1):
-        result = vcp_analyzer.analyze(candidate)
-        if result:
-            stage2_results.append(result)
-        
-        # Rate limiting
-        if i % 5 == 0:
-            logger.info(f"VCP analysis progress: {i}/{len(stage1_results)}")
-            time.sleep(1)
-    
-    if not stage2_results:
-        logger.warning("No stocks passed VCP analysis")
-        data_fetcher.print_stats()
-        return None
-    
-    # Stage 3: Portfolio optimization
-    logger.info("\n" + "="*60)
-    logger.info("STAGE 3: Portfolio Optimization")
-    logger.info("="*60)
-    
-    final_picks = PortfolioOptimizer.diversify_picks(stage2_results, max_positions=6)
-    
-    # Calculate position sizes
-    for pick in final_picks:
-        shares, position_pct = PortfolioOptimizer.calculate_position_size(
-            pick['price'], pick['stop'], INITIAL_CAPITAL
-        )
-        pick['shares'] = shares
-        pick['position_pct'] = position_pct * 100
-        pick['position_value'] = shares * pick['price']
-    
-    # Generate report
-    report = generate_safe_report(final_picks, stage1_results, stage2_results)
-    
-    # Output
-    print("\n" + report)
-    logger.info("\n" + report)
-    
-    # Print statistics
-    data_fetcher.print_stats()
-    
-    # Timing
-    elapsed = time.time() - start_time
-    logger.info(f"\nTotal execution time: {elapsed:.1f} seconds ({elapsed/60:.1f} minutes)")
-    
-    # Save results
-    save_safe_results(final_picks)
-    
-    return final_picks
-
-def generate_safe_report(final_picks: List[Dict], 
-                        stage1_results: List[Dict],
-                        stage2_results: List[Dict]) -> str:
-    """Generate safe report"""
-    
-    lines = []
-    lines.append("="*70)
-    lines.append("SENTINEL v30.0 SAFE - BAN Risk Mitigation Report")
-    lines.append("="*70)
-    lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    lines.append("")
-    
-    lines.append("【SAFETY METRICS】")
-    lines.append(f"• Maximum requests/minute: {MAX_REQUESTS_PER_MINUTE}")
-    lines.append(f"• Minimum request interval: {MIN_REQUEST_INTERVAL}s")
-    lines.append(f"• Cache TTL: {CACHE_TTL_HOURS} hours")
-    lines.append("")
-    
-    lines.append("【FILTERING RESULTS】")
-    lines.append(f"Stage 1 (Conservative): {len(stage1_results)} passed")
-    lines.append(f"Stage 2 (VCP Analysis): {len(stage2_results)} passed")
-    lines.append(f"Final (Portfolio): {len(final_picks)} selected")
-    lines.append("")
-    
-    if not final_picks:
-        lines.append("No suitable stocks found with current safety settings.")
-        return '\n'.join(lines)
-    
-    lines.append("【RECOMMENDED PORTFOLIO】")
-    lines.append("")
-    
-    total_investment = 0
-    for i, pick in enumerate(final_picks, 1):
-        symbol = pick['symbol']
-        price = pick['price']
-        shares = pick['shares']
-        value = pick['position_value']
-        maturity = pick['vcp_maturity']
-        signals = ', '.join(pick['vcp_signals'][:2])
-        
-        total_investment += value
-        
-        lines.append(f"{i}. {symbol}")
-        lines.append(f"   Price: ${price:.2f} | Shares: {shares:,} | Value: ${value:,.0f}")
-        lines.append(f"   VCP: {maturity}% | Signals: {signals}")
-        lines.append(f"   Entry: ${pick['pivot']:.2f} | Stop: ${pick['stop']:.2f}")
-        lines.append("")
-    
-    lines.append(f"Total Portfolio Value: ${total_investment:,.0f}")
-    lines.append(f"Capital Utilization: {(total_investment/INITIAL_CAPITAL*100):.1f}%")
-    lines.append("")
-    
-    lines.append("【RISK MANAGEMENT】")
-    lines.append("✓ Conservative position sizing (half-Kelly)")
-    lines.append("✓ Portfolio diversification")
-    lines.append("✓ Wide stop losses (2.5x ATR)")
-    lines.append("✓ Rate limiting and caching")
-    lines.append("")
-    
-    lines.append("【DISCLAIMER】")
-    lines.append("This analysis uses conservative settings to minimize")
-    lines.append("API BAN risk. Results may be fewer but more reliable.")
-    lines.append("="*70)
-    
-    return '\n'.join(lines)
-
-def save_safe_results(final_picks: List[Dict]):
-    """Save results safely"""
-    try:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"safe_results_{timestamp}.json"
-        
-        # Make serializable
-        serializable = []
-        for pick in final_picks:
-            pick_copy = pick.copy()
-            if 'data' in pick_copy:
-                del pick_copy['data']
-            serializable.append(pick_copy)
-        
-        with open(RESULTS_DIR / filename, 'w') as f:
-            json.dump(serializable, f, indent=2, default=str)
-        
-        logger.info(f"Results saved to: {RESULTS_DIR}/{filename}")
-        
-    except Exception as e:
-        logger.error(f"Failed to save results: {e}")
-
-# ---------------------------
-# Main Entry Point
-# ---------------------------
-if __name__ == "__main__":
-    try:
-        logger.info("Starting SENTINEL v30.0 SAFE pipeline...")
-        results = run_safe_pipeline()
-        
-        if results:
-            logger.info(f"Pipeline completed. Found {len(results)} suitable stocks.")
+        if risk_score < 0:
+            inst_score = 30
+        elif risk_score < 20:
+            inst_score = 25
+        elif risk_score < 40:
+            inst_score = 20
+        elif risk_score < 60:
+            inst_score = 15
         else:
-            logger.info("Pipeline completed. No stocks met criteria.")
+            inst_score = max(0, 15 - (risk_score - 60) // 10)
+        
+        total = tech_score + rr_score + inst_score
+        
+        # Tier Classification
+        if total >= 75:
+            tier = 'CORE'
+            tier_emoji = '🔥'
+            priority = 1
+        elif total >= 60:
+            tier = 'SECONDARY'
+            tier_emoji = '⚡'
+            priority = 2
+        elif total >= 45:
+            tier = 'WATCH'
+            tier_emoji = '👁'
+            priority = 3
+        else:
+            tier = 'AVOID'
+            tier_emoji = '❌'
+            priority = 4
+        
+        return {
+            'total_score': int(total),
+            'tech_score': int(tech_score),
+            'rr_score': int(rr_score),
+            'inst_score': int(inst_score),
+            'tier': tier,
+            'tier_emoji': tier_emoji,
+            'priority': priority
+        }
+    
+    @staticmethod
+    def generate_why_now(result, vcp_analysis, inst_analysis, quality):
+        reasons = []
+        
+        # VCP Stage
+        if vcp_analysis['maturity'] >= 85:
+            reasons.append("VCP完成・爆発待ち")
+        elif vcp_analysis['maturity'] >= 70:
+            reasons.append("初動開始可能性")
+        elif vcp_analysis['maturity'] >= 50:
+            reasons.append("形成進行中")
+        
+        # Institutional Intelligence
+        overall = inst_analysis.get('overall', 'NEUTRAL')
+        if overall == '✅LOW_RISK':
+            reasons.append("機関買い圧力検知")
+        elif overall == '🚨HIGH_RISK':
+            reasons.append("⚠️機関売り圧力")
+        
+        # RR Quality
+        ev = result['bt'].get('net_expectancy', 0)
+        if ev > 0.6:
+            reasons.append("高RR（非対称優位）")
+        elif ev > 0.4:
+            reasons.append("良好RR")
+        
+        # Price Action
+        current = result.get('price', 0)
+        entry = result.get('pivot', 0)
+        if entry > 0 and current < entry * 0.99:
+            discount = ((entry - current) / entry) * 100
+            reasons.append(f"押目-{discount:.1f}%")
+        
+        # Options Signal
+        signals = inst_analysis.get('signals', {})
+        options_sig = signals.get('options', {}).get('signal', '')
+        if options_sig == '🐂BULLISH':
+            reasons.append("Opt強気")
+        elif options_sig == '🐻BEARISH':
+            reasons.append("Opt弱気")
+        
+        return " | ".join(reasons) if reasons else "基準達成"
+
+
+# ---------------------------
+# Institutional Modules (simplified for length)
+# ---------------------------
+
+class InsiderTracker:
+    @staticmethod
+    def get_insider_activity(ticker, days=30):
+        try:
+            cache_file = CACHE_DIR / f"insider_{ticker}_{datetime.now().strftime('%Y%m%d')}.json"
+            if cache_file.exists():
+                with open(cache_file, 'r') as f:
+                    return json.load(f)
             
-    except KeyboardInterrupt:
-        logger.info("\nPipeline interrupted by user.")
+            stock = yf.Ticker(ticker)
+            insider_trades = stock.insider_transactions
+            
+            if insider_trades is None or insider_trades.empty:
+                return {'buy_shares': 0, 'sell_shares': 0, 'ratio': 0, 'signal': 'NEUTRAL'}
+            
+            cutoff_date = datetime.now() - timedelta(days=days)
+            recent = insider_trades[insider_trades.index >= cutoff_date]
+            
+            if recent.empty:
+                return {'buy_shares': 0, 'sell_shares': 0, 'ratio': 0, 'signal': 'NEUTRAL'}
+            
+            buy_shares = recent[recent['Shares'] > 0]['Shares'].sum()
+            sell_shares = abs(recent[recent['Shares'] < 0]['Shares'].sum())
+            ratio = sell_shares / max(buy_shares, 1)
+            
+            if ratio > 5:
+                signal = '🚨SELL'
+            elif ratio > 2:
+                signal = '⚠️CAUTION'
+            elif ratio < 0.5:
+                signal = '✅BUY'
+            else:
+                signal = 'NEUTRAL'
+            
+            result = {'buy_shares': int(buy_shares), 'sell_shares': int(sell_shares), 'ratio': float(ratio), 'signal': signal}
+            with open(cache_file, 'w') as f:
+                json.dump(result, f)
+            return result
+        except Exception as e:
+            logger.debug("Insider tracking failed for %s: %s", ticker, e)
+            return {'buy_shares': 0, 'sell_shares': 0, 'ratio': 0, 'signal': 'NEUTRAL'}
+
+class ShortInterestTracker:
+    @staticmethod
+    def get_short_interest(ticker):
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            short_percent = info.get('shortPercentOfFloat', 0)
+            if short_percent > 20:
+                signal = '🚨HIGH'
+            elif short_percent > 10:
+                signal = '⚠️ELEVATED'
+            else:
+                signal = 'NORMAL'
+            return {'short_percent': float(short_percent), 'signal': signal}
+        except Exception:
+            return {'short_percent': 0, 'signal': 'UNKNOWN'}
+
+class SentimentAnalyzer:
+    @staticmethod
+    def get_reddit_sentiment(ticker):
+        return {'mentions': 0, 'hype_score': 50, 'signal': 'UNKNOWN'}
+
+class InstitutionalOwnership:
+    @staticmethod
+    def get_institutional_holdings(ticker):
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            inst_percent = info.get('heldPercentInstitutions', 0) * 100
+            if inst_percent > 80:
+                signal = '✅STRONG'
+            elif inst_percent < 40:
+                signal = '⚠️WEAK'
+            else:
+                signal = 'NORMAL'
+            return {'inst_percent': float(inst_percent), 'signal': signal}
+        except Exception:
+            return {'inst_percent': 0, 'signal': 'UNKNOWN'}
+
+class OptionFlowAnalyzer:
+    @staticmethod
+    def get_put_call_ratio(ticker):
+        try:
+            stock = yf.Ticker(ticker)
+            exp_dates = stock.options
+            if not exp_dates:
+                return {'put_call_ratio': 1.0, 'signal': 'UNKNOWN'}
+            opt = stock.option_chain(exp_dates[0])
+            calls = opt.calls
+            puts = opt.puts
+            if calls.empty or puts.empty:
+                return {'put_call_ratio': 1.0, 'signal': 'UNKNOWN'}
+            call_volume = calls['volume'].sum()
+            put_volume = puts['volume'].sum()
+            ratio = put_volume / max(call_volume, 1)
+            if ratio > 1.5:
+                signal = '🐻BEARISH'
+            elif ratio < 0.7:
+                signal = '🐂BULLISH'
+            else:
+                signal = 'NEUTRAL'
+            return {'put_call_ratio': float(ratio), 'signal': signal}
+        except Exception:
+            return {'put_call_ratio': 1.0, 'signal': 'UNKNOWN'}
+
+class MacroAnalyzer:
+    @staticmethod
+    def get_macro_environment():
+        try:
+            cache_file = CACHE_DIR / f"macro_{datetime.now().strftime('%Y%m%d')}.json"
+            if cache_file.exists():
+                with open(cache_file, 'r') as f:
+                    return json.load(f)
+            tnx = yf.download("^TNX", period="5d", progress=False)
+            treasury_10y = float(tnx['Close'].iloc[-1]) if not tnx.empty and 'Close' in tnx.columns else 4.5
+            vix_data = yf.download("^VIX", period="5d", progress=False)
+            vix = float(vix_data['Close'].iloc[-1]) if not vix_data.empty and 'Close' in vix_data.columns else 20.0
+            rate_env = '⚠️ELEVATED' if treasury_10y > 4.0 else '✅LOW_RATE'
+            vol_env = '✅LOW_VOL' if vix < 20 else '⚠️ELEVATED'
+            result = {'treasury_10y': treasury_10y, 'vix': vix, 'rate_env': rate_env, 'vol_env': vol_env}
+            with open(cache_file, 'w') as f:
+                json.dump(result, f)
+            return result
+        except Exception:
+            return {'treasury_10y': 4.5, 'vix': 20.0, 'rate_env': 'UNKNOWN', 'vol_env': 'UNKNOWN'}
+
+class InstitutionalAnalyzer:
+    @staticmethod
+    def analyze(ticker):
+        signals = {}
+        alerts = []
+        risk_score = 0
+        
+        insider = InsiderTracker.get_insider_activity(ticker)
+        signals['insider'] = insider
+        if insider['signal'] == '🚨SELL':
+            alerts.append(f"Insider売{insider['ratio']:.1f}x")
+            risk_score += 30
+        elif insider['signal'] == '✅BUY':
+            risk_score -= 10
+        
+        short = ShortInterestTracker.get_short_interest(ticker)
+        signals['short'] = short
+        if short['signal'] == '🚨HIGH':
+            alerts.append(f"空売{short['short_percent']:.0f}%")
+            risk_score += 20
+        
+        sentiment = SentimentAnalyzer.get_reddit_sentiment(ticker)
+        signals['sentiment'] = sentiment
+        
+        inst = InstitutionalOwnership.get_institutional_holdings(ticker)
+        signals['institutional'] = inst
+        if inst['signal'] == '⚠️WEAK':
+            alerts.append(f"機関{inst['inst_percent']:.0f}%")
+            risk_score += 10
+        
+        options = OptionFlowAnalyzer.get_put_call_ratio(ticker)
+        signals['options'] = options
+        if options['signal'] == '🐻BEARISH':
+            alerts.append(f"P/C{options['put_call_ratio']:.2f}")
+            risk_score += 15
+        elif options['signal'] == '🐂BULLISH':
+            risk_score -= 10
+        
+        if risk_score > 60:
+            overall = '🚨HIGH_RISK'
+        elif risk_score > 30:
+            overall = '⚠️CAUTION'
+        elif risk_score < 0:
+            overall = '✅LOW_RISK'
+        else:
+            overall = 'NEUTRAL'
+        
+        return {'signals': signals, 'alerts': alerts, 'risk_score': risk_score, 'overall': overall}
+
+
+# ---------------------------
+# Core modules (abbreviated)
+# ---------------------------
+
+def get_current_fx_rate():
+    try:
+        data = yf.download("JPY=X", period="5d", progress=False)
+        return float(data['Close'].iloc[-1]) if not data.empty and 'Close' in data.columns else 152.0
+    except Exception:
+        return 152.0
+
+def jpy_to_usd(jpy, fx):
+    return jpy / fx
+
+def get_vix():
+    try:
+        data = yf.download("^VIX", period="5d", progress=False)
+        return float(data['Close'].iloc[-1]) if not data.empty and 'Close' in data.columns else 20.0
+    except Exception:
+        return 20.0
+
+def check_market_trend():
+    try:
+        spy = yf.download("SPY", period="400d", progress=False)
+        if spy.empty:
+            return True, "Unknown", 0.0
+        close = spy['Close'].dropna() if 'Close' in spy.columns else None
+        if close is None or len(close) < 210:
+            return True, "Unknown", 0.0
+        curr = float(close.iloc[-1])
+        ma200 = float(close.rolling(200).mean().iloc[-1])
+        dist = ((curr - ma200) / ma200) * 100
+        return curr > ma200, f"{'Bull' if curr > ma200 else 'Bear'} ({dist:+.1f}%)", dist
+    except Exception:
+        return True, "Unknown", 0.0
+
+def safe_download(ticker, period="700d", retry=3):
+    for attempt in range(retry):
+        try:
+            df = yf.download(ticker, period=period, progress=False)
+            return df.to_frame() if isinstance(df, pd.Series) else df
+        except Exception as e:
+            logger.warning("yf.download attempt %d failed for %s: %s", attempt+1, ticker, e)
+            time.sleep(1 + attempt)
+    return pd.DataFrame()
+
+def ensure_df(df):
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+    return df.copy() if df is not None else pd.DataFrame()
+
+def safe_rolling_last(series, window, min_periods=1, default=np.nan):
+    try:
+        val = series.rolling(window, min_periods=min_periods).mean().iloc[-1]
+        return float(val) if not pd.isna(val) else default
+    except Exception:
+        try:
+            return float(series.iloc[-1])
+        except Exception:
+            return default
+
+def is_earnings_near(ticker, days_window=2):
+    try:
+        tk = yf.Ticker(ticker)
+        cal = tk.calendar
+        if cal is None:
+            return False
+        if isinstance(cal, pd.DataFrame) and not cal.empty:
+            date_val = cal.iloc[0, 0]
+        elif isinstance(cal, dict):
+            date_val = cal.get('Earnings Date', [None])[0]
+        else:
+            return False
+        if date_val is None:
+            return False
+        ed = pd.to_datetime(date_val).date()
+        days_until = (ed - datetime.now().date()).days
+        return abs(days_until) <= days_window
+    except Exception:
+        return False
+
+def sector_is_strong(sector):
+    try:
+        sector_key = str(sector[0]) if isinstance(sector, (pd.Series, np.ndarray, list, tuple)) and len(sector) > 0 else str(sector)
+        etf = SECTOR_ETF.get(sector_key)
+        if not etf:
+            return True
+        etf_sym = str(etf[0]) if isinstance(etf, (pd.Series, np.ndarray, list, tuple)) and len(etf) > 0 else str(etf)
+        df = safe_download(etf_sym, period="300d", retry=2)
+        if df is None or df.empty:
+            return True
+        if 'Close' not in df.columns:
+            for c in df.columns:
+                if 'close' in str(c).lower():
+                    df['Close'] = df[c]
+                    break
+        if 'Close' not in df.columns:
+            return True
+        close = df['Close'].dropna()
+        if len(close) < 220:
+            return True
+        ma200 = close.rolling(200, min_periods=50).mean().dropna()
+        if len(ma200) < 12:
+            return True
+        last = float(ma200.iloc[-1])
+        prev = float(ma200.iloc[-10])
+        slope = (last - prev) / prev if prev != 0 else 0.0
+        return bool(slope >= 0.0)
     except Exception as e:
-        logger.error(f"Pipeline failed with error: {e}")
+        logger.exception("sector_is_strong error for %s: %s", sector, e)
+        return True
+
+class TransactionCostModel:
+    @staticmethod
+    def calculate_total_cost_usd(val_usd):
+        return (val_usd * COMMISSION_RATE + val_usd * SLIPPAGE_RATE) * 2
+
+class PositionSizer:
+    @staticmethod
+    def calculate_position(cap_usd, winrate, rr, atr_pct, vix, sec_exp):
+        try:
+            if rr <= 0:
+                return 0.0, 0.0
+            kelly = max(0.0, (winrate - (1 - winrate) / rr))
+            kelly = min(kelly * 0.5, MAX_POSITION_SIZE)
+            v_f = 0.7 if atr_pct > 0.05 else 0.85 if atr_pct > 0.03 else 1.0
+            m_f = 0.7 if vix > 30 else 0.85 if vix > 20 else 1.0
+            s_f = 0.7 if sec_exp > MAX_SECTOR_CONCENTRATION else 1.0
+            final_frac = min(kelly * v_f * m_f * s_f, MAX_POSITION_SIZE)
+            pos_val = cap_usd * final_frac
+            
+            # Apply minimum position size
+            if pos_val > 0 and pos_val < MIN_POSITION_USD:
+                pos_val = MIN_POSITION_USD
+                final_frac = pos_val / cap_usd
+            
+            return pos_val, final_frac
+        except Exception:
+            return 0.0, 0.0
+
+def simulate_past_performance_v2(df, sector, lookback_years=3):
+    try:
+        df = ensure_df(df)
+        if 'Close' not in df.columns:
+            for c in df.columns:
+                if 'close' in str(c).lower():
+                    df['Close'] = df[c]; break
+        if 'High' not in df.columns:
+            for c in df.columns:
+                if 'high' in str(c).lower():
+                    df['High'] = df[c]; break
+        if 'Low' not in df.columns:
+            for c in df.columns:
+                if 'low' in str(c).lower():
+                    df['Low'] = df[c]; break
+        close = df['Close'].dropna() if 'Close' in df.columns else pd.Series(dtype=float)
+        high = df['High'].dropna() if 'High' in df.columns else pd.Series(dtype=float)
+        low = df['Low'].dropna() if 'Low' in df.columns else pd.Series(dtype=float)
+        if len(close) < 60 or len(high) < 60 or len(low) < 60:
+            return {'winrate':0, 'net_expectancy':0, 'message':'LowData'}
+        end_date = close.index[-1]
+        start_date = end_date - pd.DateOffset(years=lookback_years)
+        mask = close.index >= start_date
+        close = close.loc[mask]
+        high = high.loc[mask]
+        low = low.loc[mask]
+        if len(close) < 60:
+            return {'winrate':0, 'net_expectancy':0, 'message':'ShortWindow'}
+        tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
+        atr = tr.rolling(14, min_periods=7).mean().dropna()
+        reward_mult = REWARD_MULTIPLIERS['aggressive'] if sector in AGGRESSIVE_SECTORS else REWARD_MULTIPLIERS['stable']
+        wins = 0; losses = 0; total_r = 0.0; samples = 0
+        for i in range(50, len(close)-40):
+            try:
+                window_high = high.iloc[i-5:i].max()
+                pivot = window_high * 1.002
+                if high.iloc[i] < pivot:
+                    continue
+                ma50 = close.rolling(50, min_periods=10).mean().iloc[i]
+                ma200 = close.rolling(200, min_periods=50).mean().iloc[i] if i >= 200 else None
+                if ma200 is not None and not (close.iloc[i] > ma50 or ma50 > ma200):
+                    continue
+                stop_dist = atr.iloc[i] * ATR_STOP_MULT if i < len(atr) else atr.iloc[-1] * ATR_STOP_MULT
+                entry = pivot
+                target = entry + stop_dist * reward_mult
+                outcome = None
+                for j in range(1, 31):
+                    if i + j >= len(close):
+                        break
+                    if high.iloc[i+j] >= target:
+                        outcome = 'win'; break
+                    if low.iloc[i+j] <= entry - stop_dist:
+                        outcome = 'loss'; break
+                if outcome is None:
+                    last_close = close.iloc[min(i+30, len(close)-1)]
+                    pnl = (last_close - entry) / stop_dist if stop_dist != 0 else 0
+                    if pnl > 0:
+                        wins += 1; total_r += min(pnl, reward_mult)
+                    else:
+                        losses += 1; total_r -= abs(pnl)
+                    samples += 1
+                else:
+                    samples += 1
+                    if outcome == 'win':
+                        wins += 1; total_r += reward_mult
+                    else:
+                        losses += 1; total_r -= 1.0
+            except Exception:
+                continue
+        total = wins + losses
+        if total < 8:
+            return {'winrate':0, 'net_expectancy':0, 'message':f'LowSample:{total}'}
+        wr = (wins / total)
+        ev = total_r / total
+        return {'winrate':wr*100, 'net_expectancy':ev - 0.05, 'message':f"WR{wr*100:.0f}% EV{ev:.2f}"}
+    except Exception as e:
+        logger.exception("Backtest error: %s", e)
+        return {'winrate':0, 'net_expectancy':0, 'message':'BT Error'}
+
+class StrategicAnalyzerV2:
+    @staticmethod
+    def analyze_ticker(ticker, df, sector, max_position_value_usd, vix, sec_exposures, cap_usd, market_is_bull):
+        try:
+            if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+                return None, "❌DATA"
+            df = ensure_df(df)
+            if isinstance(df.columns, pd.MultiIndex):
+                try:
+                    df.columns = [' '.join(map(str, c)).strip() for c in df.columns.values]
+                except Exception:
+                    pass
+            if 'Close' not in df.columns:
+                for c in df.columns:
+                    if 'adj close' in str(c).lower() or 'adj_close' in str(c).lower():
+                        df['Close'] = df[c]; break
+                if 'Close' not in df.columns:
+                    for c in df.columns:
+                        if 'close' in str(c).lower():
+                            df['Close'] = df[c]; break
+            if 'High' not in df.columns:
+                for c in df.columns:
+                    if 'high' in str(c).lower():
+                        df['High'] = df[c]; break
+            if 'Low' not in df.columns:
+                for c in df.columns:
+                    if 'low' in str(c).lower():
+                        df['Low'] = df[c]; break
+            if 'Volume' not in df.columns:
+                for c in df.columns:
+                    if 'volume' in str(c).lower():
+                        df['Volume'] = df[c]; break
+            if 'Volume' not in df.columns:
+                df['Volume'] = 0
+            if 'Close' not in df.columns:
+                logger.debug("analyze_ticker: missing Close column after normalization for ticker=%s, cols=%s", ticker, list(df.columns))
+                return None, "❌DATA"
+            df = df.dropna(subset=['Close'])
+            if df.empty:
+                return None, "❌DATA"
+            df[['High','Low','Close','Volume']] = df[['High','Low','Close','Volume']].ffill().bfill()
+            close = df['Close'].astype(float)
+            high = df['High'].astype(float)
+            low = df['Low'].astype(float)
+            vol = df['Volume'].astype(float)
+            if len(close) < 60:
+                return None, "❌DATA"
+            curr = float(close.iloc[-1]) if not pd.isna(close.iloc[-1]) else 0.0
+            if curr <= 0:
+                return None, "❌PRICE"
+            try:
+                max_shares = int(max_position_value_usd // curr)
+            except Exception:
+                max_shares = 0
+            fractional_possible = (max_position_value_usd / curr) if curr > 0 else 0.0
+            if ALLOW_FRACTIONAL:
+                can_trade = fractional_possible >= 0.01
+            else:
+                can_trade = max_shares >= 1
+            if not can_trade:
+                return None, "❌PRICE"
+            ma50 = safe_rolling_last(close, 50, min_periods=10, default=curr)
+            ma200 = safe_rolling_last(close, 200, min_periods=50, default=None) if len(close) >= 50 else None
+            if ma200 is not None:
+                if not (curr > ma50 or ma50 > ma200):
+                    return None, "❌TREND"
+            else:
+                if not (curr > ma50):
+                    return None, "❌TREND"
+            try:
+                tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
+                atr14 = tr.rolling(14, min_periods=7).mean().iloc[-1]
+            except Exception:
+                atr14 = np.nan
+            if pd.isna(atr14) or atr14 <= 0:
+                try:
+                    alt = (high - low).rolling(14, min_periods=7).mean().iloc[-1]
+                    atr14 = max(alt if not pd.isna(alt) else 0.0, 1e-6)
+                except Exception:
+                    atr14 = 1e-6
+            atr_pct = atr14 / curr if curr > 0 else 0.0
+            try:
+                tightness = (high.iloc[-5:].max() - low.iloc[-5:].min()) / (atr14 if atr14 > 0 else 1.0)
+            except Exception:
+                tightness = 999.0
+            max_tightness = MAX_TIGHTNESS_BASE
+            if market_is_bull and vix < 20:
+                max_tightness = MAX_TIGHTNESS_BASE * 1.4
+            elif vix > 25:
+                max_tightness = MAX_TIGHTNESS_BASE * 0.9
+            if tightness > max_tightness:
+                return None, "❌LOOSE"
+            score = 0; reasons = []
+            try:
+                if tightness < 0.8:
+                    score += 30; reasons.append("VCP+++")
+                elif tightness < 1.2:
+                    score += 20; reasons.append("VCP+")
+                vol50 = safe_rolling_last(vol, 50, min_periods=10, default=np.nan)
+                if not pd.isna(vol50) and vol.iloc[-1] < vol50:
+                    score += 15; reasons.append("VolDry")
+                mom5 = safe_rolling_last(close, 5, min_periods=3, default=np.nan)
+                mom20 = safe_rolling_last(close, 20, min_periods=10, default=np.nan)
+                if not pd.isna(mom5) and not pd.isna(mom20) and (mom5 / mom20) > 1.02:
+                    score += 20; reasons.append("Mom+")
+                if ma200 is not None and ((ma50 - ma200) / ma200) > 0.03:
+                    score += 20; reasons.append("Trend+")
+                elif ma200 is None and (curr > ma50):
+                    score += 10; reasons.append("Trend?")
+            except Exception:
+                pass
+            bt = simulate_past_performance_v2(df, sector)
+            winrate = bt.get('winrate', 0) / 100.0
+            try:
+                pos_val_usd, frac = PositionSizer.calculate_position(cap_usd, winrate, 2.0, atr_pct, vix, float(sec_exposures.get(sector, 0.0)))
+            except Exception as e:
+                logger.exception("PositionSizer error for %s: %s", ticker, e)
+                pos_val_usd, frac = 0.0, 0.0
+            try:
+                if ALLOW_FRACTIONAL:
+                    est_shares = pos_val_usd / curr if curr > 0 else 0.0
+                else:
+                    est_shares = int(pos_val_usd // curr) if curr > 0 else 0
+                    if est_shares < 1 and max_shares >= 1:
+                        est_shares = 1
+                if not ALLOW_FRACTIONAL and est_shares < 1:
+                    return None, "❌PRICE"
+                if not ALLOW_FRACTIONAL and est_shares > max_shares:
+                    est_shares = max_shares
+            except Exception:
+                return None, "❌PRICE"
+            pivot = high.iloc[-5:].max() * 1.002 if len(high) >= 5 else curr * 1.002
+            stop = pivot - (atr14 * ATR_STOP_MULT)
+            result = {
+                'score': int(score),
+                'reasons': ' '.join(reasons),
+                'pivot': pivot,
+                'stop': stop,
+                'sector': sector,
+                'bt': bt,
+                'pos_usd': pos_val_usd,
+                'pos_frac': frac,
+                'est_shares': est_shares,
+                'tightness': tightness,
+                'price': curr,
+                'atr_pct': atr_pct,
+                'vol': int(vol.iloc[-1]) if not pd.isna(vol.iloc[-1]) else 0,
+                'df': df
+            }
+            return result, "✅PASS"
+        except Exception as e:
+            logger.exception("Analyze error for %s: %s", ticker, e)
+            return None, "❌ERROR"
+
+def send_line(msg):
+    logger.info("LINE message prepared.")
+    if not ACCESS_TOKEN or not USER_ID:
+        logger.debug("LINE credentials missing; skipping send.")
+        return
+    url = "https://api.line.me/v2/bot/message/push"
+    headers = {"Content-Type":"application/json", "Authorization":f"Bearer {ACCESS_TOKEN}"}
+    payload = {"to": USER_ID, "messages":[{"type":"text", "text":msg}]}
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=10)
+        if resp.status_code == 200:
+            logger.info("LINE push succeeded.")
+        else:
+            logger.warning("LINE push failed status=%d body=%s", resp.status_code, resp.text)
+    except Exception as e:
+        logger.exception("LINE send failed: %s", e)
+
+# ---------------------------
+# Main mission - v27 PRIORITIZED
+# ---------------------------
+def run_mission():
+    fx = get_current_fx_rate()
+    vix = get_vix()
+    is_bull, market_status, _ = check_market_trend()
+    logger.info("Market: %s | VIX: %.1f | FX: ¥%.2f", market_status, vix, fx)
+    macro = MacroAnalyzer.get_macro_environment()
+    initial_cap_usd = jpy_to_usd(INITIAL_CAPITAL_JPY, fx)
+    trading_cap_usd = initial_cap_usd * TRADING_RATIO
+    results = []
+    stats = {"Earnings":0, "Sector":0, "Trend":0, "Price":0, "Loose":0, "Data":0, "Pass":0, "Error":0}
+    sec_exposures = {s: 0.0 for s in set(TICKERS.values())}
+    
+    for ticker, sector in TICKERS.items():
+        try:
+            earnings_flag = is_earnings_near(ticker, days_window=2)
+            if earnings_flag:
+                stats["Earnings"] += 1
+            try:
+                sector_flag = not bool(sector_is_strong(sector))
+            except Exception:
+                logger.exception("sector check failed for %s", sector)
+                sector_flag = False
+            if sector_flag:
+                stats["Sector"] += 1
+            df_t = safe_download(ticker, period="700d")
+            if df_t is None or df_t.empty:
+                stats["Data"] += 1
+                logger.debug("No data for %s", ticker)
+                continue
+            max_pos_val_usd = trading_cap_usd * MAX_POSITION_SIZE
+            res, reason = StrategicAnalyzerV2.analyze_ticker(
+                ticker, df_t, sector, max_pos_val_usd, vix, sec_exposures, trading_cap_usd, is_bull
+            )
+            if res:
+                res['is_earnings'] = earnings_flag
+                res['is_sector_weak'] = sector_flag
+                vcp_analysis = VCPAnalyzer.calculate_vcp_maturity(res['df'], res)
+                res['vcp_analysis'] = vcp_analysis
+                inst_analysis = InstitutionalAnalyzer.analyze(ticker)
+                res['institutional'] = inst_analysis
+                quality = SignalQuality.calculate_comprehensive_score(res, vcp_analysis, inst_analysis)
+                res['quality'] = quality
+                why_now = SignalQuality.generate_why_now(res, vcp_analysis, inst_analysis, quality)
+                res['why_now'] = why_now
+                results.append((ticker, res))
+                if not earnings_flag and not sector_flag:
+                    stats["Pass"] += 1
+                    sec_exposures[sector] += res['pos_usd'] / trading_cap_usd
+            else:
+                if reason is None:
+                    stats["Error"] += 1
+                elif "TREND" in reason:
+                    stats["Trend"] += 1
+                elif "PRICE" in reason:
+                    stats["Price"] += 1
+                elif "LOOSE" in reason:
+                    stats["Loose"] += 1
+                elif "DATA" in reason:
+                    stats["Data"] += 1
+                elif "ERROR" in reason:
+                    stats["Error"] += 1
+                else:
+                    stats["Error"] += 1
+        except Exception as e:
+            logger.exception("Loop error for %s: %s", ticker, e)
+            stats["Error"] += 1
+            continue
+    
+    all_sorted = sorted(results, key=lambda x: x[1]['quality']['total_score'], reverse=True)
+    passed_core = [r for r in all_sorted if r[1]['quality']['tier'] == 'CORE' and not r[1].get('is_earnings', False) and not r[1].get('is_sector_weak', False)]
+    passed_secondary = [r for r in all_sorted if r[1]['quality']['tier'] == 'SECONDARY' and not r[1].get('is_earnings', False) and not r[1].get('is_sector_weak', False)]
+    passed_watch = [r for r in all_sorted if r[1]['quality']['tier'] == 'WATCH' and not r[1].get('is_earnings', False) and not r[1].get('is_sector_weak', False)]
+    
+    report_lines = []
+    report_lines.append("="*50)
+    report_lines.append("SENTINEL v27.0 PRIORITIZED")
+    report_lines.append("Catch institutional accumulation BEFORE the news")
+    report_lines.append("="*50)
+    report_lines.append(datetime.now().strftime("%m/%d %H:%M"))
+    report_lines.append("")
+    report_lines.append(f"Market: {market_status} | VIX: {vix:.1f} | FX: ¥{fx:.2f}")
+    report_lines.append(f"10Y: {macro['treasury_10y']:.2f}% | {macro['rate_env']} {macro['vol_env']}")
+    report_lines.append("")
+    report_lines.append("【TARGET】10% Annual / 0.8% Monthly")
+    report_lines.append(f"Capital: ¥{INITIAL_CAPITAL_JPY:,} → ${initial_cap_usd:.0f} | Trading: ${trading_cap_usd:.0f}")
+    report_lines.append("")
+    report_lines.append("【STATISTICS】")
+    report_lines.append(f"Analyzed: {len(TICKERS)} | Pass: {len(all_sorted)}")
+    report_lines.append(f"Blocked: Earn={stats['Earnings']} Sec={stats['Sector']} Trend={stats['Trend']} Loose={stats['Loose']}")
+    report_lines.append(f"Errors: Data={stats['Data']} Internal={stats['Error']}")
+    report_lines.append("="*50)
+    
+    report_lines.append("\n【PRIORITY SIGNALS】")
+    report_lines.append(f"🔥 CORE (75+):      {len(passed_core)} signals")
+    report_lines.append(f"⚡ SECONDARY (60+): {len(passed_secondary)} signals")
+    report_lines.append(f"👁 WATCH (45+):     {len(passed_watch)} signals")
+    report_lines.append("")
+    
+    if passed_core:
+        top = passed_core[0]
+        ticker = top[0]
+        r = top[1]
+        
+        actual_shares = int(r['est_shares'])
+        actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+        
+        report_lines.append(f"🎯 TODAY'S TOP PRIORITY: {ticker}")
+        report_lines.append(f"   Score: {r['quality']['total_score']}/100 (Tech:{r['quality']['tech_score']} RR:{r['quality']['rr_score']} Inst:{r['quality']['inst_score']})")
+        
+        if actual_shares > 0:
+            report_lines.append(f"   {actual_shares}株 @ ${r['price']:.2f} = ${actual_cost:.0f}")
+        else:
+            report_lines.append(f"   ⚠️ 1株未満 (${r['price']:.2f})")
+        
+        report_lines.append(f"   Why Now: {r['why_now']}")
+        report_lines.append("")
+    
+    if passed_core:
+        report_lines.append("🔥 CORE - IMMEDIATE CONSIDERATION")
+        for i, (ticker, r) in enumerate(passed_core[:5], 1):
+            q = r['quality']
+            vcp = r['vcp_analysis']
+            inst = r['institutional']
+            
+            # Calculate actual buyable shares (integer only)
+            actual_shares = int(r['est_shares'])
+            actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+            
+            report_lines.append(f"\n[{i}] {ticker} {q['total_score']}/100 | VCP:{vcp['maturity']}% {vcp['stage']}")
+            report_lines.append(f"    Tech:{q['tech_score']} RR:{q['rr_score']} Inst:{q['inst_score']} | Risk:{inst['risk_score']}")
+            
+            if actual_shares > 0:
+                report_lines.append(f"    {actual_shares}株 @ ${r['price']:.2f} = ${actual_cost:.0f} | Entry: ${r['pivot']:.2f}")
+            else:
+                report_lines.append(f"    ⚠️ 1株未満 (${r['price']:.2f}) | Entry: ${r['pivot']:.2f}")
+            
+            report_lines.append(f"    BT: {r['bt']['message']} | T:{r['tightness']:.2f}")
+            report_lines.append(f"    💡 {r['why_now']}")
+            if inst['alerts']:
+                report_lines.append(f"    ⚠️  {' | '.join(inst['alerts'][:3])}")
+    
+    if passed_secondary:
+        report_lines.append("\n⚡ SECONDARY - CONDITIONAL WATCH")
+        for i, (ticker, r) in enumerate(passed_secondary[:5], 1):
+            q = r['quality']
+            vcp = r['vcp_analysis']
+            
+            actual_shares = int(r['est_shares'])
+            actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+            
+            report_lines.append(f"\n[{i}] {ticker} {q['total_score']}/100 | VCP:{vcp['maturity']}% {vcp['stage']}")
+            
+            if actual_shares > 0:
+                report_lines.append(f"    {actual_shares}株 @ ${r['price']:.2f} = ${actual_cost:.0f} | Entry: ${r['pivot']:.2f}")
+            else:
+                report_lines.append(f"    ⚠️ 1株未満 (${r['price']:.2f}) | Entry: ${r['pivot']:.2f}")
+            
+            report_lines.append(f"    {r['why_now']}")
+    
+    if passed_watch:
+        report_lines.append("\n👁 WATCH - MONITORING")
+        watch_str = ", ".join([f"{t} {r['quality']['total_score']}" for t, r in passed_watch[:10]])
+        report_lines.append(f"    {watch_str}")
+    
+    report_lines.append("\n" + "="*50)
+    report_lines.append("【TOP 15 COMPREHENSIVE ANALYSIS】")
+    for i, (ticker, r) in enumerate(all_sorted[:15], 1):
+        q = r['quality']
+        vcp = r['vcp_analysis']
+        tag = "✅OK"
+        if r.get('is_earnings'): 
+            tag = "❌EARN"
+        elif r.get('is_sector_weak'): 
+            tag = "❌SEC"
+        report_lines.append(f"\n{i:2}. {ticker:5} {q['total_score']:3}/100 {q['tier_emoji']} | {tag}")
+        report_lines.append(f"    VCP:{vcp['maturity']:3}% {vcp['stage']} | WR:{r['bt']['winrate']:.0f}% EV:{r['bt']['net_expectancy']:+.2f}")
+        report_lines.append(f"    {' '.join(vcp['signals'])}")
+        report_lines.append(f"    {r['why_now']}")
+    
+    report_lines.append("\n" + "="*50)
+    report_lines.append("【PHILOSOPHY】")
+    report_lines.append("✓ Price & volume are the CAUSE")
+    report_lines.append("✓ News is the RESULT")
+    report_lines.append("✓ Catch institutional accumulation BEFORE headlines")
+    report_lines.append("="*50)
+    
+    final_report = "\n".join(report_lines)
+    logger.info("\n%s", final_report)
+    send_line(final_report)
+
+if __name__ == "__main__":
+    run_mission()
         import traceback
         logger.error(traceback.format_exc())
