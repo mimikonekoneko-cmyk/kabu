@@ -20,7 +20,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           # ↓ ここから全角スペースを除去し、必要なライブラリを網羅しました
-          pip install alpaca-trade-api pandas requests numpy yfinance beautifulsoup4
+          pip install alpaca-trade-api pandas requests numpy yfinance beautifulsoup4 cachetools
 
       - name: Run Script
         env:
