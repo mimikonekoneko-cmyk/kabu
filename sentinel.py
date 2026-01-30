@@ -71,54 +71,95 @@ CACHE_DIR.mkdir(exist_ok=True)
 # TICKER UNIVERSE
 # ---------------------------
 TICKERS = {
-    # --- Index / Core ETF ---
+    # --- Index / Core ETF (15銘柄) ---
     'SPY':'Index', 'QQQ':'Index', 'IVV':'Index', 'VOO':'Index', 'DIA':'Index',
-    'IWM':'Index', 'RSP':'Index', 'VTI':'Index', 'XLK':'Sector', 'XLF':'Sector',
-    'XLE':'Sector', 'XLI':'Sector', 'XLV':'Sector', 'EEM':'Index', 'EFA':'Index',
-    'VEA':'Index', 'SMH':'Sector', 'GDX':'Metal', 'HYG':'Bond', 'LQD':'Bond', 'TLT':'Bond',
-
-    # --- Leveraged / Inverse (別レーン前提) ---
+    'IWM':'Index', 'RSP':'Index', 'VTI':'Index', 'EEM':'Index', 'EFA':'Index',
+    'VEA':'Index', 'EWZ':'Index', 'XLK':'Sector', 'XLF':'Sector', 'XLE':'Sector',
+    
+    # --- Sector ETFs (10銘柄) ---
+    'XLI':'Sector', 'XLV':'Sector', 'SMH':'Sector', 'GDX':'Metal', 'HYG':'Bond',
+    'LQD':'Bond', 'TLT':'Bond', 'IAU':'Metal', 'GLDM':'Metal', 'SLV':'Metal',
+    
+    # --- Leveraged / Inverse (3銘柄) ---
     'TQQQ':'Leveraged', 'SQQQ':'Leveraged', 'SOXL':'Leveraged',
-
-    # --- Mega Tech / AI / Semi ---
+    
+    # --- Mega Tech / AI / Semiconductor (15銘柄) ---
     'NVDA':'AI', 'AMD':'Semi', 'AVGO':'Semi', 'TSM':'Semi', 'ASML':'Semi',
     'MU':'Semi', 'INTC':'Semi', 'LRCX':'Semi', 'AMAT':'Semi', 'KLAC':'Semi',
-    'TXN':'Semi', 'SMH':'SemiETF',
-
-    # --- Big Tech ---
+    'TXN':'Semi', 'QCOM':'Semi', 'MRVL':'Semi', 'ADI':'Semi', 'ON':'Semi',
+    
+    # --- Big Tech / Software (15銘柄) ---
     'MSFT':'Cloud', 'AAPL':'Device', 'GOOGL':'Ad', 'GOOG':'Ad', 'META':'Ad',
     'AMZN':'Retail', 'NFLX':'Service', 'ORCL':'Soft', 'IBM':'Soft', 'INTU':'Soft',
-    'ADBE':'Soft', 'CRM':'Soft', 'NOW':'Soft', 'APP':'Soft',
-
-    # --- Finance ---
+    'ADBE':'Soft', 'CRM':'Soft', 'NOW':'Soft', 'APP':'Soft', 'SNOW':'Cloud',
+    
+    # --- Finance (10銘柄) ---
     'JPM':'Bank', 'GS':'Bank', 'BAC':'Bank', 'WFC':'Bank', 'COF':'Bank',
-    'MA':'Fin', 'V':'Fin', 'BLK':'Fin',
-
-    # --- Health / Bio ---
+    'MA':'Fin', 'V':'Fin', 'BLK':'Fin', 'SCHW':'Fin', 'AXP':'Fin',
+    
+    # --- Health / Bio (8銘柄) ---
     'LLY':'Bio', 'UNH':'Health', 'JNJ':'Health', 'ABBV':'Bio',
-    'ABT':'Health', 'TMO':'Health',
-
-    # --- Energy / Materials ---
+    'ABT':'Health', 'TMO':'Health', 'PFE':'Pharma', 'MRK':'Pharma',
+    
+    # --- Energy / Materials (6銘柄) ---
     'XOM':'Energy', 'CVX':'Energy', 'FCX':'Material', 'NEM':'Gold',
-
-    # --- Consumer ---
+    'COP':'Energy', 'MPC':'Energy',
+    
+    # --- Consumer (7銘柄) ---
     'WMT':'Retail', 'COST':'Retail', 'HD':'Retail', 'SBUX':'Cons', 'PG':'Cons',
-
-    # --- Industrial ---
-    'GE':'Ind', 'CAT':'Ind', 'BA':'Ind', 'APH':'Ind',
-
-    # --- Crypto / High Vol ---
-    'MSTR':'CryptoProxy', 'COIN':'Crypto', 'HOOD':'Fintech',
-
-    # --- Thematic / High Beta (歪みやすい) ---
-    'PLTR':'AI', 'CVNA':'Spec', 'RKLB':'Spec', 'ASTS':'Spec',
-    'IREN':'CryptoInfra', 'APLD':'AIInfra',
-
-    # --- Metals ---
-    'GLD':'Metal', 'IAU':'Metal', 'GLDM':'Metal', 'SLV':'Metal',
-
-    # --- Others ---
-    'DIA':'Index', 'EWZ':'Index'
+    'KO':'Cons', 'PEP':'Cons',
+    
+    # --- Industrial (5銘柄) ---
+    'GE':'Ind', 'CAT':'Ind', 'BA':'Ind', 'APH':'Ind', 'HON':'Ind',
+    
+    # --- Crypto / High Volatility (3銘柄) ---
+    'MSTR':'Crypto', 'COIN':'Crypto', 'HOOD':'Fintech',
+    
+    # --- Thematic / Speculative (3銘柄) ---
+    'PLTR':'AI', 'RKLB':'Space', 'ASTS':'Space',
+}
+# 出来高急増銘柄（監視リスト）
+VOLUME_SURGE_TICKERS = {
+    'VYNE':'Biotech', 'UGRO':'RealEstate', 'ADTX':'Biotech', 'TKLF':'China', 
+    'ISPO':'Gaming', 'BMRA':'Biotech', 'XTKG':'ChinaTech', 'JZXN':'China',
+    'VTGN':'Biotech', 'PLUR':'Biotech', 'BDRX':'Biotech', 'UCL':'Unknown',
+    'FENG':'China', 'MDLN':'Telecom', 'BYSI':'Biotech', 'DJT':'Media',
+    'MPU':'Unknown', 'DJTU':'Media', 'ACB':'Cannabis', 'COE':'China',
+    'SBC':'Unknown', 'GRWG':'Cannabis', 'CGC':'Cannabis', 'OCC':'Unknown',
+    'RYM':'Unknown', 'ANRO':'Unknown', 'DARE':'Biotech', 'MCHB':'Unknown',
+    'NRDY':'Unknown', 'CBFV':'Unknown', 'KTCC':'Tech', 'PAVS':'Unknown',
+    'DSWL':'Tech', 'ORGN':'Materials', 'RNW':'Renewable', 'SNGX':'Biotech',
+    'BRCB':'Unknown', 'GINN':'Unknown', 'NIU':'EV', 'DSGN':'Tech',
+    'MASS':'Unknown', 'QNTM':'Unknown', 'PULM':'Biotech', 'RVPH':'Biotech',
+    'CEVA':'Tech', 'HTCR':'Unknown', 'MAPS':'Tech', 'OABI':'Unknown',
+    'VUZI':'Tech', 'SNFCA':'Finance', 'MEGL':'Unknown', 'KG':'Unknown',
+    'TV':'Media', 'EVAX':'Biotech', 'TOMZ':'Unknown', 'CRMT':'Retail',
+    'DH':'Unknown', 'CHR':'Unknown', 'XRTX':'Unknown', 'PBHC':'Finance',
+    'ORKA':'Unknown', 'EHTH':'Health', 'WFCF':'Finance', 'GOCO':'Finance',
+    'SEM':'Unknown', 'EEMS':'Unknown', 'ASTC':'Unknown', 'SCYX':'Biotech',
+    'ENTA':'Biotech', 'RFL':'Unknown', 'PPBT':'Biotech', 'PMNT':'Unknown',
+    'GLRE':'Finance', 'AIXC':'Unknown', 'SCVL':'Retail', 'LCUT':'Unknown',
+    'NKE':'Consumer', 'REFR':'Unknown', 'PHUN':'Tech', 'MVIS':'Tech',
+    'INBX':'Biotech', 'SPFF':'Finance', 'PXLW':'Tech', 'NCTY':'Gaming',
+    'MBIN':'Finance', 'STEL':'Unknown', 'TELA':'Biotech', 'BEEP':'Unknown',
+    'FLUX':'Tech', 'CDRO':'Unknown', 'MTX':'Materials', 'SMHI':'Unknown',
+    'COKE':'Consumer', 'NXGL':'Unknown', 'TARS':'Biotech', 'CCOI':'Tech',
+    'BIRD':'Retail', 'CIA':'Unknown', 'NMAX':'Unknown', 'KPLT':'Finance',
+    'EPAC':'Industrial', 'MHH':'Unknown', 'MITK':'Tech', 'NVEC':'Tech',
+    'CNRG':'Renewable', 'CMMB':'Unknown', 'HY':'Unknown', 'AVR':'Unknown',
+    'USAU':'Mining', 'WEYS':'Unknown', 'QQQS':'Index', 'SDA':'Unknown',
+    'GAMB':'Gaming', 'RSVR':'Unknown', 'KOD':'Mining', 'EHLD':'Unknown',
+    'BRBS':'Finance', 'CWBC':'Finance', 'IMMR':'Tech', 'PFIS':'Finance',
+    'TORO':'Unknown', 'AREN':'Unknown', 'CHCO':'Finance', 'MNTK':'Unknown',
+    'FTEK':'Unknown', 'EFSC':'Finance', 'EXFY':'Tech', 'GWRS':'Utilities',
+    'FFWM':'Finance', 'PRSU':'Unknown', 'NNOX':'Health', 'FFIV':'Tech',
+    'XRX':'Tech', 'SI':'Finance', 'CEPI':'Unknown', 'YTRA':'Travel',
+    'XPON':'Unknown', 'LITS':'Unknown', 'SHBI':'Finance', 'PAY':'Finance',
+    'CHPT':'EV', 'BCML':'Finance', 'ATYR':'Biotech', 'SEER':'Biotech',
+    'FOA':'Unknown', 'FRST':'Finance', 'LION':'Finance', 'WALD':'Unknown',
+    'TTGT':'Tech', 'WBTN':'Unknown', 'DERM':'Biotech', 'ASTE':'Industrial',
+    'FULC':'Biotech', 'SENEA':'Consumer', 'HOLX':'Health', 'JYNT':'Health',
+    'PCB':'Finance', 'LSBK':'Finance', 'QFIN':'Finance'
 }
 
 SECTOR_ETF = {
@@ -126,7 +167,6 @@ SECTOR_ETF = {
     'Sector':'SPY',
     'AI':'QQQ',
     'Semi':'SOXX',
-    'SemiETF':'SOXX',
     'Cloud':'QQQ',
     'Ad':'QQQ',
     'Soft':'IGV',
@@ -136,6 +176,7 @@ SECTOR_ETF = {
     'Fin':'VFH',
     'Health':'XLV',
     'Bio':'IBB',
+    'Pharma':'XLV',
     'Energy':'XLE',
     'Ind':'XLI',
     'Material':'XLB',
@@ -143,10 +184,23 @@ SECTOR_ETF = {
     'Gold':'GLD',
     'Bond':'LQD',
     'Crypto':'BTC-USD',
-    'CryptoProxy':'BTC-USD',
-    'CryptoInfra':'BTC-USD',
+    'Cannabis':'MJ',
+    'China':'MCHI',
+    'Gaming':'BETZ',
+    'Biotech':'XBI',
+    'Media':'XLC',
+    'EV':'DRIV',
+    'Tech':'XLK',
+    'Renewable':'ICLN',
+    'Mining':'XME',
+    'Utilities':'XLU',
+    'Travel':'JETS',
+    'Space':'UFO',
+    'RealEstate':'XLRE',
+    'Telecom':'VOX',
     'Leveraged':'QQQ',
-    'Spec':'IWM'
+    'Space':'UFO',
+    'Unknown':'SPY'
 }
 
 # ---------------------------
