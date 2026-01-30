@@ -71,30 +71,82 @@ CACHE_DIR.mkdir(exist_ok=True)
 # TICKER UNIVERSE
 # ---------------------------
 TICKERS = {
-    'NVDA':'AI', 'AMD':'Semi', 'AVGO':'Semi', 'TSM':'Semi', 'ASML':'Semi', 'MU':'Semi',
-    'ARM':'Semi', 'INTC':'Semi', 'QCOM':'Semi', 'ON':'Semi', 'LRCX':'Semi', 'AMAT':'Semi',
-    'MSFT':'Cloud', 'GOOGL':'Ad', 'META':'Ad', 'PLTR':'AI', 'NOW':'Soft', 'CRM':'Soft',
-    'ADBE':'Soft', 'SNOW':'Cloud', 'DDOG':'Cloud', 'WDAY':'Soft', 'TEAM':'Soft',
-    'ANET':'Cloud', 'ZS':'Sec', 'MDB':'Cloud', 'SHOP':'Retail', 'PANW':'Sec',
-    'CRWD':'Sec', 'FTNT':'Sec', 'NET':'Sec', 'OKTA':'Sec', 'AAPL':'Device',
-    'TSLA':'Auto', 'AMZN':'Retail', 'NFLX':'Service', 'COST':'Retail', 'WMT':'Retail',
-    'TJX':'Retail', 'TGT':'Retail', 'NKE':'Cons', 'LULU':'Cons', 'SBUX':'Cons',
-    'PEP':'Cons', 'KO':'Cons', 'PG':'Cons', 'ELF':'Cons', 'CELH':'Cons', 'MELI':'Retail',
-    'V':'Fin', 'MA':'Fin', 'PYPL':'Fintech', 'SQ':'Fintech', 'JPM':'Bank', 'GS':'Bank',
-    'MS':'Bank', 'AXP':'Fin', 'BLK':'Fin', 'COIN':'Crypto', 'SOFI':'Fintech', 'NU':'Fintech',
-    'LLY':'Bio', 'UNH':'Health', 'ABBV':'Bio', 'ISRG':'Health', 'VRTX':'Bio', 'MRK':'Bio',
-    'PFE':'Bio', 'AMGN':'Bio', 'HCA':'Health', 'TDOC':'Health', 'GE':'Ind', 'CAT':'Ind',
-    'DE':'Ind', 'BA':'Ind', 'ETN':'Power', 'VRT':'Power', 'TT':'Ind', 'PH':'Ind',
-    'TDG':'Ind', 'XOM':'Energy', 'CVX':'Energy', 'MPC':'Energy', 'UBER':'Platform',
-    'BKNG':'Travel', 'ABNB':'Travel', 'MAR':'Travel', 'RCL':'Travel', 'DKNG':'Bet',
-    'RBLX':'Service', 'DASH':'Service', 'SMCI':'AI'
+    # --- Index / Core ETF ---
+    'SPY':'Index', 'QQQ':'Index', 'IVV':'Index', 'VOO':'Index', 'DIA':'Index',
+    'IWM':'Index', 'RSP':'Index', 'VTI':'Index', 'XLK':'Sector', 'XLF':'Sector',
+    'XLE':'Sector', 'XLI':'Sector', 'XLV':'Sector', 'EEM':'Index', 'EFA':'Index',
+    'VEA':'Index', 'SMH':'Sector', 'GDX':'Metal', 'HYG':'Bond', 'LQD':'Bond', 'TLT':'Bond',
+
+    # --- Leveraged / Inverse (別レーン前提) ---
+    'TQQQ':'Leveraged', 'SQQQ':'Leveraged', 'SOXL':'Leveraged',
+
+    # --- Mega Tech / AI / Semi ---
+    'NVDA':'AI', 'AMD':'Semi', 'AVGO':'Semi', 'TSM':'Semi', 'ASML':'Semi',
+    'MU':'Semi', 'INTC':'Semi', 'LRCX':'Semi', 'AMAT':'Semi', 'KLAC':'Semi',
+    'TXN':'Semi', 'SMH':'SemiETF',
+
+    # --- Big Tech ---
+    'MSFT':'Cloud', 'AAPL':'Device', 'GOOGL':'Ad', 'GOOG':'Ad', 'META':'Ad',
+    'AMZN':'Retail', 'NFLX':'Service', 'ORCL':'Soft', 'IBM':'Soft', 'INTU':'Soft',
+    'ADBE':'Soft', 'CRM':'Soft', 'NOW':'Soft', 'APP':'Soft',
+
+    # --- Finance ---
+    'JPM':'Bank', 'GS':'Bank', 'BAC':'Bank', 'WFC':'Bank', 'COF':'Bank',
+    'MA':'Fin', 'V':'Fin', 'BLK':'Fin',
+
+    # --- Health / Bio ---
+    'LLY':'Bio', 'UNH':'Health', 'JNJ':'Health', 'ABBV':'Bio',
+    'ABT':'Health', 'TMO':'Health',
+
+    # --- Energy / Materials ---
+    'XOM':'Energy', 'CVX':'Energy', 'FCX':'Material', 'NEM':'Gold',
+
+    # --- Consumer ---
+    'WMT':'Retail', 'COST':'Retail', 'HD':'Retail', 'SBUX':'Cons', 'PG':'Cons',
+
+    # --- Industrial ---
+    'GE':'Ind', 'CAT':'Ind', 'BA':'Ind', 'APH':'Ind',
+
+    # --- Crypto / High Vol ---
+    'MSTR':'CryptoProxy', 'COIN':'Crypto', 'HOOD':'Fintech',
+
+    # --- Thematic / High Beta (歪みやすい) ---
+    'PLTR':'AI', 'CVNA':'Spec', 'RKLB':'Spec', 'ASTS':'Spec',
+    'IREN':'CryptoInfra', 'APLD':'AIInfra',
+
+    # --- Metals ---
+    'GLD':'Metal', 'IAU':'Metal', 'GLDM':'Metal', 'SLV':'Metal',
+
+    # --- Others ---
+    'DIA':'Index', 'EWZ':'Index'
 }
 
 SECTOR_ETF = {
-    'Energy':'XLE', 'Semi':'SOXX', 'Bank':'XLF', 'Retail':'XRT', 'Soft':'IGV', 'AI':'QQQ',
-    'Fin':'VFH', 'Device':'QQQ', 'Cloud':'QQQ', 'Ad':'QQQ', 'Service':'QQQ', 'Sec':'HACK',
-    'Cons':'XLP', 'Bio':'IBB', 'Health':'XLV', 'Ind':'XLI', 'Auto':'CARZ', 'Crypto':'BTC-USD',
-    'Power':'XLI', 'Platform':'QQQ', 'Travel':'XLY', 'Bet':'BETZ', 'Fintech':'ARKF'
+    'Index':'SPY',
+    'Sector':'SPY',
+    'AI':'QQQ',
+    'Semi':'SOXX',
+    'SemiETF':'SOXX',
+    'Cloud':'QQQ',
+    'Ad':'QQQ',
+    'Soft':'IGV',
+    'Retail':'XRT',
+    'Cons':'XLP',
+    'Bank':'XLF',
+    'Fin':'VFH',
+    'Health':'XLV',
+    'Bio':'IBB',
+    'Energy':'XLE',
+    'Ind':'XLI',
+    'Material':'XLB',
+    'Metal':'GLD',
+    'Gold':'GLD',
+    'Bond':'LQD',
+    'Crypto':'BTC-USD',
+    'CryptoProxy':'BTC-USD',
+    'CryptoInfra':'BTC-USD',
+    'Leveraged':'QQQ',
+    'Spec':'IWM'
 }
 
 # ---------------------------
