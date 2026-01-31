@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# backtest_v27_relaxed.py
-# SENTINEL v27 バックテスト（フィルター緩和版）
+# backtest_v27_3years.py
+# SENTINEL v27 3年間バックテスト (2022-2024)
+# ベア相場 + 横ばい + ブル相場
 
 import yfinance as yf
 import pandas as pd
@@ -15,8 +16,8 @@ logger = logging.getLogger("Backtest")
 # ---------------------------
 # CONFIG
 # ---------------------------
-START_DATE = "2024-01-01"
-END_DATE = "2024-12-31"
+START_DATE = "2022-01-01"  # ベア相場開始
+END_DATE = "2024-12-31"    # ブル相場終了
 
 TEST_TICKERS = [
     'NVDA', 'AMD', 'AVGO', 'TSM',
@@ -27,7 +28,6 @@ TEST_TICKERS = [
     'RKLB'
 ]
 
-INITIAL_CAPITAL = 350_000
 ATR_STOP_MULT = 2.0
 REWARD_MULT = 2.0
 MAX_HOLD_DAYS = 60
@@ -56,14 +56,7 @@ def calculate_atr(df, period=14):
 
 
 def detect_vcp_breakout_relaxed(df):
-    """
-    VCPブレイクアウト検出（緩和版）
-    
-    条件を緩和:
-    1. MA50 > MA200（上昇トレンド）
-    2. 価格が20日高値をブレイク
-    3. 出来高が平均以上（1.0倍以上） ← 緩和
-    """
+    """VCPブレイクアウト検出（緩和版）"""
     try:
         close = df['Close'].astype(float)
         high = df['High'].astype(float)
@@ -77,14 +70,12 @@ def detect_vcp_breakout_relaxed(df):
         signals = []
         
         for i in range(200, len(df)):
-            # トレンドフィルター
             if pd.isna(df['MA50'].iloc[i]) or pd.isna(df['MA200'].iloc[i]):
                 continue
             
             if df['MA50'].iloc[i] <= df['MA200'].iloc[i]:
                 continue
             
-            # ブレイクアウト検出（緩和）
             prev_high20 = df['High20'].iloc[i-1]
             current_close = close.iloc[i]
             current_volume = volume.iloc[i]
@@ -93,7 +84,6 @@ def detect_vcp_breakout_relaxed(df):
             if pd.isna(prev_high20) or pd.isna(avg_volume):
                 continue
             
-            # 出来高条件を緩和（1.0倍以上）
             if (current_close > prev_high20 and
                 current_volume > avg_volume * 1.0):
                 
@@ -125,8 +115,6 @@ def backtest_ticker(ticker, start_date, end_date):
             df.columns = df.columns.get_level_values(0)
         
         df['ATR'] = calculate_atr(df)
-        
-        # フィルター緩和版のシグナル検出
         signals = detect_vcp_breakout_relaxed(df)
         
         if not signals:
@@ -182,8 +170,12 @@ def backtest_ticker(ticker, start_date, end_date):
             pnl_pct = ((exit_price - entry_price) / entry_price) * 100
             hold_days = (exit_date - entry_date).days
             
+            # 年度を追加
+            year = entry_date.year
+            
             trades.append({
                 'ticker': ticker,
+                'year': year,
                 'entry_date': entry_date,
                 'entry_price': entry_price,
                 'exit_date': exit_date,
@@ -204,10 +196,15 @@ def backtest_ticker(ticker, start_date, end_date):
 def run_backtest():
     """バックテスト実行"""
     logger.info("="*70)
-    logger.info("SENTINEL v27 BACKTEST (RELAXED)")
+    logger.info("SENTINEL v27 BACKTEST - 3 YEARS (2022-2024)")
     logger.info("="*70)
     logger.info(f"Period: {START_DATE} to {END_DATE}")
     logger.info(f"Tickers: {len(TEST_TICKERS)}")
+    logger.info("")
+    logger.info("Market Conditions:")
+    logger.info("  2022: BEAR MARKET (S&P -18%)")
+    logger.info("  2023: RECOVERY    (S&P +24%)")
+    logger.info("  2024: BULL MARKET (S&P +25%)")
     logger.info("")
     
     all_trades = []
@@ -224,6 +221,7 @@ def run_backtest():
     
     df_trades = pd.DataFrame(all_trades)
     
+    # 全期間の統計
     total_trades = len(df_trades)
     wins = len(df_trades[df_trades['result'] == 'WIN'])
     losses = len(df_trades[df_trades['result'] == 'LOSS'])
@@ -243,16 +241,21 @@ def run_backtest():
     drawdown = df_trades['cumulative_pnl'] - running_max
     max_drawdown = drawdown.min()
     
-    exit_reasons = df_trades['exit_reason'].value_counts()
+    # 年度別統計
+    yearly_stats = df_trades.groupby('year').agg({
+        'pnl_pct': ['count', 'mean', 'sum'],
+        'result': lambda x: (x == 'WIN').sum() / len(x) * 100
+    }).round(2)
+    yearly_stats.columns = ['Trades', 'Avg%', 'Total%', 'WR%']
     
     # レポート
     print("\n" + "="*70)
-    print("BACKTEST RESULTS - SENTINEL v27 (RELAXED)")
+    print("BACKTEST RESULTS - 3 YEARS (2022-2024)")
     print("="*70)
     print(f"Period:          {START_DATE} to {END_DATE}")
     print(f"Total Trades:    {total_trades}")
     print(f"")
-    print(f"【PERFORMANCE】")
+    print(f"【OVERALL PERFORMANCE】")
     print(f"Wins:            {wins} ({win_rate:.1f}%)")
     print(f"Losses:          {losses} ({100-win_rate:.1f}%)")
     print(f"")
@@ -265,32 +268,35 @@ def run_backtest():
     print(f"Max Drawdown:    {max_drawdown:.2f}%")
     print(f"Avg Hold Days:   {df_trades['hold_days'].mean():.1f} days")
     print(f"")
-    print(f"【EXIT REASONS】")
-    for reason, count in exit_reasons.items():
-        pct = (count / total_trades) * 100
-        print(f"{reason:12} {count:3} ({pct:5.1f}%)")
-    print("")
     
     print("="*70)
-    print("TOP 10 TRADES")
+    print("YEARLY PERFORMANCE")
     print("="*70)
-    top10 = df_trades.nlargest(10, 'pnl_pct')
-    for i, (_, row) in enumerate(top10.iterrows(), 1):
-        print(f"[{i:2}] {row['ticker']:6} {row['entry_date'].strftime('%Y-%m-%d')} "
-              f"{row['pnl_pct']:+6.2f}% ({row['hold_days']:2}日) {row['exit_reason']}")
+    print(yearly_stats.to_string())
     print("")
     
-    print("="*70)
-    print("WORST 10 TRADES")
-    print("="*70)
-    worst10 = df_trades.nsmallest(10, 'pnl_pct')
-    for i, (_, row) in enumerate(worst10.iterrows(), 1):
-        print(f"[{i:2}] {row['ticker']:6} {row['entry_date'].strftime('%Y-%m-%d')} "
-              f"{row['pnl_pct']:+6.2f}% ({row['hold_days']:2}日) {row['exit_reason']}")
+    # 各年のコメント
+    for year in [2022, 2023, 2024]:
+        year_data = df_trades[df_trades['year'] == year]
+        if not year_data.empty:
+            year_return = year_data['pnl_pct'].sum()
+            year_trades = len(year_data)
+            year_wr = (year_data['result'] == 'WIN').sum() / year_trades * 100
+            
+            market_comment = {
+                2022: "BEAR (-18%)",
+                2023: "RECOVERY (+24%)",
+                2024: "BULL (+25%)"
+            }
+            
+            print(f"{year} ({market_comment[year]}):")
+            print(f"  Trades: {year_trades} | WR: {year_wr:.1f}% | Total: {year_return:+.2f}%")
+    
     print("")
     
+    # 銘柄別パフォーマンス
     print("="*70)
-    print("PERFORMANCE BY TICKER")
+    print("PERFORMANCE BY TICKER (3 YEARS)")
     print("="*70)
     ticker_perf = df_trades.groupby('ticker').agg({
         'pnl_pct': ['count', 'mean', 'sum'],
@@ -301,8 +307,8 @@ def run_backtest():
     print(ticker_perf.to_string())
     print("")
     
-    df_trades.to_csv('backtest_trades_relaxed.csv', index=False)
-    logger.info("Trades saved to backtest_trades_relaxed.csv")
+    df_trades.to_csv('backtest_trades_3years.csv', index=False)
+    logger.info("Trades saved to backtest_trades_3years.csv")
     
     print("="*70)
     print("CONCLUSION")
@@ -319,8 +325,35 @@ def run_backtest():
         print(f"   → システム改善が必要")
     
     total_return = df_trades['pnl_pct'].sum()
-    print(f"\n総リターン: {total_return:+.2f}% ({total_trades}トレード)")
-    print(f"月平均: {total_return/12:+.2f}%")
+    annual_return = total_return / 3
+    monthly_return = annual_return / 12
+    
+    print(f"\n3年間総リターン: {total_return:+.2f}% ({total_trades}トレード)")
+    print(f"年平均: {annual_return:+.2f}%")
+    print(f"月平均: {monthly_return:+.2f}%")
+    print("")
+    
+    # 市場環境別の評価
+    print("="*70)
+    print("MARKET ENVIRONMENT ANALYSIS")
+    print("="*70)
+    
+    bear_2022 = df_trades[df_trades['year'] == 2022]['pnl_pct'].sum()
+    bull_2023 = df_trades[df_trades['year'] == 2023]['pnl_pct'].sum()
+    bull_2024 = df_trades[df_trades['year'] == 2024]['pnl_pct'].sum()
+    
+    print(f"2022 (BEAR):     {bear_2022:+.2f}%")
+    print(f"2023 (RECOVERY): {bull_2023:+.2f}%")
+    print(f"2024 (BULL):     {bull_2024:+.2f}%")
+    print("")
+    
+    if bear_2022 < 0:
+        print("⚠️  ベア相場で苦戦")
+        print("   → トレンドフォロー戦略の限界")
+    else:
+        print("✅ ベア相場でもプラス！")
+        print("   → 全天候型システム")
+    
     print("="*70)
     
     return df_trades
