@@ -900,7 +900,7 @@ SPY距離: {distance:+.1f}%
     report_lines.append(f"🔥 CORE: {len(passed_core)} | ⚡ SEC: {len(passed_secondary)} | 👁 WATCH: {len(passed_watch)}")
     report_lines.append("="*50)
 
-    # TOP PRIORITY
+    # TOP PRIORITY with EXIT STRATEGY
     if passed_core:
         top = passed_core[0]
         ticker = top[0]
@@ -909,6 +909,15 @@ SPY距離: {distance:+.1f}%
         
         actual_shares = int(r['est_shares'])
         actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+        
+        # Calculate exit levels
+        entry = r['pivot']
+        stop = r['stop']
+        atr = (entry - stop) / ATR_STOP_MULT
+        target1 = entry + (atr * 2.0)  # 2R
+        target2 = entry + (atr * 4.0)  # 4R
+        risk_pct = ((entry - stop) / entry) * 100
+        reward_pct = ((target2 - entry) / entry) * 100
 
         report_lines.append(f"\n🎯 TOP: {ticker} ({q['total_score']}/100)")
         if actual_shares > 0:
@@ -916,27 +925,46 @@ SPY距離: {distance:+.1f}%
         else:
             report_lines.append(f"   ⚠️ 1株未満 (${r['price']:.2f})")
         report_lines.append(f"   {r['why_now']}")
+        report_lines.append(f"\n   📍 Entry: ${entry:.2f} | Stop: ${stop:.2f} (-{risk_pct:.1f}%)")
+        report_lines.append(f"   🎯 T1: ${target1:.2f} (2R) | T2: ${target2:.2f} (+{reward_pct:.1f}%)")
 
-    # CORE (Top 5)
+    # CORE (Top 10 with exit strategy)
     if passed_core:
-        report_lines.append(f"\n🔥 CORE (Top 5)")
-        for i, (ticker, r) in enumerate(passed_core[:5], 1):
+        report_lines.append(f"\n🔥 CORE (Top 10)")
+        for i, (ticker, r) in enumerate(passed_core[:10], 1):
             q = r['quality']
             actual_shares = int(r['est_shares'])
             
-            report_lines.append(f"{i}. {ticker} {q['total_score']}/100")
+            # Exit levels
+            entry = r['pivot']
+            stop = r['stop']
+            atr = (entry - stop) / ATR_STOP_MULT
+            target = entry + (atr * 4.0)
+            risk_pct = ((entry - stop) / entry) * 100
+            reward_pct = ((target - entry) / entry) * 100
+            
+            report_lines.append(f"\n{i}. {ticker} {q['total_score']}/100")
             if actual_shares > 0:
                 report_lines.append(f"   {actual_shares}株 @ ${r['price']:.2f}")
             else:
                 report_lines.append(f"   ⚠️ <1株 (${r['price']:.2f})")
-            report_lines.append(f"   {r['why_now'][:60]}")  # Truncate
+            report_lines.append(f"   {r['why_now'][:55]}")
+            report_lines.append(f"   Entry:${entry:.2f} Stop:${stop:.2f}(-{risk_pct:.1f}%) T:${target:.2f}(+{reward_pct:.1f}%)")
 
-    # SECONDARY (Top 5)
+    # SECONDARY (Top 10 with exit)
     if passed_secondary:
-        report_lines.append(f"\n⚡ SECONDARY (Top 5)")
-        for i, (ticker, r) in enumerate(passed_secondary[:5], 1):
+        report_lines.append(f"\n⚡ SECONDARY (Top 10)")
+        for i, (ticker, r) in enumerate(passed_secondary[:10], 1):
             q = r['quality']
+            entry = r['pivot']
+            stop = r['stop']
+            atr = (entry - stop) / ATR_STOP_MULT
+            target = entry + (atr * 4.0)
+            risk_pct = ((entry - stop) / entry) * 100
+            reward_pct = ((target - entry) / entry) * 100
+            
             report_lines.append(f"{i}. {ticker} {q['total_score']}/100 @ ${r['price']:.2f}")
+            report_lines.append(f"   Entry:${entry:.2f} Stop:${stop:.2f}(-{risk_pct:.1f}%) T:${target:.2f}(+{reward_pct:.1f}%)")
 
     # WATCH (Names only)
     if passed_watch:
