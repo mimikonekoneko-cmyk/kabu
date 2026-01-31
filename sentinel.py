@@ -125,7 +125,7 @@ TICKERS = {
     # === NEW GROWTH (High Momentum) ===
     'APP': 'Ad',     # AppLovin - AI driven ads (Strongest chart)
     'RDDT': 'AI',    # Reddit - AI Data licensing
-    'CA': 'Cons',    # Cava - Next Chipotle
+    'CAVA': 'Cons',    # Cava - Next Chipotle
     'CART': 'Tech',  # Instacart - Profitable gig economy
 
     # === EXCLUDED (Poor backtest results) ===
