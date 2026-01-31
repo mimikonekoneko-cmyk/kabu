@@ -76,58 +76,76 @@ CACHE_DIR.mkdir(exist_ok=True)
 # TICKER UNIVERSE - GROWTH FOCUSED (v28)
 # Based on backtest results (3-year data)
 # ---------------------------
+  
 TICKERS = {
-    # === TOP PERFORMERS (Backtest proven) ===
-    # AI/Semiconductor (NVDA +408%, AMD +203%, AVGO +86%)
-    'NVDA':'AI', 'AMD':'Semi', 'AVGO':'Semi', 'TSM':'Semi', 'ASML':'Semi',
-    'MU':'Semi', 'QCOM':'Semi', 'MRVL':'Semi', 'LRCX':'Semi', 'AMAT':'Semi',
-    'KLAC':'Semi', 'ADI':'Semi', 'ON':'Semi',
-    
-    # Space/Defense (RKLB +223%)
-    'RKLB':'Space', 'ASTS':'Space', 'PLTR':'AI',
-    
-    # Mega Tech (META +123%, MSFT +89%)
-    'MSFT':'Cloud', 'GOOGL':'Ad', 'GOOG':'Ad', 'META':'Ad', 'AAPL':'Device',
-    
-    # Cloud/Software (Strong RR)
-    'AMZN':'Retail', 'NFLX':'Service', 'CRM':'Soft', 'NOW':'Soft', 
-    'SNOW':'Cloud', 'ADBE':'Soft', 'INTU':'Soft', 'ORCL':'Soft',
-    
-    # Growth Retail (COST +83%, WMT +54%)
-    'COST':'Retail', 'WMT':'Retail',
-    
-    # Biotech Growth (LLY +45%)
-    'LLY':'Bio', 'ABBV':'Bio', 'REGN':'Bio', 'VRTX':'Bio',
-    
-    # Fintech
-    'MA':'Fin', 'V':'Fin', 'COIN':'Crypto', 'MSTR':'Crypto', 'HOOD':'Fintech',
-    
-    # Growth Consumer
-    'TSLA':'Auto', 'SBUX':'Cons', 'NKE':'Cons',
-    
-    # === NEW DISCOVERIES (Volume trend + Growth potential) ===
-    # Volume Trend Analysis (3-week increasing volume)
-    'TARS':'Bio',    # Tarsus Pharma - 2.4x volume (eye care)
-    'ORKA':'Bio',    # Oruka Therapeutics - 3.3x volume (dermatology)
-    'CEVA':'Semi',   # CEVA - 4.3x volume (semiconductor IP)
-    'HOLX':'Health', # Hologic - 1.5x volume ($17B medical devices)
-    'FFIV':'Tech',   # F5 Networks - 1.8x volume ($10B networking)
-    
-    # TOP100 Emerging Tech
-    'PLTR':'AI',     # Palantir - AI/Data analytics
-    'CRWD':'Sec',    # CrowdStrike - Cybersecurity leader
-    'IONQ':'Quantum',# IonQ - Quantum computing pioneer
-    'ASTS':'Space',  # AST SpaceMobile - space-based cellular
-    'ANET':'Tech',   # Arista Networks - cloud networking
-    'NET':'Cloud',   # Cloudflare - CDN/security
-    'PANW':'Sec',    # Palo Alto - cybersecurity
-    
-    # === NEW GROWTH (High Momentum) ===
-    'APP': 'Ad',     # AppLovin - AI driven ads (Strongest chart)
-    'RDDT': 'AI',    # Reddit - AI Data licensing
-    'CEVA': 'Cons',    # Ceva - Next Chipotle
-    'CART': 'Tech',  # Instacart - Profitable gig economy
+    # === TOP PERFORMERS / Core (existing) ===
+    'NVDA': 'AI', 'AMD': 'Semi', 'AVGO': 'Semi', 'TSM': 'Semi', 'ASML': 'Semi',
+    'MU': 'Semi', 'QCOM': 'Semi', 'MRVL': 'Semi', 'LRCX': 'Semi', 'AMAT': 'Semi',
+    'KLAC': 'Semi', 'ADI': 'Semi', 'ON': 'Semi',
 
+    # Space / Defense / New core
+    'RKLB': 'Space', 'ASTS': 'Space', 'PLTR': 'AI',
+
+    # Mega Tech / Cloud / Ads
+    'MSFT': 'Cloud', 'GOOGL': 'Ad', 'GOOG': 'Ad', 'META': 'Ad', 'AAPL': 'Device',
+    'AMZN': 'Retail', 'NFLX': 'Service', 'CRM': 'Soft', 'NOW': 'Soft',
+    'SNOW': 'Cloud', 'ADBE': 'Soft', 'INTU': 'Soft', 'ORCL': 'Soft',
+
+    # Growth Retail / Consumer
+    'COST': 'Retail', 'WMT': 'Retail', 'TSLA': 'Auto', 'SBUX': 'Cons', 'NKE': 'Cons',
+
+    # Biotech / Healthcare
+    'LLY': 'Bio', 'ABBV': 'Bio', 'REGN': 'Bio', 'VRTX': 'Bio', 'LLY': 'Bio',
+    'BSX': 'Healthcare', 'NVO': 'Bio',
+
+    # Fintech / Crypto
+    'MA': 'Fin', 'V': 'Fin', 'COIN': 'Crypto', 'MSTR': 'Crypto', 'HOOD': 'Fintech',
+
+    # New discoveries / Volume trend (from your list)
+    'TARS': 'Bio', 'ORKA': 'Bio', 'CEVA': 'Semi', 'HOLX': 'Health', 'FFIV': 'Tech',
+    'MDLN': 'Fin', 'DJT': 'Unknown', 'DSGN': 'Bio', 'TV': 'Unknown', 'SEM': 'Semi',
+    'SCVL': 'Cons', 'INBX': 'Unknown', 'CCOI': 'Comm', 'NMAX': 'Unknown', 'EPAC': 'Unknown',
+    'HY': 'Unknown', 'AVR': 'Unknown', 'KOD': 'Unknown', 'PRSU': 'Unknown', 'PAY': 'Fin',
+    'WBTN': 'Unknown', 'ASTE': 'Tech', 'FULC': 'Unknown', 'HOLX': 'Health',
+
+    # Priority list from v28.1 (added / ensured present)
+    'SNDK': 'Tech', 'WDC': 'Tech', 'STX': 'Tech', 'GEV': 'Ind', 'CVNA': 'Cons',
+    'APH': 'Electronic', 'BABA': 'Retail', 'TXN': 'Semi', 'PG': 'ConsDef',
+    'INTU': 'Soft', 'ASTS': 'Space', 'UBER': 'Soft', 'BE': 'Ind', 'LITE': 'CommEq',
+    'IBM': 'ITServices', 'CLS': 'Electronic', 'CSCO': 'CommEq', 'APLD': 'ITServices',
+    'FXI': 'ETF', 'ANET': 'Tech', 'EWY': 'ETF', 'KO': 'ConsDef', 'IEMG': 'ETF',
+    'NET': 'Cloud', 'GLW': 'Electronic', 'PANW': 'Sec', 'MELI': 'Retail',
+    'NBIS': 'Comm', 'CRWD': 'Sec', 'ACN': 'ITServices', 'IJH': 'ETF', 'PEP': 'ConsDef',
+    'RCL': 'Travel', 'ONDS': 'CommEq', 'ETN': 'Ind', 'SPOT': 'Comm', 'TT': 'Ind',
+    'ADI': 'Semi', 'IONQ': 'Quantum', 'MRVL': 'Semi', 'AGG': 'ETF', 'RBLX': 'Gaming',
+    'ROP': 'Soft', 'PM': 'ConsDef', 'CRWV': 'AI', 'PLTR': 'AI', 'APP': 'Ad',
+    'RDDT': 'AI', 'CART': 'Tech', 'WDC': 'Tech', 'STX': 'Tech', 'MSTR': 'Crypto',
+    'GEV': 'Ind', 'CVNA': 'Cons', 'APH': 'Electronic', 'BABA': 'Retail', 'TXN': 'Semi',
+    'INTU': 'Soft', 'ASTS': 'Space', 'UBER': 'Soft', 'BE': 'Ind', 'LITE': 'CommEq',
+    'IBM': 'ITServices', 'CLS': 'Electronic', 'CSCO': 'CommEq', 'APLD': 'ITServices',
+    'FXI': 'ETF', 'ANET': 'Tech', 'EWY': 'ETF', 'KO': 'ConsDef', 'IEMG': 'ETF',
+    'NET': 'Cloud', 'GLW': 'Electronic', 'PANW': 'Sec', 'MELI': 'Retail', 'BSX': 'Healthcare',
+    'NBIS': 'Comm', 'CRWD': 'Sec', 'ACN': 'ITServices', 'IJH': 'ETF', 'PEP': 'ConsDef',
+    'NVO': 'Bio', 'RCL': 'Travel', 'ONDS': 'CommEq', 'ETN': 'Ind', 'SPOT': 'Comm',
+    'TT': 'Ind', 'ADI': 'Semi', 'IONQ': 'Quantum', 'MRVL': 'Semi', 'AGG': 'ETF',
+    'RBLX': 'Gaming', 'ROP': 'Soft', 'PM': 'ConsDef',
+
+    # Additional tech / cloud / security from your TICKERS block
+    'PLTR': 'AI', 'CRWD': 'Sec', 'IONQ': 'Quantum', 'ANET': 'Tech', 'NET': 'Cloud',
+    'PANW': 'Sec', 'MRVL': 'Semi', 'GLW': 'Electronic', 'ADBE': 'Soft', 'SNOW': 'Cloud',
+    'ORCL': 'Soft', 'NOW': 'Soft', 'CRM': 'Soft', 'AMZN': 'Retail', 'NFLX': 'Service',
+    'MSFT': 'Cloud', 'GOOGL': 'Ad', 'GOOG': 'Ad', 'META': 'Ad', 'AAPL': 'Device',
+
+    # Misc / allowed ETFs and large caps
+    'FXI': 'ETF', 'EWY': 'ETF', 'IEMG': 'ETF', 'AGG': 'ETF', 'IJH': 'ETF',
+
+    # Ensure common semiconductors and cloud names present
+    'QCOM': 'Semi', 'LRCX': 'Semi', 'KLAC': 'Semi', 'ON': 'Semi', 'AMAT': 'Semi',
+    'ADI': 'Semi', 'TXN': 'Semi', 'MU': 'Semi', 'ASML': 'Semi', 'TSM': 'Semi',
+
+    # Fallback for any tickers not explicitly categorized above
+    # (Add more mappings here as you refine sector assignments)
+}
     # === EXCLUDED (Poor backtest results) ===
     # Banks: JPM, GS, BAC, WFC (all <1% total return)
     # Traditional Retail: HD (-52%)
