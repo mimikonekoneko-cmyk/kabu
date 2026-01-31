@@ -145,7 +145,7 @@ TICKERS = {
 
     # Fallback for any tickers not explicitly categorized above
     # (Add more mappings here as you refine sector assignments)
-}
+
     # === EXCLUDED (Poor backtest results) ===
     # Banks: JPM, GS, BAC, WFC (all <1% total return)
     # Traditional Retail: HD (-52%)
