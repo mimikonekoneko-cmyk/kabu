@@ -103,7 +103,24 @@ TICKERS = {
     'MA':'Fin', 'V':'Fin', 'COIN':'Crypto', 'MSTR':'Crypto', 'HOOD':'Fintech',
     
     # Growth Consumer
-    'TSLA':'Auto', 'SBUX':'Cons', 'NKE':'Cons',  # NKE added from volume trend
+    'TSLA':'Auto', 'SBUX':'Cons', 'NKE':'Cons',
+    
+    # === NEW DISCOVERIES (Volume trend + Growth potential) ===
+    # Volume Trend Analysis (3-week increasing volume)
+    'TARS':'Bio',    # Tarsus Pharma - 2.4x volume (eye care)
+    'ORKA':'Bio',    # Oruka Therapeutics - 3.3x volume (dermatology)
+    'CEVA':'Semi',   # CEVA - 4.3x volume (semiconductor IP)
+    'HOLX':'Health', # Hologic - 1.5x volume ($17B medical devices)
+    'FFIV':'Tech',   # F5 Networks - 1.8x volume ($10B networking)
+    
+    # TOP100 Emerging Tech
+    'PLTR':'AI',     # Palantir - AI/Data analytics
+    'CRWD':'Sec',    # CrowdStrike - Cybersecurity leader
+    'IONQ':'Quantum',# IonQ - Quantum computing pioneer
+    'ASTS':'Space',  # AST SpaceMobile - space-based cellular
+    'ANET':'Tech',   # Arista Networks - cloud networking
+    'NET':'Cloud',   # Cloudflare - CDN/security
+    'PANW':'Sec',    # Palo Alto - cybersecurity
     
     # === EXCLUDED (Poor backtest results) ===
     # Banks: JPM, GS, BAC, WFC (all <1% total return)
