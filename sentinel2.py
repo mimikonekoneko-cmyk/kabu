@@ -1,4 +1,4 @@
-!/usr/bin/env python3
+#!/usr/bin/env python3
 # SENTINEL v28_JP PRIORITIZED - 日本株向けETF/株式分割通知
 # マルチ次元スコアリング with VCP成熟度と機関投資家分析
 # 哲学: 「価格と出来高が原因、ニュースは結果」
