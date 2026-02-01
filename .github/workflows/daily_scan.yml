@@ -19,10 +19,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # ↓ ここから全角スペースを除去し、必要なライブラリを網羅しました
           pip install alpaca-trade-api pandas requests numpy yfinance beautifulsoup4 cachetools
 
-      - name: Run Script
+      - name: Run sentinel.py
         env:
           # sentinel.py内の os.getenv 名に合わせて設定
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
@@ -34,3 +33,14 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           USER_ID: ${{ secrets.LINE_USER_ID }}
         run: python sentinel.py
+
+      - name: Run sentinel2.py
+        env:
+          # sentinel2.pyでも同じ環境変数を使用する場合
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_API_SECRET: ${{ secrets.ALPACA_API_SECRET }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          USER_ID: ${{ secrets.LINE_USER_ID }}
+        run: python sentinel2.py
