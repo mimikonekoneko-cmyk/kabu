@@ -1,60 +1,49 @@
+# .github/workflows/ai_analysis.yml
 name: AI Deep Analysis
 
 on:
-  schedule:
-    # 毎日 JST 8:00（UTC 23:00）
-    - cron: '0 23 * * *'
+  # 朝のワークフロー完了後に動かす、または特定の時間に動かす
+  workflow_run:
+    workflows: ["Morning Signal Alert"]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
   ai_analysis:
+    # 前のワークフローが成功した時だけ実行
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-
+    
     steps:
-    # ① リポジトリ取得
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # ② Python セットアップ
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    # ③ 依存関係
-    - name: Install dependencies
-      run: |
-        pip install requests
+      - name: Install dependencies
+        run: pip install requests
 
-    # ④ 朝のシグナルを取得（★最重要）
-    - name: Download morning signals
-      uses: actions/download-artifact@v4
-      with:
-        name: today-signals
-        path: .
-      continue-on-error: true
+      - name: Download signals from latest Morning Signal run
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          # 朝のワークフロー名を正確に指定
+          workflow: morning_signal.yml
+          name: today-signals
+          # 最新の「成功した」実行から取得
+          workflow_conclusion: success
+          path: .
+          # 見つからなくてもエラーにせず、後続のPythonでハンドリングさせる
+          if_no_artifact_found: warn
 
-    # ⑤ デバッグ（任意・おすすめ）
-    - name: Debug files
-      run: |
-        echo "Current directory:"
-        pwd
-        echo "Files:"
-        ls -la
-
-    # ⑥ AI 深層分析実行
-    - name: Run AI Deep Analysis
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        LINE_ACCESS_TOKEN: ${{ secrets.LINE_ACCESS_TOKEN }}
-        LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-      run: |
-        python ai_deep_analysis.py
-
-    # ⑦ 結果を artifact に保存
-    - name: Upload analysis result
-      uses: actions/upload-artifact@v4
-      with:
-        name: ai-analysis
-        path: ai_analysis_*.txt
-        retention-days: 7
+      - name: Run AI Deep Analysis
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          LINE_ACCESS_TOKEN: ${{ secrets.LINE_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+        run: |
+          # ファイルがない場合はスクリプト側で空リストとして扱う
+          python ai_deep_analysis.py
