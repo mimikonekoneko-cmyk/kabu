@@ -12,7 +12,7 @@ from datetime import datetime
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-1.5-pro:generateContent"
+    "gemini-2.5-flash:generateContent"
 )
 
 # ===== LINE 設定 =====
