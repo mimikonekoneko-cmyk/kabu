@@ -2,11 +2,9 @@ name: Evening Close Price Alert
 
 on:
   workflow_run:
-    workflows: ["Morning Signal Alert"]   # 朝の workflow 名
+    workflows: ["Morning Signal Alert"]
     types:
       - completed
-  schedule:
-    - cron: '0 13 * * 1-5'  # JST 22:00
   workflow_dispatch:
 
 jobs:
