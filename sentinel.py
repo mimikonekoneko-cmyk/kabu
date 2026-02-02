@@ -1003,5 +1003,207 @@ SPY距離: {distance:+.1f}%
     logger.info("\n%s", final_report)
     send_line(final_report)
 
+# ===========================
+# v28の最後に追加する関数
+# ===========================
+
+def save_signals_to_json(passed_core, passed_secondary, passed_watch):
+    """
+    シグナルをJSON保存
+    
+    Args:
+        passed_core: CORE銘柄リスト [(ticker, result), ...]
+        passed_secondary: SECONDARY銘柄リスト
+        passed_watch: WATCH銘柄リスト
+    """
+    
+    signals = []
+    
+    # CORE銘柄
+    for ticker, result in passed_core:
+        signal = {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M:%S'),
+            'ticker': ticker,
+            'tier': 'CORE',
+            'score': result['quality']['total_score'],
+            'tech_score': result['quality']['tech_score'],
+            'rr_score': result['quality']['rr_score'],
+            'inst_score': result['quality'].get('inst_score', 25),
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'stop_pct': result.get('stop_pct', 0),
+            'target_pct': result.get('target_pct', 0),
+            'shares': result.get('est_shares', 0),
+            'cost': result.get('est_cost', 0),
+            'why_now': result.get('why_now', ''),
+            'sector': result.get('sector', 'Unknown'),
+            'vcp_completion': result.get('vcp_analysis', {}).get('vcp_completion_pct', 0),
+            'vcp_stage': result.get('vcp_analysis', {}).get('vcp_stage', 'Unknown'),
+            'win_rate': result.get('bt_result', {}).get('win_rate', 0),
+            'expectancy': result.get('bt_result', {}).get('expectancy', 0),
+            'rr_ratio': result.get('rr_ratio', 0)
+        }
+        signals.append(signal)
+    
+    # SECONDARY銘柄（TOP10）
+    for ticker, result in passed_secondary[:10]:
+        signal = {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M:%S'),
+            'ticker': ticker,
+            'tier': 'SECONDARY',
+            'score': result['quality']['total_score'],
+            'tech_score': result['quality']['tech_score'],
+            'rr_score': result['quality']['rr_score'],
+            'inst_score': result['quality'].get('inst_score', 25),
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'stop_pct': result.get('stop_pct', 0),
+            'target_pct': result.get('target_pct', 0),
+            'shares': result.get('est_shares', 0),
+            'cost': result.get('est_cost', 0),
+            'why_now': result.get('why_now', ''),
+            'sector': result.get('sector', 'Unknown'),
+            'vcp_completion': result.get('vcp_analysis', {}).get('vcp_completion_pct', 0),
+            'vcp_stage': result.get('vcp_analysis', {}).get('vcp_stage', 'Unknown'),
+            'win_rate': result.get('bt_result', {}).get('win_rate', 0),
+            'expectancy': result.get('bt_result', {}).get('expectancy', 0),
+            'rr_ratio': result.get('rr_ratio', 0)
+        }
+        signals.append(signal)
+    
+    # WATCH銘柄（TOP10）
+    for ticker, result in passed_watch[:10]:
+        signal = {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M:%S'),
+            'ticker': ticker,
+            'tier': 'WATCH',
+            'score': result['quality']['total_score'],
+            'tech_score': result['quality']['tech_score'],
+            'rr_score': result['quality']['rr_score'],
+            'inst_score': result['quality'].get('inst_score', 25),
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'stop_pct': result.get('stop_pct', 0),
+            'target_pct': result.get('target_pct', 0),
+            'shares': result.get('est_shares', 0),
+            'cost': result.get('est_cost', 0),
+            'why_now': result.get('why_now', ''),
+            'sector': result.get('sector', 'Unknown'),
+            'vcp_completion': result.get('vcp_analysis', {}).get('vcp_completion_pct', 0),
+            'vcp_stage': result.get('vcp_analysis', {}).get('vcp_stage', 'Unknown'),
+            'win_rate': result.get('bt_result', {}).get('win_rate', 0),
+            'expectancy': result.get('bt_result', {}).get('expectancy', 0),
+            'rr_ratio': result.get('rr_ratio', 0)
+        }
+        signals.append(signal)
+    
+    # 日付付きファイル名で保存
+    today = datetime.now().strftime('%Y%m%d')
+    filename_dated = f"signals_{today}.json"
+    
+    with open(filename_dated, 'w') as f:
+        json.dump(signals, f, indent=2)
+    
+    # 固定名でも保存（GitHub Actions用）
+    with open('today_signals.json', 'w') as f:
+        json.dump(signals, f, indent=2)
+    
+    print(f"\n✅ Signals saved to JSON:")
+    print(f"   📄 {filename_dated}")
+    print(f"   📄 today_signals.json")
+    print(f"   📊 Total: {len(signals)} signals")
+    print(f"      🔥 CORE: {len([s for s in signals if s['tier']=='CORE'])}")
+    print(f"      ⚡ SECONDARY: {len([s for s in signals if s['tier']=='SECONDARY'])}")
+    print(f"      👁 WATCH: {len([s for s in signals if s['tier']=='WATCH'])}")
+    print()
+
+# ===========================
+# v28への統合方法
+# ===========================
+
+"""
+既存のsentinel_v28_growth.pyの最後に追加:
+
+# 既存コード
+if __name__ == "__main__":
+    # ... 既存の処理 ...
+    
+    # 最後のprint_final_report()の後に追加:
+    
+    # JSONファイル保存
+    save_signals_to_json(passed_core, passed_secondary, passed_watch)
+    
+    # これで完了！
+"""
+
+# ===========================
+# 使用例
+# ===========================
+
+if __name__ == "__main__":
+    print("="*70)
+    print("v28 JSON出力機能")
+    print("="*70)
+    print()
+    print("このコードをsentinel_v28_growth.pyに統合してください")
+    print()
+    print("統合手順:")
+    print()
+    print("1. sentinel_v28_growth.py を開く")
+    print()
+    print("2. save_signals_to_json() 関数をコピペ")
+    print()
+    print("3. if __name__ == '__main__': の最後に追加:")
+    print("   save_signals_to_json(passed_core, passed_secondary, passed_watch)")
+    print()
+    print("4. 実行:")
+    print("   python sentinel_v28_growth.py")
+    print()
+    print("5. 確認:")
+    print("   ls signals_*.json")
+    print("   cat today_signals.json")
+    print()
+    print("="*70)
+    print()
+    print("サンプル出力:")
+    print()
+    
+    # サンプルデータで実演
+    sample_signals = [
+        {
+            'date': '2026-02-02',
+            'time': '07:00:00',
+            'ticker': 'FULC',
+            'tier': 'CORE',
+            'score': 87,
+            'entry': 11.30,
+            'stop': 9.77,
+            'target': 14.36,
+            'shares': 46,
+            'why_now': '初動開始可能性'
+        },
+        {
+            'date': '2026-02-02',
+            'time': '07:00:00',
+            'ticker': 'TSM',
+            'tier': 'CORE',
+            'score': 83,
+            'entry': 346.19,
+            'stop': 325.30,
+            'target': 387.97,
+            'shares': 1,
+            'why_now': '高RR'
+        }
+    ]
+    
+    print(json.dumps(sample_signals, indent=2))
+    print()
+    print("="*70)
 if __name__ == "__main__":
     run_mission()
