@@ -1127,24 +1127,6 @@ def save_signals_to_json(passed_core, passed_secondary, passed_watch):
 # v28への統合方法
 # ===========================
 
-"""
-既存のsentinel_v28_growth.pyの最後に追加:
-
-# 既存コード
-if __name__ == "__main__":
-    # ... 既存の処理 ...
-    
-    # 最後のprint_final_report()の後に追加:
-    
-    # JSONファイル保存
-    save_signals_to_json(passed_core, passed_secondary, passed_watch)
-    
-    # これで完了！
-"""
-
-# ===========================
-# 使用例
-# ===========================
 
 if __name__ == "__main__":
     print("="*70)
@@ -1205,6 +1187,5 @@ if __name__ == "__main__":
     print(json.dumps(sample_signals, indent=2))
     print()
     print("="*70)
-if __name__ == "__main__":
     save_signals_to_json(passed_core, passed_secondary, passed_watch)
     run_mission()
