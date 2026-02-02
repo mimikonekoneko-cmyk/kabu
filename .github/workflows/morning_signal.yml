@@ -1,13 +1,13 @@
-# .github/workflows/morning_signal.yml
-# 毎朝v28を実行してシグナルをLINE通知
 
-name: Morning Signal Alert
+name: Morning Signal Alert (Commit Version)
 
 on:
   schedule:
-    # 毎日 JST 7:00 (UTC 22:00前日)
     - cron: '0 22 * * *'
-  workflow_dispatch:  # 手動実行も可能
+  workflow_dispatch:
+
+permissions:
+  contents: write  # コミット権限
 
 jobs:
   run_sentinel:
@@ -33,16 +33,18 @@ jobs:
       run: |
         python sentinel.py
     
-    - name: Save today's signals
+    # ===== JSONファイルをGitにコミット =====
+    - name: Commit signals to repo
       run: |
-        # シグナルを保存（夜の通知用）
-        if [ -f today_signals.json ]; then
-          cp today_signals.json signals_$(date +%Y%m%d).json
-        fi
-    
-    - name: Upload signals artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: today-signals
-        path: signals_*.json
-        retention-days: 1
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        # JSONファイルを追加
+        git add signals_*.json today_signals.json || true
+        
+        # コミット（変更があれば）
+        git diff --quiet && git diff --staged --quiet || \
+          git commit -m "Update signals $(date +'%Y-%m-%d')"
+        
+        # プッシュ
+        git push
