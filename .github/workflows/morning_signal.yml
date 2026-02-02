@@ -41,7 +41,7 @@ jobs:
         fi
     
     - name: Upload signals artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: today-signals
         path: signals_*.json
