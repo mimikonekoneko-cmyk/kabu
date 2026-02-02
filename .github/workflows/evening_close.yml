@@ -2,7 +2,7 @@ name: Evening Close Price Alert
 
 on:
   workflow_run:
-    workflows: ["Morning Signal Alert"]
+    workflows: ["morning_signal.yml"]   # ← ここをファイル名にする
     types:
       - completed
   workflow_dispatch:
