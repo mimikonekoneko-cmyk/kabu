@@ -2,7 +2,7 @@ name: Evening Close Price Alert
 
 on:
   workflow_run:
-    workflows: ["morning_signal.yml"]   # ← ここをファイル名にする
+    workflows: ["Morning Signal Alert"]
     types:
       - completed
   workflow_dispatch:
@@ -19,6 +19,9 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: today-signals
+        # ここがポイント：トリガー元（朝）の run から取る
+        run-id: ${{ github.event.workflow_run.id }}
+        repository: ${{ github.repository }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
