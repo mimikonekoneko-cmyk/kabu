@@ -1002,8 +1002,7 @@ SPY距離: {distance:+.1f}%
     final_report = "\n".join(report_lines)
     logger.info("\n%s", final_report)
     send_line(final_report)
-    return passedcore, passedsecondary, passed_watch
-
+    return passed_core, passed_secondary, passed_watch
 # ===========================
 # v28の最後に追加する関数
 # ===========================
