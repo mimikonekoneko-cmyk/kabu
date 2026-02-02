@@ -1207,3 +1207,4 @@ if __name__ == "__main__":
     print("="*70)
 if __name__ == "__main__":
     run_mission()
+save_signals_to_json(passed_core, passed_secondary, passed_watch)
