@@ -20,9 +20,9 @@ LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
 LINE_USER_ID = os.getenv("LINE_USER_ID")
 
 
-# -------------------------------------------------
+#------------------------------------------------
 # LINE 通知
-# -------------------------------------------------
+#------------------------------------------------
 def send_line(message: str):
     if not LINE_ACCESS_TOKEN or not LINE_USER_ID:
         return
@@ -43,9 +43,9 @@ def send_line(message: str):
         requests.post(url, headers=headers, json=payload, timeout=30)
 
 
-# -------------------------------------------------
+#------------------------------------------------
 # signals 読み込み
-# -------------------------------------------------
+#------------------------------------------------
 def load_signals():
     print("🔍 Searching signals files...")
     print("📂 CWD files:", os.listdir("."))
@@ -63,9 +63,9 @@ def load_signals():
         return json.load(f)
 
 
-# -------------------------------------------------
+#------------------------------------------------
 # Gemini 用プロンプト生成
-# -------------------------------------------------
+#------------------------------------------------
 def create_analysis_prompt(signals):
     return f"""
 あなたは世界トップクラスの株式アナリストです。
@@ -85,9 +85,7 @@ def create_analysis_prompt(signals):
 事実ベースで分析
 リスクを必ず明示
 投資助言ではなく分析結果として出力 """
--------------------------------------------------
-Gemini API 呼び出し
--------------------------------------------------
+
 def analyze_with_gemini(prompt: str) -> str: if not GEMINI_API_KEY: raise ValueError("GEMINI_API_KEY not set")
 headers = {"Content-Type": "application/json"}
 
@@ -117,13 +115,9 @@ response.raise_for_status()
 
 result = response.json()
 return result["candidates"][0]["content"]["parts"][0]["text"]
--------------------------------------------------
-レポート整形
--------------------------------------------------
+
 def format_final_report(signals, ai_analysis): lines = [] lines.append("=" * 60) lines.append("🤖 AI深層分析レポート（Gemini）") lines.append("=" * 60) lines.append(datetime.now().strftime("%Y/%m/%d %H:%M")) lines.append("") lines.append(f"📊 分析対象: {len(signals)}銘柄") lines.append("") lines.append(ai_analysis) lines.append("") lines.append("=" * 60) lines.append("⚠️ 注意事項") lines.append("- 本レポートは投資助言ではありません") lines.append("- 最終判断はご自身で行ってください") lines.append("=" * 60) return "\n".join(lines)
--------------------------------------------------
-main
--------------------------------------------------
+
 def main(): print("=" * 70) print("AI深層分析システム（Gemini）") print("=" * 70)
 try:
     print("📊 Loading signals...")
