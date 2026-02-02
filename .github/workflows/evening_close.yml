@@ -1,37 +1,46 @@
-name: Evening Close Price Alert
+# .github/workflows/evening_close_commit.yml
+# 代替案：Gitから直接JSONファイルを読む
+
+name: Evening Close Price Alert (Commit Version)
 
 on:
-  workflow_run:
-    workflows: ["Morning Signal Alert"]
-    types:
-      - completed
+  schedule:
+    - cron: '0 13 * * 1-5'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   check_close_prices:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Download morning signals
-      uses: actions/download-artifact@v4
-      with:
-        name: today-signals
-        # ここがポイント：トリガー元（朝）の run から取る
-        run-id: ${{ github.event.workflow_run.id }}
-        repository: ${{ github.repository }}
-
+    
+    # ===== 最新のmainブランチをpull =====
+    - name: Pull latest changes
+      run: |
+        git pull origin main
+    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-
+    
     - name: Install dependencies
       run: |
         pip install yfinance pandas requests
-
+    
+    # ===== デバッグ =====
+    - name: Check files
+      run: |
+        echo "Files in current directory:"
+        ls -la
+        echo "JSON files:"
+        ls -la *.json || echo "No JSON files found"
+    
     - name: Check close prices and notify
       env:
         LINE_ACCESS_TOKEN: ${{ secrets.LINE_ACCESS_TOKEN }}
