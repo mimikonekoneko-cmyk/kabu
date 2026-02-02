@@ -237,3 +237,55 @@ def main():
         print(f"✅ {len(signals)} signals loaded")
         print()
         
+        # プロンプト作成
+        print("📝 Creating analysis prompt...")
+        prompt = create_analysis_prompt(signals)
+        print(f"✅ Prompt created ({len(prompt)} chars)")
+        print()
+        
+        # Gemini API で分析
+        print("🤖 Analyzing with Gemini API (FREE)...")
+        ai_analysis = analyze_with_gemini(prompt)
+        print("✅ Analysis complete")
+        print()
+        
+        # レポート生成
+        print("📄 Generating final report...")
+        report = format_final_report(signals, ai_analysis)
+        print("✅ Report generated")
+        print()
+        
+        # 表示
+        print(report)
+        print()
+        
+        # LINE 通知
+        print("📱 Sending to LINE...")
+        send_line(report)
+        print("✅ LINE notification sent")
+        print()
+        
+        # ファイル保存
+        today = datetime.now().strftime("%Y%m%d")
+        filename = f"ai_analysis_{today}.txt"
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(report)
+        print(f"✅ Saved: {filename}")
+        print()
+        
+        print("💰 Cost: ¥0 (Completely FREE!)")
+        
+    except Exception as e:
+        msg = f"❌ Error: {e}"
+        print(msg)
+        send_line(msg)
+        raise
+    
+    print()
+    print("=" * 70)
+    print("✅ Complete!")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    main()
