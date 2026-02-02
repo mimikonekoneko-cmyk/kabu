@@ -1123,69 +1123,13 @@ def save_signals_to_json(passed_core, passed_secondary, passed_watch):
     print(f"      👁 WATCH: {len([s for s in signals if s['tier']=='WATCH'])}")
     print()
 
-# ===========================
-# v28への統合方法
-# ===========================
-
-
 if __name__ == "__main__":
-    print("="*70)
-    print("v28 JSON出力機能")
-    print("="*70)
-    print()
-    print("このコードをsentinel_v28_growth.pyに統合してください")
-    print()
-    print("統合手順:")
-    print()
-    print("1. sentinel_v28_growth.py を開く")
-    print()
-    print("2. save_signals_to_json() 関数をコピペ")
-    print()
-    print("3. if __name__ == '__main__': の最後に追加:")
-    print("   save_signals_to_json(passed_core, passed_secondary, passed_watch)")
-    print()
-    print("4. 実行:")
-    print("   python sentinel_v28_growth.py")
-    print()
-    print("5. 確認:")
-    print("   ls signals_*.json")
-    print("   cat today_signals.json")
-    print()
-    print("="*70)
-    print()
-    print("サンプル出力:")
-    print()
-    
-    # サンプルデータで実演
-    sample_signals = [
-        {
-            'date': '2026-02-02',
-            'time': '07:00:00',
-            'ticker': 'FULC',
-            'tier': 'CORE',
-            'score': 87,
-            'entry': 11.30,
-            'stop': 9.77,
-            'target': 14.36,
-            'shares': 46,
-            'why_now': '初動開始可能性'
-        },
-        {
-            'date': '2026-02-02',
-            'time': '07:00:00',
-            'ticker': 'TSM',
-            'tier': 'CORE',
-            'score': 83,
-            'entry': 346.19,
-            'stop': 325.30,
-            'target': 387.97,
-            'shares': 1,
-            'why_now': '高RR'
-        }
-    ]
-    
-    print(json.dumps(sample_signals, indent=2))
-    print()
-    print("="*70)
-    save_signals_to_json(passed_core, passed_secondary, passed_watch)
-    run_mission()
+    # メイン処理を実行して、3つのリストを受け取る
+    passed_core, passed_secondary, passed_watch = run_mission()
+
+    # JSON 出力
+    save_signals_to_json(
+        passed_core,
+        passed_secondary,
+        passed_watch
+    )
