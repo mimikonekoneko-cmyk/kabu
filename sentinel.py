@@ -1123,6 +1123,63 @@ def save_signals_to_json(passed_core, passed_secondary, passed_watch):
     print(f"      👁 WATCH: {len([s for s in signals if s['tier']=='WATCH'])}")
     print()
 
+def save_signals_to_json(passed_core, passed_secondary, passed_watch):
+    """シグナルをJSON保存"""
+    signals = []
+
+    # CORE
+    for ticker, result in passed_core:
+        signals.append({
+            'ticker': ticker,
+            'tier': 'CORE',
+            'score': result['quality']['total_score'],
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'shares': result.get('est_shares', 0),
+            'why_now': result.get('why_now', '')
+        })
+
+    # SECONDARY（上位10）
+    for ticker, result in passed_secondary[:10]:
+        signals.append({
+            'ticker': ticker,
+            'tier': 'SECONDARY',
+            'score': result['quality']['total_score'],
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'shares': result.get('est_shares', 0),
+            'why_now': result.get('why_now', '')
+        })
+
+    # WATCH（必要なら）
+    for ticker, result in passed_watch:
+        signals.append({
+            'ticker': ticker,
+            'tier': 'WATCH',
+            'score': result['quality']['total_score'],
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'shares': result.get('est_shares', 0),
+            'why_now': result.get('why_now', '')
+        })
+
+    # 保存
+    import json
+    from datetime import datetime
+
+    today = datetime.now().strftime('%Y%m%d')
+
+    with open(f'signals_{today}.json', 'w') as f:
+        json.dump(signals, f, indent=2)
+
+    with open('today_signals.json', 'w') as f:
+        json.dump(signals, f, indent=2)
+
+    print(f"\n✅ Signals saved: {len(signals)} signals")
+
 if __name__ == "__main__":
     # メイン処理を実行して、3つのリストを受け取る
     passed_core, passed_secondary, passed_watch = run_mission()
