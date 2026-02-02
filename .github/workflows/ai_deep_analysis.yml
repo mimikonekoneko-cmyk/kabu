@@ -1,0 +1,48 @@
+# .github/workflows/ai_deep_analysis.yml
+# v28シグナルをClaude APIで深層分析
+
+name: AI Deep Analysis
+
+on:
+  schedule:
+    # 毎日 JST 8:00 (朝のシグナル後)
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+
+jobs:
+  ai_analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        pip install requests
+    
+    - name: Download morning signals
+      uses: actions/download-artifact@v3
+      with:
+        name: today-signals
+      continue-on-error: true
+    
+    - name: Run AI Deep Analysis
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        LINE_ACCESS_TOKEN: ${{ secrets.LINE_ACCESS_TOKEN }}
+        LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+      run: |
+        python ai_deep_analysis.py
+    
+    - name: Upload analysis result
+      uses: actions/upload-artifact@v3
+      with:
+        name: ai-analysis
+        path: ai_analysis_*.txt
+        retention-days: 7

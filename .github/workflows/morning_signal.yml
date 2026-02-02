@@ -1,0 +1,48 @@
+# .github/workflows/morning_signal.yml
+# 毎朝v28を実行してシグナルをLINE通知
+
+name: Morning Signal Alert
+
+on:
+  schedule:
+    # 毎日 JST 7:00 (UTC 22:00前日)
+    - cron: '0 22 * * *'
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  run_sentinel:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        pip install yfinance pandas numpy requests
+    
+    - name: Run SENTINEL v28
+      env:
+        LINE_ACCESS_TOKEN: ${{ secrets.LINE_ACCESS_TOKEN }}
+        LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+      run: |
+        python sentinel_v28_growth.py
+    
+    - name: Save today's signals
+      run: |
+        # シグナルを保存（夜の通知用）
+        if [ -f today_signals.json ]; then
+          cp today_signals.json signals_$(date +%Y%m%d).json
+        fi
+    
+    - name: Upload signals artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: today-signals
+        path: signals_*.json
+        retention-days: 1
