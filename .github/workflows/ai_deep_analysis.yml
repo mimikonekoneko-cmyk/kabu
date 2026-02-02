@@ -41,7 +41,7 @@ jobs:
         python ai_deep_analysis.py
     
     - name: Upload analysis result
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ai-analysis
         path: ai_analysis_*.txt
