@@ -16,7 +16,8 @@ GEMINI_API_URL = (
 )
 
 # ===== LINE 設定 =====
-LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
+# YAML側でどちらの名前を使っても動くように or で結合
+LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN") or os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 LINE_USER_ID = os.getenv("LINE_USER_ID")
 
 
