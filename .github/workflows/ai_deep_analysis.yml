@@ -13,16 +13,14 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
 
-    # 書き込み権限を付与（ファイルをリポジトリに保存するために必要）
+    # ここを修正：書き込み権限を加えると他が消えるので、actions: read も明記する
     permissions:
       contents: write
+      actions: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          # 最新の状態を取得
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -35,6 +33,7 @@ jobs:
       - name: Download signals from latest Morning Signal run
         uses: dawidd6/action-download-artifact@v6
         with:
+          # トークンを指定しなくても最初動いていたなら、ここはそのままでOK
           workflow: morning_signal.yml
           name: today-signals
           workflow_conclusion: success
@@ -49,17 +48,15 @@ jobs:
         run: |
           python ai_deep_analysis.py
 
-      # --- ここから追加：生成されたレポートをGitHubに保存 ---
+      # --- ファイル保存のステップ ---
       - name: Commit and Push Report
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # ai_analysis_*.txt が存在する場合のみ追加
+          # ファイルが存在する場合のみ実行
           if ls ai_analysis_*.txt 1> /dev/null 2>&1; then
             git add ai_analysis_*.txt
-            git commit -m "chore: AI analysis report generated [skip ci]"
+            git commit -m "chore: save AI report [skip ci]"
             git push
-          else
-            echo "No report file found to commit."
           fi
