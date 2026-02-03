@@ -3,310 +3,300 @@
     "ticker": "FULC",
     "tier": "CORE",
     "score": 87,
-    "entry": 11.302559732437134,
-    "stop": 9.887274485724312,
+    "entry": 11.1622803440094,
+    "stop": 9.793437946592059,
     "target": 0,
-    "shares": 46.64178988295694,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-5.2%"
+    "shares": 47.664443366017665,
+    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-6.0%"
   },
   {
     "ticker": "TSM",
     "tier": "CORE",
     "score": 83,
-    "entry": 346.191,
-    "stop": 324.930998953683,
+    "entry": 347.73910345458984,
+    "stop": 324.85267244175503,
     "target": 0,
-    "shares": 1.4647293808764845,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-1.4%"
-  },
-  {
-    "ticker": "GOOG",
-    "tier": "CORE",
-    "score": 79,
-    "entry": 345.8553385620117,
-    "stop": 329.4046331699916,
-    "target": 0,
-    "shares": 1.449695589586082,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09"
-  },
-  {
-    "ticker": "NVDA",
-    "tier": "CORE",
-    "score": 78,
-    "entry": 194.8789855041504,
-    "stop": 184.28898698643275,
-    "target": 0,
-    "shares": 2.693820367199087,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u826f\u597dRR | \u62bc\u76ee-4.8%"
+    "shares": 1.4892032762472078,
+    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-3.4%"
   },
   {
     "ticker": "KOD",
     "tier": "CORE",
     "score": 75,
     "entry": 26.8435809173584,
-    "stop": 22.580723752702987,
+    "stop": 22.64929538835798,
     "target": 0,
-    "shares": 20.738282345182785,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-10.2%"
+    "shares": 20.80732358355159,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-10.5%"
   },
   {
-    "ticker": "AVGO",
-    "tier": "SECONDARY",
-    "score": 74,
-    "entry": 340.6699702148438,
-    "stop": 315.6456956612723,
+    "ticker": "APH",
+    "tier": "CORE",
+    "score": 75,
+    "entry": 153.71682366943358,
+    "stop": 138.04396556745255,
     "target": 0,
-    "shares": 1.5100722482564675,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-2.8%"
+    "shares": 3.3999728566620084,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-4.3%"
   },
   {
     "ticker": "ASTS",
     "tier": "SECONDARY",
     "score": 74,
     "entry": 130.14977938842773,
-    "stop": 105.38734892490932,
+    "stop": 104.62020676531111,
     "target": 0,
-    "shares": 4.7824006255884415,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-19.7%"
-  },
-  {
-    "ticker": "GOOGL",
-    "tier": "SECONDARY",
-    "score": 74,
-    "entry": 345.5196465454102,
-    "stop": 328.9439411533901,
-    "target": 0,
-    "shares": 1.454799372830876,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR"
+    "shares": 4.319281191888562,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-11.1%"
   },
   {
     "ticker": "ABBV",
     "tier": "SECONDARY",
     "score": 74,
     "entry": 230.24957327270508,
-    "stop": 219.57631308503596,
+    "stop": 219.5480122414253,
     "target": 0,
-    "shares": 2.2159191692629396,
+    "shares": 2.215722732809452,
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-2.0%"
   },
   {
-    "ticker": "WDC",
+    "ticker": "STX",
     "tier": "SECONDARY",
     "score": 71,
-    "entry": 285.99085345458985,
-    "stop": 247.412279410226,
+    "entry": 460.3288236694336,
+    "stop": 403.2631106044224,
     "target": 0,
-    "shares": 1.8502756158541427,
-    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-5.5%"
+    "shares": 1.1249859067775045,
+    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-3.4%"
   },
   {
-    "ticker": "ONDS",
+    "ticker": "TARS",
     "tier": "SECONDARY",
-    "score": 71,
-    "entry": 13.106159923553466,
-    "stop": 10.253303015027727,
+    "score": 69,
+    "entry": 68.2161618347168,
+    "stop": 62.3787344229562,
     "target": 0,
-    "shares": 46.9924796866929,
-    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-18.8%"
+    "shares": 7.478312824343405,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-2.0%"
+  },
+  {
+    "ticker": "GOOG",
+    "tier": "SECONDARY",
+    "score": 67,
+    "entry": 350.85029388427733,
+    "stop": 333.95816044398714,
+    "target": 0,
+    "shares": 1.4675667217063904,
+    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-2.9%"
+  },
+  {
+    "ticker": "LITE",
+    "tier": "SECONDARY",
+    "score": 67,
+    "entry": 464.928,
+    "stop": 392.6782964564732,
+    "target": 0,
+    "shares": 1.1491610962677024,
+    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-6.4%"
+  },
+  {
+    "ticker": "AMD",
+    "tier": "SECONDARY",
+    "score": 66,
+    "entry": 261.0510587768555,
+    "stop": 235.33215400913784,
+    "target": 0,
+    "shares": 2.065176980461427,
+    "why_now": "\u826f\u597dRR | \u62bc\u76ee-7.3%"
   },
   {
     "ticker": "ASML",
     "tier": "SECONDARY",
-    "score": 70,
+    "score": 66,
     "entry": 1496.4669404296876,
-    "stop": 1395.3055285993305,
+    "stop": 1388.0998226841518,
     "target": 0,
-    "shares": 0.3468873760180395,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-3.7%"
+    "shares": 0.3581969784300881,
+    "why_now": "\u826f\u597dRR | \u62bc\u76ee-6.7%"
   },
   {
-    "ticker": "INBX",
+    "ticker": "RKLB",
     "tier": "SECONDARY",
-    "score": 70,
-    "entry": 84.21810305786133,
-    "stop": 74.3566724809919,
+    "score": 66,
+    "entry": 89.97960305786133,
+    "stop": 74.59660418265206,
     "target": 0,
-    "shares": 6.080505649861927,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-2.4%"
+    "shares": 6.152331987854927,
+    "why_now": "\u826f\u597dRR | \u62bc\u76ee-9.7%"
   },
   {
-    "ticker": "GEV",
+    "ticker": "FFIV",
     "tier": "SECONDARY",
-    "score": 67,
-    "entry": 763.8847053222656,
-    "stop": 697.8018544573102,
+    "score": 66,
+    "entry": 304.58797100830077,
+    "stop": 281.40440341622485,
     "target": 0,
-    "shares": 0.6622779970100476,
-    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-1.2%"
-  },
-  {
-    "ticker": "GLW",
-    "tier": "SECONDARY",
-    "score": 67,
-    "entry": 114.21797785949707,
-    "stop": 103.38940490504673,
-    "target": 0,
-    "shares": 4.530627013725305,
-    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-3.4%"
-  },
-  {
-    "ticker": "BABA",
-    "tier": "WATCH",
-    "score": 59,
-    "entry": 181.1115,
-    "stop": 168.8922115827288,
-    "target": 0,
-    "shares": 2.9692974749825725,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-7.0%"
-  },
-  {
-    "ticker": "APP",
-    "tier": "WATCH",
-    "score": 59,
-    "entry": 571.0598228759766,
-    "stop": 488.2773957693918,
-    "target": 0,
-    "shares": 1.0351966873706004,
-    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-15.4%"
-  },
-  {
-    "ticker": "COST",
-    "tier": "WATCH",
-    "score": 58,
-    "entry": 978.6190688295477,
-    "stop": 943.6022446716063,
-    "target": 0,
-    "shares": 0.516336907310844,
-    "why_now": "\u826f\u597dRR | \u62bc\u76ee-1.0%"
-  },
-  {
-    "ticker": "DSGN",
-    "tier": "WATCH",
-    "score": 58,
-    "entry": 10.991940267562866,
-    "stop": 9.479225745337349,
-    "target": 0,
-    "shares": 48.03074037741685,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-5.3%"
+    "shares": 1.820631362597671,
+    "why_now": "\u826f\u597dRR | \u62bc\u76ee-9.8%"
   },
   {
     "ticker": "PRSU",
     "tier": "WATCH",
     "score": 57,
     "entry": 35.97180152893066,
-    "stop": 33.584658257620674,
+    "stop": 33.50251529148647,
     "target": 0,
     "shares": 0.0,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-2.4%"
+    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-3.1%"
   },
   {
-    "ticker": "LLY",
+    "ticker": "AMAT",
     "tier": "WATCH",
     "score": 56,
-    "entry": 1075.5367946777344,
-    "stop": 1015.0739738071987,
+    "entry": 345.28920611572266,
+    "stop": 315.85063364083425,
     "target": 0,
-    "shares": 0.4788675717217008,
-    "why_now": "\u62bc\u76ee-2.9%"
+    "shares": 1.569021178434118,
+    "why_now": "\u62bc\u76ee-7.7%"
+  },
+  {
+    "ticker": "BE",
+    "tier": "WATCH",
+    "score": 56,
+    "entry": 176.8429855041504,
+    "stop": 150.07012565830775,
+    "target": 0,
+    "shares": 2.9605068494697733,
+    "why_now": "\u62bc\u76ee-4.5%"
+  },
+  {
+    "ticker": "ANET",
+    "tier": "WATCH",
+    "score": 56,
+    "entry": 152.10360305786133,
+    "stop": 138.05831933157785,
+    "target": 0,
+    "shares": 3.587057910821195,
+    "why_now": "\u62bc\u76ee-8.4%"
+  },
+  {
+    "ticker": "EWY",
+    "tier": "WATCH",
+    "score": 56,
+    "entry": 126.57263969421386,
+    "stop": 120.16477989196777,
+    "target": 0,
+    "shares": 4.02187903175177,
+    "why_now": "\u62bc\u76ee-1.8%"
+  },
+  {
+    "ticker": "PM",
+    "tier": "WATCH",
+    "score": 56,
+    "entry": 182.1235144958496,
+    "stop": 173.36637774222237,
+    "target": 0,
+    "shares": 2.824858757062147,
+    "why_now": "\u62bc\u76ee-2.8%"
   },
   {
     "ticker": "ADI",
     "tier": "WATCH",
-    "score": 54,
-    "entry": 319.89852978515626,
-    "stop": 302.00424267578126,
+    "score": 55,
+    "entry": 321.8724710083008,
+    "stop": 303.4560412161691,
     "target": 0,
-    "shares": 1.577984040633089,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d"
+    "shares": 1.606219236965473,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-3.3%"
+  },
+  {
+    "ticker": "AMZN",
+    "tier": "WATCH",
+    "score": 55,
+    "entry": 248.27555877685546,
+    "stop": 235.924127066476,
+    "target": 0,
+    "shares": 2.09538182143725,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-3.9%"
+  },
+  {
+    "ticker": "PLTR",
+    "tier": "WATCH",
+    "score": 54,
+    "entry": 165.40815893554688,
+    "stop": 150.51786962890625,
+    "target": 0,
+    "shares": 3.1669621518641855,
+    "why_now": "\u826f\u597dRR | \u62bc\u76ee-4.6%"
   },
   {
     "ticker": "VRTX",
     "tier": "WATCH",
     "score": 53,
-    "entry": 485.97,
-    "stop": 462.5157153320313,
+    "entry": 485.31870611572265,
+    "stop": 461.036566746303,
     "target": 0,
-    "shares": 1.0592995691940374,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-2.9%"
+    "shares": 1.0738601312909366,
+    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-4.1%"
   },
   {
-    "ticker": "TV",
+    "ticker": "IONQ",
     "tier": "WATCH",
     "score": 53,
-    "entry": 3.4468800573349,
-    "stop": 3.1897372070040024,
+    "entry": 46.99380152893067,
+    "stop": 38.82723004804339,
     "target": 0,
-    "shares": 0.0,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-6.0%"
+    "shares": 12.997140216645446,
+    "why_now": "\u62bc\u76ee-18.1%"
   },
   {
-    "ticker": "EWY",
+    "ticker": "LLY",
     "tier": "WATCH",
     "score": 52,
-    "entry": 126.57263969421386,
-    "stop": 120.68835036141532,
+    "entry": 1059.524854248047,
+    "stop": 994.2220588378907,
     "target": 0,
-    "shares": 4.134623325380081,
-    "why_now": "\u62bc\u76ee-4.5%"
+    "shares": 0.4982759542498493,
+    "why_now": "\u62bc\u76ee-5.3%"
   },
   {
     "ticker": "TSLA",
     "tier": "WATCH",
     "score": 50,
     "entry": 441.1104710083008,
-    "stop": 412.4519016723633,
+    "stop": 411.4504847848075,
     "target": 0,
-    "shares": 1.1853678264952572,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-4.4%"
-  },
-  {
-    "ticker": "IONQ",
-    "tier": "WATCH",
-    "score": 49,
-    "entry": 46.99380152893067,
-    "stop": 38.697943963187086,
-    "target": 0,
-    "shares": 12.966804517448233,
-    "why_now": "\u62bc\u76ee-17.9%"
-  },
-  {
-    "ticker": "QCOM",
-    "tier": "WATCH",
-    "score": 47,
-    "entry": 157.0534855041504,
-    "stop": 149.88777723475866,
-    "target": 0,
-    "shares": 3.276110706307393,
-    "why_now": "\u62bc\u76ee-2.8%"
+    "shares": 1.18494646441671,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-4.3%"
   },
   {
     "ticker": "IJH",
     "tier": "WATCH",
     "score": 47,
-    "entry": 70.0498236694336,
-    "stop": 68.25410942731585,
+    "entry": 70.0949118347168,
+    "stop": 68.18749780709403,
     "target": 0,
-    "shares": 7.2202166064981945,
-    "why_now": "\u62bc\u76ee-1.1%"
+    "shares": 7.20668809157913,
+    "why_now": "\u62bc\u76ee-1.0%"
   },
   {
     "ticker": "SEM",
     "tier": "WATCH",
     "score": 45,
-    "entry": 15.270479770660401,
-    "stop": 14.683336826324464,
+    "entry": 15.490920038223267,
+    "stop": 14.868062808173043,
     "target": 0,
     "shares": 33.15649884148807,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-1.2%"
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-2.7%"
   },
   {
     "ticker": "CCOI",
     "tier": "WATCH",
     "score": 45,
     "entry": 25.60109923553467,
-    "stop": 23.24824300820487,
+    "stop": 23.2046715360369,
     "target": 0,
-    "shares": 20.23472353401225,
-    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-3.5%"
+    "shares": 20.61855670103093,
+    "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-5.3%"
   }
 ]
