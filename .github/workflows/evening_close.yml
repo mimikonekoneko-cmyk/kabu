@@ -43,7 +43,7 @@ jobs:
     
     - name: Check close prices and notify
       env:
-        LINE_ACCESS_TOKEN: ${{ secrets.LINE_ACCESS_TOKEN }}
-        LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
       run: |
         python check_close_prices.py
