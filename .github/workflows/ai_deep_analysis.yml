@@ -2,7 +2,6 @@
 name: AI Deep Analysis
 
 on:
-  # 朝のワークフロー完了後に動かす、または特定の時間に動かす
   workflow_run:
     workflows: ["Morning Signal Alert"]
     types:
@@ -11,13 +10,19 @@ on:
 
 jobs:
   ai_analysis:
-    # 前のワークフローが成功した時だけ実行
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    
+
+    # 書き込み権限を付与（ファイルをリポジトリに保存するために必要）
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # 最新の状態を取得
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -30,13 +35,10 @@ jobs:
       - name: Download signals from latest Morning Signal run
         uses: dawidd6/action-download-artifact@v6
         with:
-          # 朝のワークフロー名を正確に指定
           workflow: morning_signal.yml
           name: today-signals
-          # 最新の「成功した」実行から取得
           workflow_conclusion: success
           path: .
-          # 見つからなくてもエラーにせず、後続のPythonでハンドリングさせる
           if_no_artifact_found: warn
 
       - name: Run AI Deep Analysis
@@ -45,5 +47,19 @@ jobs:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
         run: |
-          # ファイルがない場合はスクリプト側で空リストとして扱う
           python ai_deep_analysis.py
+
+      # --- ここから追加：生成されたレポートをGitHubに保存 ---
+      - name: Commit and Push Report
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # ai_analysis_*.txt が存在する場合のみ追加
+          if ls ai_analysis_*.txt 1> /dev/null 2>&1; then
+            git add ai_analysis_*.txt
+            git commit -m "chore: AI analysis report generated [skip ci]"
+            git push
+          else
+            echo "No report file found to commit."
+          fi
