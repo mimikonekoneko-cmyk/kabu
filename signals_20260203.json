@@ -54,7 +54,7 @@
     "tier": "SECONDARY",
     "score": 74,
     "entry": 340.6699702148438,
-    "stop": 315.6464106445313,
+    "stop": 315.6456956612723,
     "target": 0,
     "shares": 1.5100722482564675,
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-2.8%"
@@ -64,7 +64,7 @@
     "tier": "SECONDARY",
     "score": 74,
     "entry": 130.14977938842773,
-    "stop": 105.38877780151367,
+    "stop": 105.38734892490932,
     "target": 0,
     "shares": 4.7824006255884415,
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-19.7%"
@@ -83,8 +83,8 @@
     "ticker": "ABBV",
     "tier": "SECONDARY",
     "score": 74,
-    "entry": 230.22954428100587,
-    "stop": 219.55913966671847,
+    "entry": 230.24957327270508,
+    "stop": 219.57631308503596,
     "target": 0,
     "shares": 2.2159191692629396,
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-2.0%"
@@ -130,24 +130,24 @@
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u826f\u597dRR | \u62bc\u76ee-2.4%"
   },
   {
-    "ticker": "ANET",
-    "tier": "SECONDARY",
-    "score": 68,
-    "entry": 152.10360305786133,
-    "stop": 138.11289130074638,
-    "target": 0,
-    "shares": 3.613500163648506,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-9.0%"
-  },
-  {
     "ticker": "GEV",
     "tier": "SECONDARY",
     "score": 67,
-    "entry": 763.8647069091797,
-    "stop": 697.784707257952,
+    "entry": 763.8847053222656,
+    "stop": 697.8018544573102,
     "target": 0,
     "shares": 0.6622779970100476,
     "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-1.2%"
+  },
+  {
+    "ticker": "GLW",
+    "tier": "SECONDARY",
+    "score": 67,
+    "entry": 114.21797785949707,
+    "stop": 103.38940490504673,
+    "target": 0,
+    "shares": 4.530627013725305,
+    "why_now": "\u9ad8RR\uff08\u975e\u5bfe\u79f0\u512a\u4f4d\uff09 | \u62bc\u76ee-3.4%"
   },
   {
     "ticker": "BABA",
@@ -174,7 +174,7 @@
     "tier": "WATCH",
     "score": 58,
     "entry": 978.6190688295477,
-    "stop": 943.6350990242848,
+    "stop": 943.6022446716063,
     "target": 0,
     "shares": 0.516336907310844,
     "why_now": "\u826f\u597dRR | \u62bc\u76ee-1.0%"
@@ -184,10 +184,20 @@
     "tier": "WATCH",
     "score": 58,
     "entry": 10.991940267562866,
-    "stop": 9.48194003868103,
+    "stop": 9.479225745337349,
     "target": 0,
     "shares": 48.03074037741685,
     "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-5.3%"
+  },
+  {
+    "ticker": "PRSU",
+    "tier": "WATCH",
+    "score": 57,
+    "entry": 35.97180152893066,
+    "stop": 33.584658257620674,
+    "target": 0,
+    "shares": 0.0,
+    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-2.4%"
   },
   {
     "ticker": "LLY",
@@ -204,7 +214,7 @@
     "tier": "WATCH",
     "score": 54,
     "entry": 319.89852978515626,
-    "stop": 302.01281375558034,
+    "stop": 302.00424267578126,
     "target": 0,
     "shares": 1.577984040633089,
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d"
@@ -228,16 +238,6 @@
     "target": 0,
     "shares": 0.0,
     "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-6.0%"
-  },
-  {
-    "ticker": "PRSU",
-    "tier": "WATCH",
-    "score": 53,
-    "entry": 35.97180152893066,
-    "stop": 33.58537269592285,
-    "target": 0,
-    "shares": 0.0,
-    "why_now": "\u521d\u52d5\u958b\u59cb\u53ef\u80fd\u6027 | \u62bc\u76ee-2.4%"
   },
   {
     "ticker": "EWY",
@@ -274,7 +274,7 @@
     "tier": "WATCH",
     "score": 47,
     "entry": 157.0534855041504,
-    "stop": 149.88794944109236,
+    "stop": 149.88777723475866,
     "target": 0,
     "shares": 3.276110706307393,
     "why_now": "\u62bc\u76ee-2.8%"
@@ -284,7 +284,7 @@
     "tier": "WATCH",
     "score": 47,
     "entry": 70.0498236694336,
-    "stop": 68.25482441057477,
+    "stop": 68.25410942731585,
     "target": 0,
     "shares": 7.2202166064981945,
     "why_now": "\u62bc\u76ee-1.1%"
@@ -293,8 +293,8 @@
     "ticker": "SEM",
     "tier": "WATCH",
     "score": 45,
-    "entry": 15.2654696559906,
-    "stop": 14.678326711654663,
+    "entry": 15.270479770660401,
+    "stop": 14.683336826324464,
     "target": 0,
     "shares": 33.15649884148807,
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-1.2%"
@@ -303,8 +303,8 @@
     "ticker": "CCOI",
     "tier": "WATCH",
     "score": 45,
-    "entry": 25.596090076446533,
-    "stop": 23.243233576638357,
+    "entry": 25.60109923553467,
+    "stop": 23.24824300820487,
     "target": 0,
     "shares": 20.23472353401225,
     "why_now": "\u5f62\u6210\u9032\u884c\u4e2d | \u62bc\u76ee-3.5%"
