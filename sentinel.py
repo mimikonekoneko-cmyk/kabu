@@ -76,41 +76,88 @@ CACHE_DIR.mkdir(exist_ok=True)
 # TICKER UNIVERSE - GROWTH FOCUSED (v28)
 # Based on backtest results (3-year data)
 # ---------------------------
+  
 TICKERS = {
-    # === TOP PERFORMERS (Backtest proven) ===
-    # AI/Semiconductor (NVDA +408%, AMD +203%, AVGO +86%)
-    'NVDA':'AI', 'AMD':'Semi', 'AVGO':'Semi', 'TSM':'Semi', 'ASML':'Semi',
-    'MU':'Semi', 'QCOM':'Semi', 'MRVL':'Semi', 'LRCX':'Semi', 'AMAT':'Semi',
-    'KLAC':'Semi', 'ADI':'Semi', 'ON':'Semi',
-    
-    # Space/Defense (RKLB +223%)
-    'RKLB':'Space', 'ASTS':'Space', 'PLTR':'AI',
-    
-    # Mega Tech (META +123%, MSFT +89%)
-    'MSFT':'Cloud', 'GOOGL':'Ad', 'GOOG':'Ad', 'META':'Ad', 'AAPL':'Device',
-    
-    # Cloud/Software (Strong RR)
-    'AMZN':'Retail', 'NFLX':'Service', 'CRM':'Soft', 'NOW':'Soft', 
-    'SNOW':'Cloud', 'ADBE':'Soft', 'INTU':'Soft', 'ORCL':'Soft',
-    
-    # Growth Retail (COST +83%, WMT +54%)
-    'COST':'Retail', 'WMT':'Retail',
-    
-    # Biotech Growth (LLY +45%)
-    'LLY':'Bio', 'ABBV':'Bio', 'REGN':'Bio', 'VRTX':'Bio',
-    
-    # Fintech
-    'MA':'Fin', 'V':'Fin', 'COIN':'Crypto', 'MSTR':'Crypto', 'HOOD':'Fintech',
-    
-    # Growth Consumer
-    'TSLA':'Auto', 'SBUX':'Cons',
-    
+    # === TOP PERFORMERS / Core (existing) ===
+    'NVDA': 'AI', 'AMD': 'Semi', 'AVGO': 'Semi', 'TSM': 'Semi', 'ASML': 'Semi',
+    'MU': 'Semi', 'QCOM': 'Semi', 'MRVL': 'Semi', 'LRCX': 'Semi', 'AMAT': 'Semi',
+    'KLAC': 'Semi', 'ADI': 'Semi', 'ON': 'Semi',
+
+    # Space / Defense / New core
+    'RKLB': 'Space', 'ASTS': 'Space', 'PLTR': 'AI',
+
+    # Mega Tech / Cloud / Ads
+    'MSFT': 'Cloud', 'GOOGL': 'Ad', 'GOOG': 'Ad', 'META': 'Ad', 'AAPL': 'Device',
+    'AMZN': 'Retail', 'NFLX': 'Service', 'CRM': 'Soft', 'NOW': 'Soft',
+    'SNOW': 'Cloud', 'ADBE': 'Soft', 'INTU': 'Soft', 'ORCL': 'Soft',
+
+    # Growth Retail / Consumer
+    'COST': 'Retail', 'WMT': 'Retail', 'TSLA': 'Auto', 'SBUX': 'Cons', 'NKE': 'Cons',
+
+    # Biotech / Healthcare
+    'LLY': 'Bio', 'ABBV': 'Bio', 'REGN': 'Bio', 'VRTX': 'Bio', 'LLY': 'Bio',
+    'BSX': 'Healthcare', 'NVO': 'Bio',
+
+    # Fintech / Crypto
+    'MA': 'Fin', 'V': 'Fin', 'COIN': 'Crypto', 'MSTR': 'Crypto', 'HOOD': 'Fintech',
+
+    # New discoveries / Volume trend (from your list)
+    'TARS': 'Bio', 'ORKA': 'Bio', 'CEVA': 'Semi', 'HOLX': 'Health', 'FFIV': 'Tech',
+    'MDLN': 'Fin', 'DJT': 'Unknown', 'DSGN': 'Bio', 'TV': 'Unknown', 'SEM': 'Semi',
+    'SCVL': 'Cons', 'INBX': 'Unknown', 'CCOI': 'Comm', 'NMAX': 'Unknown', 'EPAC': 'Unknown',
+    'HY': 'Unknown', 'AVR': 'Unknown', 'KOD': 'Unknown', 'PRSU': 'Unknown', 'PAY': 'Fin',
+    'WBTN': 'Unknown', 'ASTE': 'Tech', 'FULC': 'Unknown', 'HOLX': 'Health',
+
+    # Priority list from v28.1 (added / ensured present)
+    'SNDK': 'Tech', 'WDC': 'Tech', 'STX': 'Tech', 'GEV': 'Ind', 'CVNA': 'Cons',
+    'APH': 'Electronic', 'BABA': 'Retail', 'TXN': 'Semi', 'PG': 'ConsDef',
+    'INTU': 'Soft', 'ASTS': 'Space', 'UBER': 'Soft', 'BE': 'Ind', 'LITE': 'CommEq',
+    'IBM': 'ITServices', 'CLS': 'Electronic', 'CSCO': 'CommEq', 'APLD': 'ITServices',
+    'FXI': 'ETF', 'ANET': 'Tech', 'EWY': 'ETF', 'KO': 'ConsDef', 'IEMG': 'ETF',
+    'NET': 'Cloud', 'GLW': 'Electronic', 'PANW': 'Sec', 'MELI': 'Retail',
+    'NBIS': 'Comm', 'CRWD': 'Sec', 'ACN': 'ITServices', 'IJH': 'ETF', 'PEP': 'ConsDef',
+    'RCL': 'Travel', 'ONDS': 'CommEq', 'ETN': 'Ind', 'SPOT': 'Comm', 'TT': 'Ind',
+    'ADI': 'Semi', 'IONQ': 'Quantum', 'MRVL': 'Semi', 'AGG': 'ETF', 'RBLX': 'Gaming',
+    'ROP': 'Soft', 'PM': 'ConsDef', 'CRWV': 'AI', 'PLTR': 'AI', 'APP': 'Ad',
+    'RDDT': 'AI', 'CART': 'Tech', 'WDC': 'Tech', 'STX': 'Tech', 'MSTR': 'Crypto',
+    'GEV': 'Ind', 'CVNA': 'Cons', 'APH': 'Electronic', 'BABA': 'Retail', 'TXN': 'Semi',
+    'INTU': 'Soft', 'ASTS': 'Space', 'UBER': 'Soft', 'BE': 'Ind', 'LITE': 'CommEq',
+    'IBM': 'ITServices', 'CLS': 'Electronic', 'CSCO': 'CommEq', 'APLD': 'ITServices',
+    'FXI': 'ETF', 'ANET': 'Tech', 'EWY': 'ETF', 'KO': 'ConsDef', 'IEMG': 'ETF',
+    'NET': 'Cloud', 'GLW': 'Electronic', 'PANW': 'Sec', 'MELI': 'Retail', 'BSX': 'Healthcare',
+    'NBIS': 'Comm', 'CRWD': 'Sec', 'ACN': 'ITServices', 'IJH': 'ETF', 'PEP': 'ConsDef',
+    'NVO': 'Bio', 'RCL': 'Travel', 'ONDS': 'CommEq', 'ETN': 'Ind', 'SPOT': 'Comm',
+    'TT': 'Ind', 'ADI': 'Semi', 'IONQ': 'Quantum', 'MRVL': 'Semi', 'AGG': 'ETF',
+    'RBLX': 'Gaming', 'ROP': 'Soft', 'PM': 'ConsDef',
+
+    # Additional tech / cloud / security from your TICKERS block
+    'PLTR': 'AI', 'CRWD': 'Sec', 'IONQ': 'Quantum', 'ANET': 'Tech', 'NET': 'Cloud',
+    'PANW': 'Sec', 'MRVL': 'Semi', 'GLW': 'Electronic', 'ADBE': 'Soft', 'SNOW': 'Cloud',
+    'ORCL': 'Soft', 'NOW': 'Soft', 'CRM': 'Soft', 'AMZN': 'Retail', 'NFLX': 'Service',
+    'MSFT': 'Cloud', 'GOOGL': 'Ad', 'GOOG': 'Ad', 'META': 'Ad', 'AAPL': 'Device',
+
+    # Misc / allowed ETFs and large caps
+    'FXI': 'ETF', 'EWY': 'ETF', 'IEMG': 'ETF', 'AGG': 'ETF', 'IJH': 'ETF',
+
+    # Ensure common semiconductors and cloud names present
+    'QCOM': 'Semi', 'LRCX': 'Semi', 'KLAC': 'Semi', 'ON': 'Semi', 'AMAT': 'Semi',
+    'ADI': 'Semi', 'TXN': 'Semi', 'MU': 'Semi', 'ASML': 'Semi', 'TSM': 'Semi',
+
+    # Fallback for any tickers not explicitly categorized above
+    # (Add more mappings here as you refine sector assignments)
+
     # === EXCLUDED (Poor backtest results) ===
     # Banks: JPM, GS, BAC, WFC (all <1% total return)
     # Traditional Retail: HD (-52%)
     # Pharma: JNJ (-10%), PFE (-16%)
     # Traditional: IBM, XOM, CVX, etc.
 }
+
+# ---------------------------
+# VOLUME TREND FILTER (v28)
+# ---------------------------
+MIN_WEEKLY_VOLUME_USD = 10_000_000  # $10M minimum weekly volume
+# Exclude penny stocks and micro-caps from volume trend analysis
 
 # ETF categories for filtering
 ETF_CATEGORIES = ['Index', 'Sector', 'Metal', 'Bond', 'Leveraged']
@@ -877,7 +924,7 @@ SPY距離: {distance:+.1f}%
     report_lines.append(f"🔥 CORE: {len(passed_core)} | ⚡ SEC: {len(passed_secondary)} | 👁 WATCH: {len(passed_watch)}")
     report_lines.append("="*50)
 
-    # TOP PRIORITY
+    # TOP PRIORITY with EXIT STRATEGY
     if passed_core:
         top = passed_core[0]
         ticker = top[0]
@@ -886,6 +933,15 @@ SPY距離: {distance:+.1f}%
         
         actual_shares = int(r['est_shares'])
         actual_cost = actual_shares * r['price'] if actual_shares > 0 else 0
+        
+        # Calculate exit levels
+        entry = r['pivot']
+        stop = r['stop']
+        atr = (entry - stop) / ATR_STOP_MULT
+        target1 = entry + (atr * 2.0)  # 2R
+        target2 = entry + (atr * 4.0)  # 4R
+        risk_pct = ((entry - stop) / entry) * 100
+        reward_pct = ((target2 - entry) / entry) * 100
 
         report_lines.append(f"\n🎯 TOP: {ticker} ({q['total_score']}/100)")
         if actual_shares > 0:
@@ -893,27 +949,46 @@ SPY距離: {distance:+.1f}%
         else:
             report_lines.append(f"   ⚠️ 1株未満 (${r['price']:.2f})")
         report_lines.append(f"   {r['why_now']}")
+        report_lines.append(f"\n   📍 Entry: ${entry:.2f} | Stop: ${stop:.2f} (-{risk_pct:.1f}%)")
+        report_lines.append(f"   🎯 T1: ${target1:.2f} (2R) | T2: ${target2:.2f} (+{reward_pct:.1f}%)")
 
-    # CORE (Top 5)
+    # CORE (Top 10 with exit strategy)
     if passed_core:
-        report_lines.append(f"\n🔥 CORE (Top 5)")
-        for i, (ticker, r) in enumerate(passed_core[:5], 1):
+        report_lines.append(f"\n🔥 CORE (Top 10)")
+        for i, (ticker, r) in enumerate(passed_core[:10], 1):
             q = r['quality']
             actual_shares = int(r['est_shares'])
             
-            report_lines.append(f"{i}. {ticker} {q['total_score']}/100")
+            # Exit levels
+            entry = r['pivot']
+            stop = r['stop']
+            atr = (entry - stop) / ATR_STOP_MULT
+            target = entry + (atr * 4.0)
+            risk_pct = ((entry - stop) / entry) * 100
+            reward_pct = ((target - entry) / entry) * 100
+            
+            report_lines.append(f"\n{i}. {ticker} {q['total_score']}/100")
             if actual_shares > 0:
                 report_lines.append(f"   {actual_shares}株 @ ${r['price']:.2f}")
             else:
                 report_lines.append(f"   ⚠️ <1株 (${r['price']:.2f})")
-            report_lines.append(f"   {r['why_now'][:60]}")  # Truncate
+            report_lines.append(f"   {r['why_now'][:55]}")
+            report_lines.append(f"   Entry:${entry:.2f} Stop:${stop:.2f}(-{risk_pct:.1f}%) T:${target:.2f}(+{reward_pct:.1f}%)")
 
-    # SECONDARY (Top 5)
+    # SECONDARY (Top 10 with exit)
     if passed_secondary:
-        report_lines.append(f"\n⚡ SECONDARY (Top 5)")
-        for i, (ticker, r) in enumerate(passed_secondary[:5], 1):
+        report_lines.append(f"\n⚡ SECONDARY (Top 10)")
+        for i, (ticker, r) in enumerate(passed_secondary[:10], 1):
             q = r['quality']
+            entry = r['pivot']
+            stop = r['stop']
+            atr = (entry - stop) / ATR_STOP_MULT
+            target = entry + (atr * 4.0)
+            risk_pct = ((entry - stop) / entry) * 100
+            reward_pct = ((target - entry) / entry) * 100
+            
             report_lines.append(f"{i}. {ticker} {q['total_score']}/100 @ ${r['price']:.2f}")
+            report_lines.append(f"   Entry:${entry:.2f} Stop:${stop:.2f}(-{risk_pct:.1f}%) T:${target:.2f}(+{reward_pct:.1f}%)")
 
     # WATCH (Names only)
     if passed_watch:
@@ -927,6 +1002,191 @@ SPY距離: {distance:+.1f}%
     final_report = "\n".join(report_lines)
     logger.info("\n%s", final_report)
     send_line(final_report)
+    return passed_core, passed_secondary, passed_watch
+# ===========================
+# v28の最後に追加する関数
+# ===========================
+
+def save_signals_to_json(passed_core, passed_secondary, passed_watch):
+    """
+    シグナルをJSON保存
+    
+    Args:
+        passed_core: CORE銘柄リスト [(ticker, result), ...]
+        passed_secondary: SECONDARY銘柄リスト
+        passed_watch: WATCH銘柄リスト
+    """
+    
+    signals = []
+    
+    # CORE銘柄
+    for ticker, result in passed_core:
+        signal = {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M:%S'),
+            'ticker': ticker,
+            'tier': 'CORE',
+            'score': result['quality']['total_score'],
+            'tech_score': result['quality']['tech_score'],
+            'rr_score': result['quality']['rr_score'],
+            'inst_score': result['quality'].get('inst_score', 25),
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'stop_pct': result.get('stop_pct', 0),
+            'target_pct': result.get('target_pct', 0),
+            'shares': result.get('est_shares', 0),
+            'cost': result.get('est_cost', 0),
+            'why_now': result.get('why_now', ''),
+            'sector': result.get('sector', 'Unknown'),
+            'vcp_completion': result.get('vcp_analysis', {}).get('vcp_completion_pct', 0),
+            'vcp_stage': result.get('vcp_analysis', {}).get('vcp_stage', 'Unknown'),
+            'win_rate': result.get('bt_result', {}).get('win_rate', 0),
+            'expectancy': result.get('bt_result', {}).get('expectancy', 0),
+            'rr_ratio': result.get('rr_ratio', 0)
+        }
+        signals.append(signal)
+    
+    # SECONDARY銘柄（TOP10）
+    for ticker, result in passed_secondary[:10]:
+        signal = {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M:%S'),
+            'ticker': ticker,
+            'tier': 'SECONDARY',
+            'score': result['quality']['total_score'],
+            'tech_score': result['quality']['tech_score'],
+            'rr_score': result['quality']['rr_score'],
+            'inst_score': result['quality'].get('inst_score', 25),
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'stop_pct': result.get('stop_pct', 0),
+            'target_pct': result.get('target_pct', 0),
+            'shares': result.get('est_shares', 0),
+            'cost': result.get('est_cost', 0),
+            'why_now': result.get('why_now', ''),
+            'sector': result.get('sector', 'Unknown'),
+            'vcp_completion': result.get('vcp_analysis', {}).get('vcp_completion_pct', 0),
+            'vcp_stage': result.get('vcp_analysis', {}).get('vcp_stage', 'Unknown'),
+            'win_rate': result.get('bt_result', {}).get('win_rate', 0),
+            'expectancy': result.get('bt_result', {}).get('expectancy', 0),
+            'rr_ratio': result.get('rr_ratio', 0)
+        }
+        signals.append(signal)
+    
+    # WATCH銘柄（TOP10）
+    for ticker, result in passed_watch[:10]:
+        signal = {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M:%S'),
+            'ticker': ticker,
+            'tier': 'WATCH',
+            'score': result['quality']['total_score'],
+            'tech_score': result['quality']['tech_score'],
+            'rr_score': result['quality']['rr_score'],
+            'inst_score': result['quality'].get('inst_score', 25),
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'stop_pct': result.get('stop_pct', 0),
+            'target_pct': result.get('target_pct', 0),
+            'shares': result.get('est_shares', 0),
+            'cost': result.get('est_cost', 0),
+            'why_now': result.get('why_now', ''),
+            'sector': result.get('sector', 'Unknown'),
+            'vcp_completion': result.get('vcp_analysis', {}).get('vcp_completion_pct', 0),
+            'vcp_stage': result.get('vcp_analysis', {}).get('vcp_stage', 'Unknown'),
+            'win_rate': result.get('bt_result', {}).get('win_rate', 0),
+            'expectancy': result.get('bt_result', {}).get('expectancy', 0),
+            'rr_ratio': result.get('rr_ratio', 0)
+        }
+        signals.append(signal)
+    
+    # 日付付きファイル名で保存
+    today = datetime.now().strftime('%Y%m%d')
+    filename_dated = f"signals_{today}.json"
+    
+    with open(filename_dated, 'w') as f:
+        json.dump(signals, f, indent=2)
+    
+    # 固定名でも保存（GitHub Actions用）
+    with open('today_signals.json', 'w') as f:
+        json.dump(signals, f, indent=2)
+    
+    print(f"\n✅ Signals saved to JSON:")
+    print(f"   📄 {filename_dated}")
+    print(f"   📄 today_signals.json")
+    print(f"   📊 Total: {len(signals)} signals")
+    print(f"      🔥 CORE: {len([s for s in signals if s['tier']=='CORE'])}")
+    print(f"      ⚡ SECONDARY: {len([s for s in signals if s['tier']=='SECONDARY'])}")
+    print(f"      👁 WATCH: {len([s for s in signals if s['tier']=='WATCH'])}")
+    print()
+
+def save_signals_to_json(passed_core, passed_secondary, passed_watch):
+    """シグナルをJSON保存"""
+    signals = []
+
+    # CORE
+    for ticker, result in passed_core:
+        signals.append({
+            'ticker': ticker,
+            'tier': 'CORE',
+            'score': result['quality']['total_score'],
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'shares': result.get('est_shares', 0),
+            'why_now': result.get('why_now', '')
+        })
+
+    # SECONDARY（上位10）
+    for ticker, result in passed_secondary[:10]:
+        signals.append({
+            'ticker': ticker,
+            'tier': 'SECONDARY',
+            'score': result['quality']['total_score'],
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'shares': result.get('est_shares', 0),
+            'why_now': result.get('why_now', '')
+        })
+
+    # WATCH（必要なら）
+    for ticker, result in passed_watch:
+        signals.append({
+            'ticker': ticker,
+            'tier': 'WATCH',
+            'score': result['quality']['total_score'],
+            'entry': result['pivot'],
+            'stop': result['stop'],
+            'target': result.get('target', 0),
+            'shares': result.get('est_shares', 0),
+            'why_now': result.get('why_now', '')
+        })
+
+    # 保存
+    import json
+    from datetime import datetime
+
+    today = datetime.now().strftime('%Y%m%d')
+
+    with open(f'signals_{today}.json', 'w') as f:
+        json.dump(signals, f, indent=2)
+
+    with open('today_signals.json', 'w') as f:
+        json.dump(signals, f, indent=2)
+
+    print(f"\n✅ Signals saved: {len(signals)} signals")
 
 if __name__ == "__main__":
-    run_mission()
+    # メイン処理を実行して、3つのリストを受け取る
+    passed_core, passed_secondary, passed_watch = run_mission()
+
+    # JSON 出力
+    save_signals_to_json(
+        passed_core,
+        passed_secondary,
+        passed_watch
+    )
