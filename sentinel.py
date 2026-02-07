@@ -73,84 +73,58 @@ CACHE_DIR = Path("./cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # ---------------------------
-# TICKER UNIVERSE - GROWTH FOCUSED (v28)
-# Based on backtest results (3-year data)
+# TICKER UNIVERSE - GROWTH FOCUSED (v28.2)
+# Optimized with Priority list and Volume Trend discoveries
 # ---------------------------
-  
+
 TICKERS = {
     # === TOP PERFORMERS / Core (existing) ===
     'NVDA': 'AI', 'AMD': 'Semi', 'AVGO': 'Semi', 'TSM': 'Semi', 'ASML': 'Semi',
     'MU': 'Semi', 'QCOM': 'Semi', 'MRVL': 'Semi', 'LRCX': 'Semi', 'AMAT': 'Semi',
-    'KLAC': 'Semi', 'ADI': 'Semi', 'ON': 'Semi',
+    'KLAC': 'Semi', 'ADI': 'Semi', 'ON': 'Semi', 'SMCI': 'Tech', 'ARM': 'Semi',
+    'MPWR': 'Semi', 'TER': 'Semi',
 
     # Space / Defense / New core
-    'RKLB': 'Space', 'ASTS': 'Space', 'PLTR': 'AI',
+    'RKLB': 'Space', 'ASTS': 'Space', 'PLTR': 'AI', 'AERO': 'Ind',
 
     # Mega Tech / Cloud / Ads
     'MSFT': 'Cloud', 'GOOGL': 'Ad', 'GOOG': 'Ad', 'META': 'Ad', 'AAPL': 'Device',
     'AMZN': 'Retail', 'NFLX': 'Service', 'CRM': 'Soft', 'NOW': 'Soft',
     'SNOW': 'Cloud', 'ADBE': 'Soft', 'INTU': 'Soft', 'ORCL': 'Soft',
+    'SAP': 'Soft',
 
     # Growth Retail / Consumer
     'COST': 'Retail', 'WMT': 'Retail', 'TSLA': 'Auto', 'SBUX': 'Cons', 'NKE': 'Cons',
+    'MELI': 'Retail', 'BABA': 'Retail', 'CVNA': 'Cons', 'MTN': 'Cons',
 
-    # Biotech / Healthcare
-    'LLY': 'Bio', 'ABBV': 'Bio', 'REGN': 'Bio', 'VRTX': 'Bio', 'LLY': 'Bio',
-    'BSX': 'Healthcare', 'NVO': 'Bio',
+    # Biotech / Healthcare / Medical
+    'LLY': 'Bio', 'ABBV': 'Bio', 'REGN': 'Bio', 'VRTX': 'Bio', 'NVO': 'Bio',
+    'BSX': 'Healthcare', 'BSX': 'Healthcare', 'HOLX': 'Health', 'REGN': 'Bio',
+    'OMER': 'Bio', 'DVAX': 'Bio', 'RARE': 'Bio', 'RIGL': 'Bio', 'KOD': 'Bio',
+    'TARS': 'Bio', 'ORKA': 'Bio', 'DSGN': 'Bio',
 
     # Fintech / Crypto
     'MA': 'Fin', 'V': 'Fin', 'COIN': 'Crypto', 'MSTR': 'Crypto', 'HOOD': 'Fintech',
+    'PAY': 'Fin', 'MDLN': 'Fin',
 
-    # New discoveries / Volume trend (from your list)
-    'TARS': 'Bio', 'ORKA': 'Bio', 'CEVA': 'Semi', 'HOLX': 'Health', 'FFIV': 'Tech',
-    'MDLN': 'Fin', 'DJT': 'Unknown', 'DSGN': 'Bio', 'TV': 'Unknown', 'SEM': 'Semi',
-    'SCVL': 'Cons', 'INBX': 'Unknown', 'CCOI': 'Comm', 'NMAX': 'Unknown', 'EPAC': 'Unknown',
-    'HY': 'Unknown', 'AVR': 'Unknown', 'KOD': 'Unknown', 'PRSU': 'Unknown', 'PAY': 'Fin',
-    'WBTN': 'Unknown', 'ASTE': 'Tech', 'FULC': 'Unknown', 'HOLX': 'Health',
+    # New discoveries / Volume trend / Priority (Added v28.2)
+    'COHR': 'Tech', 'ACN': 'ITServices', 'ETN': 'Ind', 'SPOT': 'Comm',
+    'RDDT': 'AI', 'RBLX': 'Gaming', 'CEVA': 'Semi', 'FFIV': 'Tech',
+    'DAKT': 'Tech', 'ITRN': 'Tech', 'TBLA': 'Ad', 'CHA': 'Unknown',
+    'EPAC': 'Unknown', 'DJT': 'Unknown', 'TV': 'Unknown', 'SEM': 'Semi',
+    'SCVL': 'Cons', 'INBX': 'Unknown', 'CCOI': 'Comm', 'NMAX': 'Unknown',
+    'HY': 'Unknown', 'AVR': 'Unknown', 'PRSU': 'Unknown', 'WBTN': 'Unknown',
+    'ASTE': 'Tech', 'FULC': 'Unknown',
 
-    # Priority list from v28.1 (added / ensured present)
-    'SNDK': 'Tech', 'WDC': 'Tech', 'STX': 'Tech', 'GEV': 'Ind', 'CVNA': 'Cons',
-    'APH': 'Electronic', 'BABA': 'Retail', 'TXN': 'Semi', 'PG': 'ConsDef',
-    'INTU': 'Soft', 'ASTS': 'Space', 'UBER': 'Soft', 'BE': 'Ind', 'LITE': 'CommEq',
-    'IBM': 'ITServices', 'CLS': 'Electronic', 'CSCO': 'CommEq', 'APLD': 'ITServices',
-    'FXI': 'ETF', 'ANET': 'Tech', 'EWY': 'ETF', 'KO': 'ConsDef', 'IEMG': 'ETF',
-    'NET': 'Cloud', 'GLW': 'Electronic', 'PANW': 'Sec', 'MELI': 'Retail',
-    'NBIS': 'Comm', 'CRWD': 'Sec', 'ACN': 'ITServices', 'IJH': 'ETF', 'PEP': 'ConsDef',
-    'RCL': 'Travel', 'ONDS': 'CommEq', 'ETN': 'Ind', 'SPOT': 'Comm', 'TT': 'Ind',
-    'ADI': 'Semi', 'IONQ': 'Quantum', 'MRVL': 'Semi', 'AGG': 'ETF', 'RBLX': 'Gaming',
-    'ROP': 'Soft', 'PM': 'ConsDef', 'CRWV': 'AI', 'PLTR': 'AI', 'APP': 'Ad',
-    'RDDT': 'AI', 'CART': 'Tech', 'WDC': 'Tech', 'STX': 'Tech', 'MSTR': 'Crypto',
-    'GEV': 'Ind', 'CVNA': 'Cons', 'APH': 'Electronic', 'BABA': 'Retail', 'TXN': 'Semi',
-    'INTU': 'Soft', 'ASTS': 'Space', 'UBER': 'Soft', 'BE': 'Ind', 'LITE': 'CommEq',
-    'IBM': 'ITServices', 'CLS': 'Electronic', 'CSCO': 'CommEq', 'APLD': 'ITServices',
-    'FXI': 'ETF', 'ANET': 'Tech', 'EWY': 'ETF', 'KO': 'ConsDef', 'IEMG': 'ETF',
-    'NET': 'Cloud', 'GLW': 'Electronic', 'PANW': 'Sec', 'MELI': 'Retail', 'BSX': 'Healthcare',
-    'NBIS': 'Comm', 'CRWD': 'Sec', 'ACN': 'ITServices', 'IJH': 'ETF', 'PEP': 'ConsDef',
-    'NVO': 'Bio', 'RCL': 'Travel', 'ONDS': 'CommEq', 'ETN': 'Ind', 'SPOT': 'Comm',
-    'TT': 'Ind', 'ADI': 'Semi', 'IONQ': 'Quantum', 'MRVL': 'Semi', 'AGG': 'ETF',
-    'RBLX': 'Gaming', 'ROP': 'Soft', 'PM': 'ConsDef',
-
-    # Additional tech / cloud / security from your TICKERS block
-    'PLTR': 'AI', 'CRWD': 'Sec', 'IONQ': 'Quantum', 'ANET': 'Tech', 'NET': 'Cloud',
-    'PANW': 'Sec', 'MRVL': 'Semi', 'GLW': 'Electronic', 'ADBE': 'Soft', 'SNOW': 'Cloud',
-    'ORCL': 'Soft', 'NOW': 'Soft', 'CRM': 'Soft', 'AMZN': 'Retail', 'NFLX': 'Service',
-    'MSFT': 'Cloud', 'GOOGL': 'Ad', 'GOOG': 'Ad', 'META': 'Ad', 'AAPL': 'Device',
-
-    # Misc / allowed ETFs and large caps
-    'FXI': 'ETF', 'EWY': 'ETF', 'IEMG': 'ETF', 'AGG': 'ETF', 'IJH': 'ETF',
-
-    # Ensure common semiconductors and cloud names present
-    'QCOM': 'Semi', 'LRCX': 'Semi', 'KLAC': 'Semi', 'ON': 'Semi', 'AMAT': 'Semi',
-    'ADI': 'Semi', 'TXN': 'Semi', 'MU': 'Semi', 'ASML': 'Semi', 'TSM': 'Semi',
-
-    # Fallback for any tickers not explicitly categorized above
-    # (Add more mappings here as you refine sector assignments)
-
-    # === EXCLUDED (Poor backtest results) ===
-    # Banks: JPM, GS, BAC, WFC (all <1% total return)
-    # Traditional Retail: HD (-52%)
-    # Pharma: JNJ (-10%), PFE (-16%)
-    # Traditional: IBM, XOM, CVX, etc.
+    # Priority list from v28.1 (Ensured present)
+    'SNDK': 'Tech', 'WDC': 'Tech', 'STX': 'Tech', 'GEV': 'Ind', 
+    'APH': 'Electronic', 'TXN': 'Semi', 'PG': 'ConsDef', 'UBER': 'Soft',
+    'BE': 'Ind', 'LITE': 'CommEq', 'IBM': 'ITServices', 'CLS': 'Electronic',
+    'CSCO': 'CommEq', 'APLD': 'ITServices', 'ANET': 'Tech', 'NET': 'Cloud',
+    'GLW': 'Electronic', 'PANW': 'Sec', 'CRWD': 'Sec', 'NBIS': 'Comm',
+    'RCL': 'Travel', 'ONDS': 'CommEq', 'IONQ': 'Quantum', 'ROP': 'Soft',
+    'PM': 'ConsDef', 'PEP': 'ConsDef', 'KO': 'ConsDef', 'IEMG': 'ETF',
+    'FXI': 'ETF', 'EWY': 'ETF', 'AGG': 'ETF', 'IJH': 'ETF', 'SPY': 'Unknown'
 }
 
 # ---------------------------
