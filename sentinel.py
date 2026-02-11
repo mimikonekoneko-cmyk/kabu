@@ -28,7 +28,7 @@ warnings.filterwarnings("ignore")
 
 CONFIG = {
     "CAPITAL_JPY": 350_000,
-    "MAX_POSITIONS": 4,
+    "MAX_POSITIONS": 20,
     "ACCOUNT_RISK_PCT": 0.015,
     "MAX_SAME_SECTOR": 2,
     "CORRELATION_LIMIT": 0.80,
