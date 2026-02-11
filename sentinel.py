@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 # ==============================================================================
-# 🛡 SENTINEL PRO v4.4 GRAND MASTER (TOTAL RESTORATION)
+# 🛡 SENTINEL PRO v4.5 ELITE (JSON Bugfix & Total Restoration)
 # ------------------------------------------------------------------------------
-# 復元・統合レポート:
-# 1. 銘柄ユニバース完全復元: ORIGINAL + EXPANSION 計450銘柄以上を1つも漏らさず搭載。
-# 2. ロジック完全復刻: v3.3.1の「20日Pivot判定」「含み益カウント型PF計算」を完全復旧。
-# 3. 判定感度の修正: ACTION判定幅を v3.3.1 同等の -5% 〜 +3% に戻し、検知力を最大化。
-# 4. JSON保存インフラ: ダッシュボード更新用の結果保存(results/YYYY-MM-DD.json)を完備。
-# 5. エラー耐性: GitHub Actions環境での SyntaxError や IndentationError を完全に排除。
+# 修正・統合レポート:
+# 1. JSONエラー修正: numpy.bool_ 型が JSON 変換に失敗する不具合を型キャスト(bool)で解決。
+# 2. 廃止銘柄除外: 404エラーを吐く FI と SQ をユニバースから削除しログをクリーンに。
+# 3. v3.3.1ロジック復刻: 20日Pivot判定および含み益をカウントするPF計算を完全復旧。
+# 4. フル・ユニバース: 450銘柄を超えるリストを1つも漏らさず搭載。
+# 5. 安定性強化: GitHub Actions での実行に最適化したシリアライズ処理。
 # ==============================================================================
 
 import os
@@ -24,7 +24,7 @@ import requests
 import warnings
 from datetime import datetime
 
-# 警告の抑制（クリーンなログ出力のため）
+# 警告の抑制
 warnings.filterwarnings("ignore")
 
 # ==============================================================================
@@ -33,7 +33,7 @@ warnings.filterwarnings("ignore")
 
 CONFIG = {
     "CAPITAL_JPY": 350_000,          # 運用資金
-    "MAX_POSITIONS": 20,              # 最大ポジション数（チャンスを逃さない設定）
+    "MAX_POSITIONS": 20,              # 最大ポジション数
     "ACCOUNT_RISK_PCT": 0.015,       # 1トレードあたりの許容リスク（1.5%）
     "MAX_SAME_SECTOR": 2,            # セクターあたりの最大銘柄数
     "CORRELATION_LIMIT": 0.80,       # 銘柄間の相関上限
@@ -60,7 +60,7 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger("SENTINEL_PRO")
 
 # ディレクトリ管理
-CACHE_DIR = Path("./cache_v44")
+CACHE_DIR = Path("./cache_v45")
 CACHE_DIR.mkdir(exist_ok=True)
 RESULTS_DIR = Path("./results")
 RESULTS_DIR.mkdir(exist_ok=True)
@@ -101,7 +101,7 @@ EXPANSION_LIST = [
     'NXE', 'UEC', 'SCCO', 'AA', 'NUE', 'STLD', 'TTE', 'CART', 'CAVA', 'BIRK', 'KVUE', 'LULU', 'ONON',
     'DECK', 'CROX', 'WING', 'CMG', 'DPZ', 'YUM', 'CELH', 'MNST', 'GME', 'AMC', 'U', 'OPEN', 'Z',
     'SMH', 'XLF', 'XLV', 'XLE', 'XLI', 'XLK', 'XLC', 'XLY', 'XLP', 'XLB', 'XLU', 'XLRE',
-    'AFRM', 'UPST', 'SQ', 'FI', 'PYPL', 'GPN', 'FIS', 'JKHY', 'EPAM', 'GLBE', 'AUB', 'BOKF'
+    'AFRM', 'UPST', 'PYPL', 'GPN', 'FIS', 'JKHY', 'EPAM', 'GLBE', 'AUB', 'BOKF'
 ]
 
 # 重複排除・ソート
@@ -214,7 +214,10 @@ class VCPAnalyzer:
             vol_ma = volume.rolling(50, min_periods=10).mean().iloc[-1]
             vol_curr = volume.iloc[-1]
             vol_ratio = vol_curr / vol_ma if vol_ma > 0 else 1.0
-            is_dryup = vol_ratio < 0.7
+            
+            # 重要: numpy.bool_ を Python の標準 bool に変換
+            is_dryup = bool(vol_ratio < 0.7)
+            
             vol_score = 30 if is_dryup else (15 if vol_ratio < 1.2 else 0)
             
             # トレンド判定
@@ -287,7 +290,7 @@ class StrategyValidator:
                     elif i == len(df) - 1:
                         # 最終日は含み益をカウント (v3.3.1)
                         pnl = (close.iloc[i] - entry_p) / (entry_p - stop_p) if (entry_p - stop_p) > 0 else 0
-                        trades.append(pnl)
+                        trades.append(float(pnl))
                         in_pos = False
                 else:
                     # エントリー判定 (20日高値ピボット)
@@ -368,7 +371,7 @@ def filter_portfolio(candidates, return_map):
 def run():
     start_time = time.time()
     print("=" * 60)
-    print("🛡 SENTINEL PRO v4.4 GRAND MASTER (TOTAL RESTORATION)")
+    print("🛡 SENTINEL PRO v4.5 ELITE (JSON BUGFIX)")
     print("-" * 60)
     
     usd_jpy = CurrencyEngine.get_usd_jpy()
@@ -414,14 +417,14 @@ def run():
         qualified.append({
             "ticker": ticker,
             "status": status,
-            "price": round(price, 2),
-            "entry": round(entry, 2),
-            "stop": round(stop, 2),
-            "target": round(target, 2),
-            "shares": shares,
+            "price": round(float(price), 2),
+            "entry": round(float(entry), 2),
+            "stop": round(float(stop), 2),
+            "target": round(float(target), 2),
+            "shares": int(shares),
             "vcp": vcp,
-            "rs": rs,
-            "pf": pf
+            "rs": int(rs),
+            "pf": float(pf)
         })
     
     # ソート: Status(ACTION優先) > 総合評価
@@ -436,7 +439,7 @@ def run():
     run_info = {
         "date": today,
         "runtime": f"{round(time.time() - start_time, 2)}s",
-        "usd_jpy": usd_jpy,
+        "usd_jpy": float(usd_jpy),
         "scan_count": len(TICKERS),
         "qualified_count": len(qualified),
         "selected_count": len(selected),
@@ -446,16 +449,18 @@ def run():
     
     # JSONファイル出力
     with open(RESULTS_DIR / f"{today}.json", 'w', encoding='utf-8') as f:
+        # 重要: default=str を追加して未知の型(numpy系など)を強制変換
         json.dump(run_info, f, ensure_ascii=False, indent=2, default=str)
     
     # ログ出力
     print(f"Scan complete. Found {len(qualified)} qualified, selected {len(selected)}.")
     print("--- START JSON DATA ---")
-    print(json.dumps(run_info, ensure_ascii=False))
+    # 重要: ログ出力用にも default=str を追加
+    print(json.dumps(run_info, ensure_ascii=False, default=str))
     print("--- END JSON DATA ---")
     
     # LINE通知
-    msg = [f"🛡 SENTINEL PRO v4.4 (Rate:{usd_jpy})\nScan:{len(TICKERS)} | Sel:{len(selected)}\n" + "="*20]
+    msg = [f"🛡 SENTINEL PRO v4.5 (Rate:{usd_jpy})\nScan:{len(TICKERS)} | Sel:{len(selected)}\n" + "="*20]
     if not selected:
         msg.append("\n⚠️ 条件を満たす銘柄は見つかりませんでした。")
     else:
@@ -473,7 +478,7 @@ def send_line(message):
     """LINE通知送信"""
     if not ACCESS_TOKEN or not USER_ID: return
     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}
-    # 分割送信（4000文字制限対応）
+    # 分割送信
     parts = [message[i:i+4000] for i in range(0, len(message), 4000)]
     for p in parts:
         payload = {"to": USER_ID, "messages": [{"type": "text", "text": p}]}
