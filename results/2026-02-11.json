@@ -1,362 +1,11 @@
 {
   "date": "2026-02-11",
-  "runtime": "153.33s",
-  "usd_jpy": 153.11,
-  "scan_count": 346,
-  "qualified_count": 24,
+  "runtime": "103.03s",
+  "usd_jpy": 153.2,
+  "scan_count": 339,
+  "qualified_count": 23,
   "selected_count": 12,
   "selected": [
-    {
-      "ticker": "MNST",
-      "status": "ACTION",
-      "price": 80.79,
-      "entry": 83.41,
-      "stop": 80.44,
-      "target": 90.81,
-      "shares": 10,
-      "vcp": {
-        "score": 85,
-        "atr": 1.4814273289271764,
-        "signals": [
-          "極度収縮",
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 99,
-      "pf": 1.33,
-      "sector": "Consumer Defensive"
-    },
-    {
-      "ticker": "ASML",
-      "status": "ACTION",
-      "price": 1435.63,
-      "entry": 1494.5,
-      "stop": 1384.97,
-      "target": 1768.3,
-      "shares": 0,
-      "vcp": {
-        "score": 78,
-        "atr": 54.76131112985479,
-        "signals": [
-          "Vol枯渇",
-          "MA整列"
-        ],
-        "is_dryup": true
-      },
-      "rs": 99,
-      "pf": 1.82,
-      "sector": "Technology"
-    },
-    {
-      "ticker": "ADI",
-      "status": "ACTION",
-      "price": 337.0,
-      "entry": 338.52,
-      "stop": 318.5,
-      "target": 388.54,
-      "shares": 1,
-      "vcp": {
-        "score": 68,
-        "atr": 10.00571768624442,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 99,
-      "pf": 2.5,
-      "sector": "Technology"
-    },
-    {
-      "ticker": "F",
-      "status": "ACTION",
-      "price": 13.85,
-      "entry": 14.16,
-      "stop": 13.61,
-      "target": 15.54,
-      "shares": 62,
-      "vcp": {
-        "score": 70,
-        "atr": 0.27535717827933176,
-        "signals": [
-          "極度収縮",
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 97,
-      "pf": 1.25,
-      "sector": "Consumer Cyclical"
-    },
-    {
-      "ticker": "LMT",
-      "status": "ACTION",
-      "price": 628.7,
-      "entry": 647.88,
-      "stop": 604.94,
-      "target": 755.25,
-      "shares": 1,
-      "vcp": {
-        "score": 88,
-        "atr": 21.47249494280134,
-        "signals": [
-          "Vol枯渇",
-          "MA整列"
-        ],
-        "is_dryup": true
-      },
-      "rs": 79,
-      "pf": 1.88,
-      "sector": "Industrials"
-    },
-    {
-      "ticker": "ROST",
-      "status": "ACTION",
-      "price": 192.54,
-      "entry": 195.31,
-      "stop": 188.64,
-      "target": 212.0,
-      "shares": 4,
-      "vcp": {
-        "score": 84,
-        "atr": 3.3371429443359375,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 73,
-      "pf": 2.5,
-      "sector": "Consumer Cyclical"
-    },
-    {
-      "ticker": "RTX",
-      "status": "ACTION",
-      "price": 196.51,
-      "entry": 206.89,
-      "stop": 196.73,
-      "target": 232.29,
-      "shares": 3,
-      "vcp": {
-        "score": 64,
-        "atr": 5.080070495605469,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 90,
-      "pf": 3.3,
-      "sector": "Industrials"
-    },
-    {
-      "ticker": "GS",
-      "status": "ACTION",
-      "price": 944.59,
-      "entry": 986.67,
-      "stop": 924.3,
-      "target": 1142.6,
-      "shares": 0,
-      "vcp": {
-        "score": 67,
-        "atr": 31.185721261160715,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 84,
-      "pf": 2.5,
-      "sector": "Financial Services"
-    },
-    {
-      "ticker": "EIX",
-      "status": "ACTION",
-      "price": 67.06,
-      "entry": 67.34,
-      "stop": 64.45,
-      "target": 74.58,
-      "shares": 11,
-      "vcp": {
-        "score": 65,
-        "atr": 1.446784428187779,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 75,
-      "pf": 1.67,
-      "sector": "Utilities"
-    },
-    {
-      "ticker": "NUE",
-      "status": "ACTION",
-      "price": 194.42,
-      "entry": 197.29,
-      "stop": 185.76,
-      "target": 226.12,
-      "shares": 2,
-      "vcp": {
-        "score": 58,
-        "atr": 5.76678466796875,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 78,
-      "pf": 2.86,
-      "sector": "Basic Materials"
-    },
-    {
-      "ticker": "DSGN",
-      "status": "WAIT",
-      "price": 10.36,
-      "entry": 10.99,
-      "stop": 9.7,
-      "target": 14.21,
-      "shares": 26,
-      "vcp": {
-        "score": 72,
-        "atr": 0.6443572044372559,
-        "signals": [
-          "Vol枯渇",
-          "MA整列"
-        ],
-        "is_dryup": true
-      },
-      "rs": 99,
-      "pf": 2.31,
-      "sector": "Healthcare"
-    },
-    {
-      "ticker": "RIGL",
-      "status": "WAIT",
-      "price": 34.94,
-      "entry": 39.57,
-      "stop": 36.54,
-      "target": 47.14,
-      "shares": 11,
-      "vcp": {
-        "score": 70,
-        "atr": 1.5135718754359655,
-        "signals": [
-          "Vol枯渇"
-        ],
-        "is_dryup": true
-      },
-      "rs": 99,
-      "pf": 3.75,
-      "sector": "Healthcare"
-    }
-  ],
-  "qualified": [
-    {
-      "ticker": "MNST",
-      "status": "ACTION",
-      "price": 80.79,
-      "entry": 83.41,
-      "stop": 80.44,
-      "target": 90.81,
-      "shares": 10,
-      "vcp": {
-        "score": 85,
-        "atr": 1.4814273289271764,
-        "signals": [
-          "極度収縮",
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 99,
-      "pf": 1.33,
-      "sector": "Consumer Defensive"
-    },
-    {
-      "ticker": "ASML",
-      "status": "ACTION",
-      "price": 1435.63,
-      "entry": 1494.5,
-      "stop": 1384.97,
-      "target": 1768.3,
-      "shares": 0,
-      "vcp": {
-        "score": 78,
-        "atr": 54.76131112985479,
-        "signals": [
-          "Vol枯渇",
-          "MA整列"
-        ],
-        "is_dryup": true
-      },
-      "rs": 99,
-      "pf": 1.82,
-      "sector": "Technology"
-    },
-    {
-      "ticker": "ADI",
-      "status": "ACTION",
-      "price": 337.0,
-      "entry": 338.52,
-      "stop": 318.5,
-      "target": 388.54,
-      "shares": 1,
-      "vcp": {
-        "score": 68,
-        "atr": 10.00571768624442,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 99,
-      "pf": 2.5,
-      "sector": "Technology"
-    },
-    {
-      "ticker": "F",
-      "status": "ACTION",
-      "price": 13.85,
-      "entry": 14.16,
-      "stop": 13.61,
-      "target": 15.54,
-      "shares": 62,
-      "vcp": {
-        "score": 70,
-        "atr": 0.27535717827933176,
-        "signals": [
-          "極度収縮",
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 97,
-      "pf": 1.25,
-      "sector": "Consumer Cyclical"
-    },
-    {
-      "ticker": "LMT",
-      "status": "ACTION",
-      "price": 628.7,
-      "entry": 647.88,
-      "stop": 604.94,
-      "target": 755.25,
-      "shares": 1,
-      "vcp": {
-        "score": 88,
-        "atr": 21.47249494280134,
-        "signals": [
-          "Vol枯渇",
-          "MA整列"
-        ],
-        "is_dryup": true
-      },
-      "rs": 79,
-      "pf": 1.88,
-      "sector": "Industrials"
-    },
     {
       "ticker": "ITRN",
       "status": "ACTION",
@@ -374,29 +23,9 @@
         ],
         "is_dryup": true
       },
-      "rs": 79,
+      "rs": 75,
       "pf": 2.53,
       "sector": "Technology"
-    },
-    {
-      "ticker": "SMH",
-      "status": "ACTION",
-      "price": 414.78,
-      "entry": 421.44,
-      "stop": 393.89,
-      "target": 490.33,
-      "shares": 1,
-      "vcp": {
-        "score": 60,
-        "atr": 13.777138846261161,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 99,
-      "pf": 2.5,
-      "sector": "Unknown"
     },
     {
       "ticker": "ROST",
@@ -410,33 +39,55 @@
         "score": 84,
         "atr": 3.3371429443359375,
         "signals": [
+          "極度収縮",
           "MA整列"
         ],
         "is_dryup": false
       },
-      "rs": 73,
+      "rs": 71,
       "pf": 2.5,
       "sector": "Consumer Cyclical"
     },
     {
-      "ticker": "MPWR",
+      "ticker": "ADI",
       "status": "ACTION",
-      "price": 1196.73,
-      "entry": 1252.5,
-      "stop": 1116.77,
-      "target": 1591.83,
-      "shares": 0,
+      "price": 337.0,
+      "entry": 338.52,
+      "stop": 318.5,
+      "target": 388.54,
+      "shares": 1,
       "vcp": {
-        "score": 57,
-        "atr": 67.86574009486607,
+        "score": 68,
+        "atr": 10.00571768624442,
         "signals": [
           "MA整列"
         ],
         "is_dryup": false
       },
-      "rs": 99,
-      "pf": 1.63,
+      "rs": 86,
+      "pf": 2.5,
       "sector": "Technology"
+    },
+    {
+      "ticker": "MNST",
+      "status": "ACTION",
+      "price": 80.79,
+      "entry": 83.41,
+      "stop": 80.44,
+      "target": 90.81,
+      "shares": 10,
+      "vcp": {
+        "score": 85,
+        "atr": 1.4814273289271764,
+        "signals": [
+          "極度収縮",
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 80,
+      "pf": 1.33,
+      "sector": "Consumer Defensive"
     },
     {
       "ticker": "RTX",
@@ -454,89 +105,49 @@
         ],
         "is_dryup": false
       },
-      "rs": 90,
+      "rs": 77,
       "pf": 3.3,
       "sector": "Industrials"
     },
     {
-      "ticker": "PH",
+      "ticker": "PCAR",
       "status": "ACTION",
-      "price": 995.83,
-      "entry": 1014.51,
-      "stop": 971.86,
-      "target": 1121.14,
-      "shares": 0,
+      "price": 129.48,
+      "entry": 132.14,
+      "stop": 126.06,
+      "target": 147.35,
+      "shares": 5,
       "vcp": {
-        "score": 70,
-        "atr": 21.32557543739907,
+        "score": 71,
+        "atr": 3.041429247174944,
         "signals": [
           "MA整列"
         ],
         "is_dryup": false
       },
-      "rs": 83,
-      "pf": 7.6,
+      "rs": 72,
+      "pf": 2.63,
       "sector": "Industrials"
     },
     {
-      "ticker": "GS",
+      "ticker": "SMH",
       "status": "ACTION",
-      "price": 944.59,
-      "entry": 986.67,
-      "stop": 924.3,
-      "target": 1142.6,
-      "shares": 0,
-      "vcp": {
-        "score": 67,
-        "atr": 31.185721261160715,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 84,
-      "pf": 2.5,
-      "sector": "Financial Services"
-    },
-    {
-      "ticker": "GE",
-      "status": "ACTION",
-      "price": 313.73,
-      "entry": 326.95,
-      "stop": 309.63,
-      "target": 370.25,
+      "price": 414.78,
+      "entry": 421.44,
+      "stop": 393.89,
+      "target": 490.33,
       "shares": 1,
       "vcp": {
-        "score": 62,
-        "atr": 8.659284319196429,
+        "score": 60,
+        "atr": 13.777138846261161,
         "signals": [
           "MA整列"
         ],
         "is_dryup": false
       },
-      "rs": 86,
+      "rs": 82,
       "pf": 2.5,
-      "sector": "Industrials"
-    },
-    {
-      "ticker": "EIX",
-      "status": "ACTION",
-      "price": 67.06,
-      "entry": 67.34,
-      "stop": 64.45,
-      "target": 74.58,
-      "shares": 11,
-      "vcp": {
-        "score": 65,
-        "atr": 1.446784428187779,
-        "signals": [
-          "MA整列"
-        ],
-        "is_dryup": false
-      },
-      "rs": 75,
-      "pf": 1.67,
-      "sector": "Utilities"
+      "sector": "Unknown"
     },
     {
       "ticker": "NUE",
@@ -554,30 +165,93 @@
         ],
         "is_dryup": false
       },
-      "rs": 78,
+      "rs": 79,
       "pf": 2.86,
       "sector": "Basic Materials"
     },
     {
-      "ticker": "NVDA",
+      "ticker": "F",
       "status": "ACTION",
-      "price": 190.05,
-      "entry": 194.88,
-      "stop": 181.61,
-      "target": 228.05,
-      "shares": 2,
+      "price": 13.85,
+      "entry": 14.16,
+      "stop": 13.61,
+      "target": 15.54,
+      "shares": 62,
+      "vcp": {
+        "score": 70,
+        "atr": 0.27535717827933176,
+        "signals": [
+          "極度収縮",
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 77,
+      "pf": 1.25,
+      "sector": "Consumer Cyclical"
+    },
+    {
+      "ticker": "TTE",
+      "status": "ACTION",
+      "price": 77.72,
+      "entry": 77.93,
+      "stop": 74.59,
+      "target": 86.27,
+      "shares": 10,
       "vcp": {
         "score": 56,
-        "atr": 6.63428715297154,
+        "atr": 1.6692859104701452,
         "signals": [
           "MA整列"
         ],
         "is_dryup": false
       },
-      "rs": 78,
-      "pf": 3.75,
-      "sector": "Technology"
+      "rs": 74,
+      "pf": 2.84,
+      "sector": "Energy"
     },
+    {
+      "ticker": "EIX",
+      "status": "ACTION",
+      "price": 67.06,
+      "entry": 67.34,
+      "stop": 64.45,
+      "target": 74.58,
+      "shares": 11,
+      "vcp": {
+        "score": 65,
+        "atr": 1.446784428187779,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 74,
+      "pf": 1.67,
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "WMB",
+      "status": "ACTION",
+      "price": 71.12,
+      "entry": 71.73,
+      "stop": 67.45,
+      "target": 82.42,
+      "shares": 8,
+      "vcp": {
+        "score": 56,
+        "atr": 2.1374991280691966,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 73,
+      "pf": 1.25,
+      "sector": "Energy"
+    }
+  ],
+  "watchlist_wait": [
     {
       "ticker": "LHX",
       "status": "WAIT",
@@ -595,50 +269,9 @@
         ],
         "is_dryup": true
       },
-      "rs": 99,
+      "rs": 79,
       "pf": 4.94,
       "sector": "Industrials"
-    },
-    {
-      "ticker": "DSGN",
-      "status": "WAIT",
-      "price": 10.36,
-      "entry": 10.99,
-      "stop": 9.7,
-      "target": 14.21,
-      "shares": 26,
-      "vcp": {
-        "score": 72,
-        "atr": 0.6443572044372559,
-        "signals": [
-          "Vol枯渇",
-          "MA整列"
-        ],
-        "is_dryup": true
-      },
-      "rs": 99,
-      "pf": 2.31,
-      "sector": "Healthcare"
-    },
-    {
-      "ticker": "RIGL",
-      "status": "WAIT",
-      "price": 34.94,
-      "entry": 39.57,
-      "stop": 36.54,
-      "target": 47.14,
-      "shares": 11,
-      "vcp": {
-        "score": 70,
-        "atr": 1.5135718754359655,
-        "signals": [
-          "Vol枯渇"
-        ],
-        "is_dryup": true
-      },
-      "rs": 99,
-      "pf": 3.75,
-      "sector": "Healthcare"
     },
     {
       "ticker": "ORKA",
@@ -657,50 +290,588 @@
         ],
         "is_dryup": true
       },
-      "rs": 99,
+      "rs": 93,
       "pf": 3.75,
       "sector": "Healthcare"
     },
     {
-      "ticker": "STX",
+      "ticker": "FCX",
       "status": "WAIT",
-      "price": 407.25,
-      "entry": 460.33,
-      "stop": 392.49,
-      "target": 629.92,
-      "shares": 1,
+      "price": 65.46,
+      "entry": 69.58,
+      "stop": 62.94,
+      "target": 86.19,
+      "shares": 5,
       "vcp": {
         "score": 60,
-        "atr": 33.917855398995535,
+        "atr": 3.3214285714285716,
         "signals": [
           "Vol枯渇",
           "MA整列"
         ],
         "is_dryup": true
       },
-      "rs": 99,
-      "pf": 5.83,
-      "sector": "Technology"
+      "rs": 88,
+      "pf": 4.46,
+      "sector": "Basic Materials"
     },
     {
-      "ticker": "TEL",
+      "ticker": "HUT",
       "status": "WAIT",
-      "price": 228.46,
-      "entry": 243.52,
-      "stop": 228.05,
-      "target": 282.19,
+      "price": 53.22,
+      "entry": 66.2,
+      "stop": 54.12,
+      "target": 96.4,
       "shares": 2,
       "vcp": {
-        "score": 69,
-        "atr": 7.734643118722098,
+        "score": 60,
+        "atr": 6.040307453700474,
         "signals": [
-          "Vol枯渇"
+          "Vol枯渇",
+          "MA整列"
         ],
         "is_dryup": true
       },
-      "rs": 90,
-      "pf": 3.75,
+      "rs": 92,
+      "pf": 3.9,
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "DSGN",
+      "status": "WAIT",
+      "price": 10.36,
+      "entry": 10.99,
+      "stop": 9.7,
+      "target": 14.21,
+      "shares": 26,
+      "vcp": {
+        "score": 72,
+        "atr": 0.6443572044372559,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 92,
+      "pf": 2.31,
+      "sector": "Healthcare"
+    },
+    {
+      "ticker": "URA",
+      "status": "WAIT",
+      "price": 53.71,
+      "entry": 62.4,
+      "stop": 54.99,
+      "target": 80.93,
+      "shares": 4,
+      "vcp": {
+        "score": 60,
+        "atr": 3.705499921526228,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 86,
+      "pf": 3.33,
+      "sector": "Unknown"
+    },
+    {
+      "ticker": "CORZ",
+      "status": "WAIT",
+      "price": 18.09,
+      "entry": 20.1,
+      "stop": 17.25,
+      "target": 27.23,
+      "shares": 12,
+      "vcp": {
+        "score": 60,
+        "atr": 1.4264285905020577,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 74,
+      "pf": 3.33,
       "sector": "Technology"
+    },
+    {
+      "ticker": "C",
+      "status": "WAIT",
+      "price": 117.39,
+      "entry": 125.41,
+      "stop": 118.12,
+      "target": 143.64,
+      "shares": 4,
+      "vcp": {
+        "score": 65,
+        "atr": 3.6454801763011466,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 76,
+      "pf": 1.1,
+      "sector": "Financial Services"
+    }
+  ],
+  "qualified_full": [
+    {
+      "ticker": "ITRN",
+      "status": "ACTION",
+      "price": 47.49,
+      "entry": 47.98,
+      "stop": 45.25,
+      "target": 54.79,
+      "shares": 12,
+      "vcp": {
+        "score": 87,
+        "atr": 1.3635703495570592,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 75,
+      "pf": 2.53,
+      "sector": "Technology"
+    },
+    {
+      "ticker": "ROST",
+      "status": "ACTION",
+      "price": 192.54,
+      "entry": 195.31,
+      "stop": 188.64,
+      "target": 212.0,
+      "shares": 4,
+      "vcp": {
+        "score": 84,
+        "atr": 3.3371429443359375,
+        "signals": [
+          "極度収縮",
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 71,
+      "pf": 2.5,
+      "sector": "Consumer Cyclical"
+    },
+    {
+      "ticker": "ADI",
+      "status": "ACTION",
+      "price": 337.0,
+      "entry": 338.52,
+      "stop": 318.5,
+      "target": 388.54,
+      "shares": 1,
+      "vcp": {
+        "score": 68,
+        "atr": 10.00571768624442,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 86,
+      "pf": 2.5,
+      "sector": "Technology"
+    },
+    {
+      "ticker": "MNST",
+      "status": "ACTION",
+      "price": 80.79,
+      "entry": 83.41,
+      "stop": 80.44,
+      "target": 90.81,
+      "shares": 10,
+      "vcp": {
+        "score": 85,
+        "atr": 1.4814273289271764,
+        "signals": [
+          "極度収縮",
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 80,
+      "pf": 1.33,
+      "sector": "Consumer Defensive"
+    },
+    {
+      "ticker": "RTX",
+      "status": "ACTION",
+      "price": 196.51,
+      "entry": 206.89,
+      "stop": 196.73,
+      "target": 232.29,
+      "shares": 3,
+      "vcp": {
+        "score": 64,
+        "atr": 5.080070495605469,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 77,
+      "pf": 3.3,
+      "sector": "Industrials"
+    },
+    {
+      "ticker": "DAKT",
+      "status": "ACTION",
+      "price": 26.16,
+      "entry": 27.12,
+      "stop": 25.1,
+      "target": 32.17,
+      "shares": 16,
+      "vcp": {
+        "score": 60,
+        "atr": 1.0099996839250838,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 86,
+      "pf": 2.63,
+      "sector": "Technology"
+    },
+    {
+      "ticker": "PCAR",
+      "status": "ACTION",
+      "price": 129.48,
+      "entry": 132.14,
+      "stop": 126.06,
+      "target": 147.35,
+      "shares": 5,
+      "vcp": {
+        "score": 71,
+        "atr": 3.041429247174944,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 72,
+      "pf": 2.63,
+      "sector": "Industrials"
+    },
+    {
+      "ticker": "SMH",
+      "status": "ACTION",
+      "price": 414.78,
+      "entry": 421.44,
+      "stop": 393.89,
+      "target": 490.33,
+      "shares": 1,
+      "vcp": {
+        "score": 60,
+        "atr": 13.777138846261161,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 82,
+      "pf": 2.5,
+      "sector": "Unknown"
+    },
+    {
+      "ticker": "NUE",
+      "status": "ACTION",
+      "price": 194.42,
+      "entry": 197.29,
+      "stop": 185.76,
+      "target": 226.12,
+      "shares": 2,
+      "vcp": {
+        "score": 58,
+        "atr": 5.76678466796875,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 79,
+      "pf": 2.86,
+      "sector": "Basic Materials"
+    },
+    {
+      "ticker": "F",
+      "status": "ACTION",
+      "price": 13.85,
+      "entry": 14.16,
+      "stop": 13.61,
+      "target": 15.54,
+      "shares": 62,
+      "vcp": {
+        "score": 70,
+        "atr": 0.27535717827933176,
+        "signals": [
+          "極度収縮",
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 77,
+      "pf": 1.25,
+      "sector": "Consumer Cyclical"
+    },
+    {
+      "ticker": "TTE",
+      "status": "ACTION",
+      "price": 77.72,
+      "entry": 77.93,
+      "stop": 74.59,
+      "target": 86.27,
+      "shares": 10,
+      "vcp": {
+        "score": 56,
+        "atr": 1.6692859104701452,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 74,
+      "pf": 2.84,
+      "sector": "Energy"
+    },
+    {
+      "ticker": "EIX",
+      "status": "ACTION",
+      "price": 67.06,
+      "entry": 67.34,
+      "stop": 64.45,
+      "target": 74.58,
+      "shares": 11,
+      "vcp": {
+        "score": 65,
+        "atr": 1.446784428187779,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 74,
+      "pf": 1.67,
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "TXN",
+      "status": "ACTION",
+      "price": 226.56,
+      "entry": 231.78,
+      "stop": 216.55,
+      "target": 269.87,
+      "shares": 2,
+      "vcp": {
+        "score": 58,
+        "atr": 7.618202591048897,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 76,
+      "pf": 1.92,
+      "sector": "Technology"
+    },
+    {
+      "ticker": "WMB",
+      "status": "ACTION",
+      "price": 71.12,
+      "entry": 71.73,
+      "stop": 67.45,
+      "target": 82.42,
+      "shares": 8,
+      "vcp": {
+        "score": 56,
+        "atr": 2.1374991280691966,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 73,
+      "pf": 1.25,
+      "sector": "Energy"
+    },
+    {
+      "ticker": "LHX",
+      "status": "WAIT",
+      "price": 340.29,
+      "entry": 370.33,
+      "stop": 349.88,
+      "target": 421.46,
+      "shares": 1,
+      "vcp": {
+        "score": 83,
+        "atr": 10.226427350725446,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 79,
+      "pf": 4.94,
+      "sector": "Industrials"
+    },
+    {
+      "ticker": "ORKA",
+      "status": "WAIT",
+      "price": 32.21,
+      "entry": 36.58,
+      "stop": 32.75,
+      "target": 46.18,
+      "shares": 8,
+      "vcp": {
+        "score": 63,
+        "atr": 1.9185714721679688,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 93,
+      "pf": 3.75,
+      "sector": "Healthcare"
+    },
+    {
+      "ticker": "FCX",
+      "status": "WAIT",
+      "price": 65.46,
+      "entry": 69.58,
+      "stop": 62.94,
+      "target": 86.19,
+      "shares": 5,
+      "vcp": {
+        "score": 60,
+        "atr": 3.3214285714285716,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 88,
+      "pf": 4.46,
+      "sector": "Basic Materials"
+    },
+    {
+      "ticker": "HUT",
+      "status": "WAIT",
+      "price": 53.22,
+      "entry": 66.2,
+      "stop": 54.12,
+      "target": 96.4,
+      "shares": 2,
+      "vcp": {
+        "score": 60,
+        "atr": 6.040307453700474,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 92,
+      "pf": 3.9,
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "DSGN",
+      "status": "WAIT",
+      "price": 10.36,
+      "entry": 10.99,
+      "stop": 9.7,
+      "target": 14.21,
+      "shares": 26,
+      "vcp": {
+        "score": 72,
+        "atr": 0.6443572044372559,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 92,
+      "pf": 2.31,
+      "sector": "Healthcare"
+    },
+    {
+      "ticker": "URA",
+      "status": "WAIT",
+      "price": 53.71,
+      "entry": 62.4,
+      "stop": 54.99,
+      "target": 80.93,
+      "shares": 4,
+      "vcp": {
+        "score": 60,
+        "atr": 3.705499921526228,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 86,
+      "pf": 3.33,
+      "sector": "Unknown"
+    },
+    {
+      "ticker": "CORZ",
+      "status": "WAIT",
+      "price": 18.09,
+      "entry": 20.1,
+      "stop": 17.25,
+      "target": 27.23,
+      "shares": 12,
+      "vcp": {
+        "score": 60,
+        "atr": 1.4264285905020577,
+        "signals": [
+          "Vol枯渇",
+          "MA整列"
+        ],
+        "is_dryup": true
+      },
+      "rs": 74,
+      "pf": 3.33,
+      "sector": "Technology"
+    },
+    {
+      "ticker": "C",
+      "status": "WAIT",
+      "price": 117.39,
+      "entry": 125.41,
+      "stop": 118.12,
+      "target": 143.64,
+      "shares": 4,
+      "vcp": {
+        "score": 65,
+        "atr": 3.6454801763011466,
+        "signals": [
+          "MA整列"
+        ],
+        "is_dryup": false
+      },
+      "rs": 76,
+      "pf": 1.1,
+      "sector": "Financial Services"
     },
     {
       "ticker": "GM",
@@ -716,27 +887,9 @@
         "signals": [],
         "is_dryup": false
       },
-      "rs": 99,
+      "rs": 83,
       "pf": 1.25,
       "sector": "Consumer Cyclical"
-    },
-    {
-      "ticker": "GD",
-      "status": "WAIT",
-      "price": 346.34,
-      "entry": 370.44,
-      "stop": 351.89,
-      "target": 416.81,
-      "shares": 1,
-      "vcp": {
-        "score": 58,
-        "atr": 9.274278913225446,
-        "signals": [],
-        "is_dryup": false
-      },
-      "rs": 72,
-      "pf": 2.61,
-      "sector": "Industrials"
     }
   ]
 }
