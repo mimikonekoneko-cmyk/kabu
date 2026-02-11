@@ -40,7 +40,7 @@ jobs:
         git config --local user.name "github-actions[bot]"
         
         # JSONファイルを追加
-        git add signals_*.json today_signals.json || true
+        git add results/*.json signals_*.json today_signals.json || true
         
         # コミット（変更があれば）
         git diff --quiet && git diff --staged --quiet || \
