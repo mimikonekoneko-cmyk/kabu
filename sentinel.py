@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# SENTINEL INSTITUTIONAL v3.1 - FULL UNIVERSE
-# No Ticker Reduction. Institutional Grade Logic.
+# SENTINEL INSTITUTIONAL v3.1 - FULL UNIVERSE + LINE INTEGRATED
 
 import os
 import time
@@ -36,7 +35,7 @@ ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 USER_ID = os.getenv("LINE_USER_ID")
 
 # ==========================================
-# FULL TICKER UNIVERSE (完全維持)
+# FULL TICKER UNIVERSE
 # ==========================================
 
 TICKERS = sorted(list(set([
@@ -61,6 +60,44 @@ TICKERS = sorted(list(set([
 ])))
 
 BENCHMARK = "SPY"
+
+# ==========================================
+# LINE NOTIFIER
+# ==========================================
+
+def send_line(message):
+
+    if not ACCESS_TOKEN or not USER_ID:
+        print("LINE not configured")
+        return
+
+    url = "https://api.line.me/v2/bot/message/push"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {ACCESS_TOKEN}"
+    }
+
+    payload = {
+        "to": USER_ID,
+        "messages": [
+            {
+                "type": "text",
+                "text": message[:4900]
+            }
+        ]
+    }
+
+    for _ in range(3):
+        try:
+            r = requests.post(url, headers=headers, json=payload, timeout=10)
+            if r.status_code == 200:
+                return
+        except:
+            pass
+        time.sleep(2)
+
+    print("LINE send failed")
 
 # ==========================================
 # DATA ENGINE
@@ -119,7 +156,7 @@ def compute_rs_percentiles(data_dict):
     return pct.to_dict()
 
 # ==========================================
-# WALK FORWARD BACKTEST
+# BACKTEST
 # ==========================================
 
 def backtest(df):
@@ -170,11 +207,9 @@ def backtest(df):
 # ==========================================
 
 def market_filter(spy_df):
-
     ma200 = spy_df["Close"].rolling(200).mean().iloc[-1]
     current = spy_df["Close"].iloc[-1]
     vol = spy_df["Close"].pct_change().rolling(20).std().iloc[-1]
-
     return current > ma200 and vol < 0.025
 
 # ==========================================
@@ -183,74 +218,87 @@ def market_filter(spy_df):
 
 def run():
 
-    data = {}
-    for t in TICKERS:
-        data[t] = DataEngine.get(t)
+    try:
 
-    spy_df = data[BENCHMARK]
-    if spy_df is None:
-        return "SPY Data Error"
+        data = {}
+        for t in TICKERS:
+            data[t] = DataEngine.get(t)
 
-    if not market_filter(spy_df):
-        return "⚠ Market Regime Not Favorable"
+        spy_df = data[BENCHMARK]
+        if spy_df is None:
+            message = "❌ SPY Data Error"
+            send_line(message)
+            return message
 
-    rs_percentiles = compute_rs_percentiles(data)
+        if not market_filter(spy_df):
+            message = "⚠ Market Regime Not Favorable"
+            send_line(message)
+            return message
 
-    results = []
+        rs_percentiles = compute_rs_percentiles(data)
+        results = []
 
-    for t in TICKERS:
-        if t in ["SPY","QQQ","IWM"]:
-            continue
+        for t in TICKERS:
+            if t in ["SPY","QQQ","IWM"]:
+                continue
 
-        df = data[t]
-        if df is None:
-            continue
+            df = data[t]
+            if df is None:
+                continue
 
-        rs = rs_percentiles.get(t,0)
-        if rs < CONFIG["MIN_RS_PERCENTILE"]:
-            continue
+            rs = rs_percentiles.get(t,0)
+            if rs < CONFIG["MIN_RS_PERCENTILE"]:
+                continue
 
-        pf, winrate, ev = backtest(df)
-        if ev < CONFIG["MIN_EV"]:
-            continue
+            pf, winrate, ev = backtest(df)
+            if ev < CONFIG["MIN_EV"]:
+                continue
 
-        atr = calculate_atr(df).iloc[-1]
-        pivot = df["High"].iloc[-10:].max()
-        entry = pivot
-        stop = entry - atr * CONFIG["ATR_MULTIPLIER"]
+            atr = calculate_atr(df).iloc[-1]
+            pivot = df["High"].iloc[-10:].max()
+            entry = pivot
+            stop = entry - atr * CONFIG["ATR_MULTIPLIER"]
 
-        risk = entry - stop
-        capital_usd = CONFIG["CAPITAL_JPY"] / CONFIG["USDJPY"]
-        shares = int((capital_usd * CONFIG["RISK_PER_TRADE"]) / risk) if risk > 0 else 0
+            risk = entry - stop
+            capital_usd = CONFIG["CAPITAL_JPY"] / CONFIG["USDJPY"]
+            shares = int((capital_usd * CONFIG["RISK_PER_TRADE"]) / risk) if risk > 0 else 0
 
-        results.append({
-            "ticker": t,
-            "RS": round(rs,1),
-            "EV": round(ev,2),
-            "PF": round(pf,2),
-            "Win": round(winrate,1),
-            "Entry": round(entry,2),
-            "Stop": round(stop,2),
-            "Shares": shares
-        })
+            results.append({
+                "ticker": t,
+                "RS": round(rs,1),
+                "EV": round(ev,2),
+                "PF": round(pf,2),
+                "Win": round(winrate,1),
+                "Entry": round(entry,2),
+                "Stop": round(stop,2),
+                "Shares": shares
+            })
 
-    results = sorted(results, key=lambda x: x["EV"], reverse=True)
-    results = results[:CONFIG["MAX_POSITIONS"]]
+        results = sorted(results, key=lambda x: x["EV"], reverse=True)
+        results = results[:CONFIG["MAX_POSITIONS"]]
 
-    report = []
-    report.append("🛡 SENTINEL INSTITUTIONAL v3.1")
-    report.append("="*45)
+        report = []
+        report.append("🛡 SENTINEL INSTITUTIONAL v3.1")
+        report.append("="*45)
 
-    if not results:
-        report.append("No Qualified Setups")
-    else:
-        for r in results:
-            report.append(
-                f"{r['ticker']} | RS {r['RS']} | EV {r['EV']} | PF {r['PF']} | "
-                f"Entry {r['Entry']} | Stop {r['Stop']} | Shares {r['Shares']}"
-            )
+        if not results:
+            report.append("No Qualified Setups")
+        else:
+            for r in results:
+                report.append(
+                    f"{r['ticker']} | RS {r['RS']} | EV {r['EV']} | PF {r['PF']} | "
+                    f"Entry {r['Entry']} | Stop {r['Stop']} | Shares {r['Shares']}"
+                )
 
-    return "\n".join(report)
+        message = "\n".join(report)
+
+        send_line(message)
+        return message
+
+    except Exception as e:
+        error_message = f"❌ SYSTEM ERROR\n{str(e)}"
+        send_line(error_message)
+        return error_message
 
 # ==========================================
 
