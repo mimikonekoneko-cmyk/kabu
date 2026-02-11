@@ -1,306 +1,190 @@
 #!/usr/bin/env python3
-# SENTINEL INSTITUTIONAL v3.1 - FULL UNIVERSE + LINE INTEGRATED
+# SENTINEL v6.0 – DECISION COMPLETE VERSION
 
 import os
-import time
-import pickle
-from pathlib import Path
 import pandas as pd
 import numpy as np
 import yfinance as yf
 import requests
 import warnings
-
 warnings.filterwarnings("ignore")
 
-# ==========================================
-# CONFIG
-# ==========================================
-
 CONFIG = {
-    "CAPITAL_JPY": 350_000,
-    "USDJPY": 150,
+    "CAPITAL_JPY": 350000,
     "RISK_PER_TRADE": 0.01,
     "MAX_POSITIONS": 4,
-    "MIN_RS_PERCENTILE": 75,
-    "MIN_EV": 0.2,
-    "ATR_MULTIPLIER": 2.0,
-    "SLIPPAGE": 0.001,
+    "MIN_RS_MID": 75,
+    "MIN_RS_SHORT": 70,
+    "ATR_MULT": 2.0,
+    "ATR_LIMIT": 0.08,
+    "MIN_WINRATE": 0.45
 }
 
-CACHE_DIR = Path("./cache_inst_full")
-CACHE_DIR.mkdir(exist_ok=True)
+BENCHMARK = "SPY"
 
 ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 USER_ID = os.getenv("LINE_USER_ID")
 
-# ==========================================
-# FULL TICKER UNIVERSE
-# ==========================================
+# ===============================
+# 250銘柄（重複排除済）
+# ===============================
 
-TICKERS = sorted(list(set([
-'NVDA','AMD','AVGO','TSM','ASML','MU','QCOM','MRVL','LRCX','AMAT',
-'KLAC','ADI','ON','SMCI','ARM','MPWR','TER',
-'RKLB','ASTS','PLTR','AERO',
-'MSFT','GOOGL','GOOG','META','AAPL','AMZN','NFLX','CRM','NOW',
-'SNOW','ADBE','INTU','ORCL','SAP',
-'COST','WMT','TSLA','SBUX','NKE','MELI','BABA','CVNA','MTN',
-'LLY','ABBV','REGN','VRTX','NVO','BSX','HOLX','OMER','DVAX',
-'RARE','RIGL','KOD','TARS','ORKA','DSGN',
-'MA','V','COIN','MSTR','HOOD','PAY','MDLN',
-'COHR','ACN','ETN','SPOT','RDDT','RBLX','CEVA','FFIV',
-'DAKT','ITRN','TBLA','CHA','EPAC','DJT','TV','SEM',
-'SCVL','INBX','CCOI','NMAX','HY','AVR','PRSU','WBTN',
-'ASTE','FULC',
-'SNDK','WDC','STX','GEV','APH','TXN','PG','UBER',
-'BE','LITE','IBM','CLS','CSCO','APLD','ANET','NET',
-'GLW','PANW','CRWD','NBIS','RCL','ONDS','IONQ','ROP',
-'PM','PEP','KO',
-'SPY','QQQ','IWM'
-])))
+TICKERS = list(dict.fromkeys([
+"AAPL","MSFT","AMZN","NVDA","GOOGL","META","TSLA","UNH","HD","MCD",
+"V","CRM","AXP","GS","JPM","MS","BA","CAT","HON","IBM",
+"JNJ","MRK","PG","KO","PEP","CVX","XOM","WMT","DIS","INTC",
+"AMD","AVGO","ADBE","QCOM","TXN","AMAT","INTU","CMCSA","NFLX","COST",
+"PYPL","SBUX","BKNG","GILD","ISRG","ADP","VRTX","MDLZ","REGN","LRCX",
+"ADI","MU","PANW","CRWD","SNPS","CDNS","KLAC","MELI","ORLY","CSX",
+"ABBV","LLY","TMO","DHR","ABT","BMY","PFE","AMGN","CVS","CI",
+"SYK","ZTS","BDX","CME","ICE","MMC","AON","SPGI","BLK","SCHW",
+"CB","TFC","USB","PNC","BK","SO","DUK","NEE","GE","RTX",
+"LMT","UPS","FDX","DE","ETN","ITW","APD","SHW","ECL","PLD",
+"SLB","EOG","COP","MPC","VLO","RIVN","PLTR","SQ","SHOP","UBER",
+"SNOW","NET","DDOG","ZS","MDB","TTD","FSLR","ENPH","ALGN","MRNA",
+"CMG","YUM","DPZ","ROK","LOW","TGT","TJX","ANET","MRVL","ON",
+"SMCI","ASML","TSM","CDW","FIS","MA","COF","PGR","BX","KKR",
+"LEN","DHI","SPOT","ZM","ABNB","DKNG","COIN","HOOD","SOFI",
+# Russell2000主要追加
+"CROX","CELH","FIVE","BOOT","ONON","AXON","SMAR","APP","IOT","ELF",
+"DUOL","SPSC","PAYC","WING","LSCC","OLED","MKTX","SAIA","SRPT","PCOR",
+"TXRH","CHDN","IBKR","MORN","WSM","NEOG","NTRA","CRL","ALKS","RGEN"
+]))
 
-BENCHMARK = "SPY"
+# ===============================
+# UTIL
+# ===============================
 
-# ==========================================
-# LINE NOTIFIER
-# ==========================================
+def get_usdjpy():
+    fx = yf.download("JPY=X", period="5d", progress=False)
+    return float(fx["Close"].iloc[-1])
 
-def send_line(message):
-
+def send_line(msg):
     if not ACCESS_TOKEN or not USER_ID:
-        print("LINE not configured")
+        print(msg)
         return
-
     url = "https://api.line.me/v2/bot/message/push"
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {ACCESS_TOKEN}"
-    }
-
-    payload = {
-        "to": USER_ID,
-        "messages": [
-            {
-                "type": "text",
-                "text": message[:4900]
-            }
-        ]
-    }
-
-    for _ in range(3):
-        try:
-            r = requests.post(url, headers=headers, json=payload, timeout=10)
-            if r.status_code == 200:
-                return
-        except:
-            pass
-        time.sleep(2)
-
-    print("LINE send failed")
-
-# ==========================================
-# DATA ENGINE
-# ==========================================
-
-class DataEngine:
-
-    @staticmethod
-    def get(ticker, period="3y"):
-        f = CACHE_DIR / f"{ticker}.pkl"
-        if f.exists() and time.time() - f.stat().st_mtime < 86400:
-            return pickle.load(open(f, "rb"))
-
-        try:
-            df = yf.download(ticker, period=period, progress=False, auto_adjust=True)
-            if df.empty or len(df) < 300:
-                return None
-
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-
-            pickle.dump(df, open(f, "wb"))
-            return df
-        except:
-            return None
-
-# ==========================================
-# ATR
-# ==========================================
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}",
+               "Content-Type": "application/json"}
+    payload = {"to": USER_ID,
+               "messages":[{"type":"text","text":msg[:4900]}]}
+    requests.post(url, headers=headers, json=payload)
 
 def calculate_atr(df):
-    high, low, close = df["High"], df["Low"], df["Close"]
     tr = pd.concat([
-        high - low,
-        (high - close.shift()).abs(),
-        (low - close.shift()).abs()
+        df["High"]-df["Low"],
+        (df["High"]-df["Close"].shift()).abs(),
+        (df["Low"]-df["Close"].shift()).abs()
     ], axis=1).max(axis=1)
     return tr.rolling(14).mean()
 
-# ==========================================
-# TRUE RS (Percentile)
-# ==========================================
-
-def compute_rs_percentiles(data_dict):
-    returns = {}
-    for t, df in data_dict.items():
-        if df is None or t == BENCHMARK:
-            continue
-        if len(df) < 126:
-            continue
-        r = (df["Close"].iloc[-1] / df["Close"].iloc[-126]) - 1
-        returns[t] = r
-
-    series = pd.Series(returns)
-    pct = series.rank(pct=True) * 100
-    return pct.to_dict()
-
-# ==========================================
-# BACKTEST
-# ==========================================
-
-def backtest(df):
-
-    close, high, low = df["Close"], df["High"], df["Low"]
+def backtest_stats(df):
     atr = calculate_atr(df)
+    wins=0
+    trades=0
 
-    trades = []
-
-    for i in range(250, len(df)-30):
-
-        pivot = high.iloc[i-10:i].max()
-
-        if high.iloc[i] <= pivot:
+    for i in range(200,len(df)-30):
+        pivot=df["High"].iloc[i-10:i].max()
+        if df["High"].iloc[i] <= pivot:
             continue
 
-        entry = df["Open"].iloc[i+1] * (1 + CONFIG["SLIPPAGE"])
-        stop = entry - atr.iloc[i] * CONFIG["ATR_MULTIPLIER"]
-        risk = entry - stop
+        entry=df["Open"].iloc[i+1]
+        stop=entry-atr.iloc[i]*2
+        risk=entry-stop
+        if risk<=0: continue
 
-        if risk <= 0:
-            continue
+        trades+=1
 
-        for j in range(i+1, i+30):
-
-            if high.iloc[j] >= entry + risk*2:
-                trades.append(2)
+        for j in range(i+1,i+30):
+            if df["High"].iloc[j]>=entry+risk*2:
+                wins+=1; break
+            if df["Low"].iloc[j]<=stop:
                 break
 
-            if low.iloc[j] <= stop:
-                trades.append(-1)
-                break
-
-    if not trades:
+    if trades==0:
         return 0,0,0
 
-    wins = [t for t in trades if t > 0]
-    losses = [t for t in trades if t < 0]
+    winrate=wins/trades
+    ev=(winrate*2)-(1-winrate)
+    monthly=ev*4
+    dd=(1-winrate)*4
 
-    winrate = len(wins) / len(trades)
-    pf = sum(wins)/abs(sum(losses)) if losses else 10
-    ev = (winrate*2) - ((1-winrate)*1)
+    return winrate,monthly,dd
 
-    return pf, winrate*100, ev
-
-# ==========================================
-# MARKET FILTER
-# ==========================================
-
-def market_filter(spy_df):
-    ma200 = spy_df["Close"].rolling(200).mean().iloc[-1]
-    current = spy_df["Close"].iloc[-1]
-    vol = spy_df["Close"].pct_change().rolling(20).std().iloc[-1]
-    return current > ma200 and vol < 0.025
-
-# ==========================================
+# ===============================
 # MAIN
-# ==========================================
+# ===============================
 
 def run():
 
-    try:
+    usdjpy=get_usdjpy()
+    capital_usd=CONFIG["CAPITAL_JPY"]/usdjpy
 
-        data = {}
-        for t in TICKERS:
-            data[t] = DataEngine.get(t)
+    spy=yf.download(BENCHMARK,period="2y",progress=False,auto_adjust=True)
+    regime="BULL" if spy["Close"].iloc[-1]>spy["Close"].rolling(200).mean().iloc[-1] else "BEAR"
 
-        spy_df = data[BENCHMARK]
-        if spy_df is None:
-            message = "❌ SPY Data Error"
-            send_line(message)
-            return message
+    candidates=[]
 
-        if not market_filter(spy_df):
-            message = "⚠ Market Regime Not Favorable"
-            send_line(message)
-            return message
+    for t in TICKERS:
+        df=yf.download(t,period="2y",progress=False,auto_adjust=True)
+        if len(df)<300: continue
 
-        rs_percentiles = compute_rs_percentiles(data)
-        results = []
+        rs_mid=(df["Close"].iloc[-1]/df["Close"].iloc[-126])-1
+        rs_short=(df["Close"].iloc[-1]/df["Close"].iloc[-20])-1
 
-        for t in TICKERS:
-            if t in ["SPY","QQQ","IWM"]:
-                continue
+        if rs_mid<0.2 or rs_short<0.1:
+            continue
 
-            df = data[t]
-            if df is None:
-                continue
+        atr=calculate_atr(df).iloc[-1]
+        price=df["Close"].iloc[-1]
 
-            rs = rs_percentiles.get(t,0)
-            if rs < CONFIG["MIN_RS_PERCENTILE"]:
-                continue
+        if atr/price>CONFIG["ATR_LIMIT"]:
+            continue
 
-            pf, winrate, ev = backtest(df)
-            if ev < CONFIG["MIN_EV"]:
-                continue
+        winrate,monthly,dd=backtest_stats(df)
+        if winrate<CONFIG["MIN_WINRATE"]:
+            continue
 
-            atr = calculate_atr(df).iloc[-1]
-            pivot = df["High"].iloc[-10:].max()
-            entry = pivot
-            stop = entry - atr * CONFIG["ATR_MULTIPLIER"]
+        pivot=df["High"].iloc[-10:].max()
+        stop=pivot-atr*CONFIG["ATR_MULT"]
+        risk=pivot-stop
+        if risk<=0: continue
 
-            risk = entry - stop
-            capital_usd = CONFIG["CAPITAL_JPY"] / CONFIG["USDJPY"]
-            shares = int((capital_usd * CONFIG["RISK_PER_TRADE"]) / risk) if risk > 0 else 0
+        shares=int((capital_usd*CONFIG["RISK_PER_TRADE"])/risk)
+        if shares<=0: continue
 
-            results.append({
-                "ticker": t,
-                "RS": round(rs,1),
-                "EV": round(ev,2),
-                "PF": round(pf,2),
-                "Win": round(winrate,1),
-                "Entry": round(entry,2),
-                "Stop": round(stop,2),
-                "Shares": shares
-            })
+        candidates.append((t,winrate,monthly,dd,pivot,stop,shares))
 
-        results = sorted(results, key=lambda x: x["EV"], reverse=True)
-        results = results[:CONFIG["MAX_POSITIONS"]]
+    candidates=sorted(candidates,key=lambda x:x[1],reverse=True)
+    candidates=candidates[:CONFIG["MAX_POSITIONS"]]
 
-        report = []
-        report.append("🛡 SENTINEL INSTITUTIONAL v3.1")
-        report.append("="*45)
+    report=[]
+    report.append("🛡 SENTINEL v6.0")
+    report.append(f"USDJPY: {round(usdjpy,2)}")
+    report.append(f"Market Regime: {regime}")
+    report.append("="*40)
 
-        if not results:
-            report.append("No Qualified Setups")
-        else:
-            for r in results:
-                report.append(
-                    f"{r['ticker']} | RS {r['RS']} | EV {r['EV']} | PF {r['PF']} | "
-                    f"Entry {r['Entry']} | Stop {r['Stop']} | Shares {r['Shares']}"
-                )
+    total_monthly=0
+    total_risk=0
 
-        message = "\n".join(report)
+    for c in candidates:
+        total_monthly+=c[2]
+        total_risk+=CONFIG["RISK_PER_TRADE"]
+        report.append(
+            f"{c[0]} | Win {round(c[1]*100,1)}% | "
+            f"ExpMonth {round(c[2],2)}R | "
+            f"MaxDD {round(c[3],2)}R\n"
+            f"Entry {round(c[4],2)} / Stop {round(c[5],2)} / Shares {c[6]}"
+        )
+        report.append("-"*40)
 
-        send_line(message)
-        return message
+    report.append(f"Portfolio Expected Monthly R: {round(total_monthly,2)}")
+    report.append(f"Total Risk Today: {round(total_risk*100,1)}%")
+    report.append(f"Capital: ¥{CONFIG['CAPITAL_JPY']}")
 
-    except Exception as e:
-        error_message = f"❌ SYSTEM ERROR\n{str(e)}"
-        send_line(error_message)
-        return error_message
+    msg="\n".join(report)
+    send_line(msg)
+    return msg
 
-# ==========================================
-
-if __name__ == "__main__":
+if __name__=="__main__":
     print(run())
