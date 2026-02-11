@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 # ==========================================================
-# 🛡 SENTINEL PRO v3.7 MASTER-PIECE (THE ULTIMATE BALANCE)
+# 🛡 SENTINEL PRO v3.9 FINAL MASTER (TRUE UNIFICATION)
 # ----------------------------------------------------------
-# 統合・修正内容:
-# 1. PF計算修正: 固定損益からATRベースの動的判定に変更。ADIやLMTの誤脱落を防止。
-# 2. エントリー最適化: 判定ロジックを微調整し、v3.3.1の「拾い上げる力」を完全復活。
-# 3. リスト完全版: 廃止銘柄を除去しつつ、450銘柄の網羅性を100%維持。
-# 4. 分析機能: JSON保存、VIX連動、Cheat Entry、qualified全保存をすべて継承。
-# 5. 可読性: スマホで一目で状況がわかる「PLATINUM」通知フォーマットを維持。
+# 統合内容:
+# 1. 復刻: v3.3.1のコア判定エンジン(20日Pivot/PF判定)を完全移植。ADI等を確実に捕捉。
+# 2. 進化: v3.8のプラチナインフラ(JSON保存/VIX市場判定/LINE詳細表示)を維持。
+# 3. 救済: 安定成長株がPF不足で落ちないよう、判定ロジックをv3.3.1基準に再調整。
+# 4. 網羅: 450銘柄のマンモスリスト。エラー銘柄(FI等)はスキャン時に自動スキップ。
+# 5. 可読性: スマホで一目で全てがわかるPLATINUM通知。
 # ==========================================================
 
 import os
@@ -27,7 +27,7 @@ from datetime import datetime
 warnings.filterwarnings("ignore")
 
 # ==========================================================
-# CONFIGURATION
+# CONFIGURATION (v3.3.1の黄金比 + アルファ)
 # ==========================================================
 
 CONFIG = {
@@ -35,16 +35,16 @@ CONFIG = {
     "MAX_POSITIONS": 4,           
     "ACCOUNT_RISK_PCT": 0.015,    
     "MAX_SAME_SECTOR": 2,
-    "CORRELATION_LIMIT": 0.75,
+    "CORRELATION_LIMIT": 0.80,    
 
-    "MIN_RS_RATING": 70,
-    "MIN_VCP_SCORE": 50,
-    "MIN_PROFIT_FACTOR": 1.1,     # 少し緩和(1.1以上)して、安定株を拾いやすく
-    "MAX_TIGHTNESS_PCT": 0.15,
+    "MIN_RS_RATING": 70,          # v3.3.1 基準
+    "MIN_VCP_SCORE": 50,          # v3.3.1 基準
+    "MIN_PROFIT_FACTOR": 1.1,     # 1.2から微調整し、ADIなどの安定株を拾う
+    "MAX_TIGHTNESS_PCT": 0.18,    # 0.15から微増し、ボラティリティを許容
 
     "STOP_LOSS_ATR": 2.0,
-    "TARGET_R_MULTIPLE": 2.5,
-    "CHEAT_MA50_RANGE": 0.08,     # 許容幅を8%に拡大(ボラティリティ対応)
+    "TARGET_R_MULTIPLE": 2.5,     # v3.3.1 の利確倍率
+    "CHEAT_MA50_RANGE": 0.10,     
 }
 
 ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
@@ -53,13 +53,13 @@ USER_ID = os.getenv("LINE_USER_ID")
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger("SENTINEL_PRO")
 
-CACHE_DIR = Path("./cache_v37")
+CACHE_DIR = Path("./cache_v39")
 CACHE_DIR.mkdir(exist_ok=True)
 RESULTS_DIR = Path("./results")
 RESULTS_DIR.mkdir(exist_ok=True)
 
 # ==========================================================
-# TICKER UNIVERSE (NO OMISSIONS, NO ERRORS)
+# TICKER UNIVERSE (450+ 銘柄完全版)
 # ==========================================================
 
 ORIGINAL_LIST = [
@@ -110,7 +110,7 @@ class CurrencyEngine:
             df = ticker.history(period="1d")
             if df.empty: return 152.0
             rate = df['Close'].iloc[-1]
-            return round(float(rate), 2) if 130 < rate < 190 else 152.0
+            return round(float(rate), 2) if 130 < rate < 195 else 152.0
         except: return 152.0
 
 class DataEngine:
@@ -126,7 +126,6 @@ class DataEngine:
             df = yf.download(ticker, period=period, progress=False, auto_adjust=True)
             if df is None or df.empty or len(df) < 100: return None
             if isinstance(df.columns, pd.MultiIndex): df.columns = df.columns.get_level_values(0)
-            if 'Close' not in df.columns: return None
             with open(cache_file, "wb") as f: pickle.dump(df, f)
             return df
         except: return None
@@ -149,7 +148,7 @@ class DataEngine:
         except: return "Unknown"
 
 # ==========================================
-# CORE ANALYSIS
+# CORE ANALYSIS (v3.3.1 ロジック復刻)
 # ==========================================
 
 class MarketRegime:
@@ -175,19 +174,27 @@ class VCPAnalyzer:
             close = df["Close"]; high = df["High"]; low = df["Low"]; volume = df["Volume"]
             tr = pd.concat([(high-low), (high-close.shift()).abs(), (low-close.shift()).abs()], axis=1).max(axis=1)
             atr = tr.rolling(14).mean().iloc[-1]
-            h10 = high.iloc[-10:].max(); l10 = low.iloc[-10:].min(); range_pct = (h10 - l10) / h10
+            
+            # v3.3.1 の収縮スコアリング
+            h10 = high.iloc[-10:].max(); l10 = low.iloc[-10:].min(); range_pct = (h10 - l10) / (h10 if h10 > 0 else 1)
+            
             if range_pct > CONFIG['MAX_TIGHTNESS_PCT']:
                 return {"score": 0, "atr": atr, "signals": [f"ルーズ({range_pct*100:.1f}%)"], "is_dryup": False}
+            
+            # スコア計算 (v3.3.1 のマッピング)
             tight_score = max(0, int(40 * (1 - (range_pct - 0.05) / 0.10))) if range_pct > 0.05 else 40
+            
             vol_ma = volume.rolling(50).mean().iloc[-1]; vol_curr = volume.iloc[-1]; vol_ratio = vol_curr / vol_ma if vol_ma > 0 else 1.0
             is_dryup = vol_ratio < 0.7
             vol_score = 30 if is_dryup else (15 if vol_ratio < 1.2 else 0)
-            ma50 = close.rolling(50).mean().iloc[-1]; ma150 = close.rolling(150).mean().iloc[-1]; ma200 = close.rolling(200).mean().iloc[-1]
-            trend_score = (10 if close.iloc[-1] > ma50 else 0) + (20 if ma50 > ma150 > ma200 else 0)
+            
+            ma50 = close.rolling(50).mean().iloc[-1]; ma200 = close.rolling(200).mean().iloc[-1]
+            trend_score = (10 if close.iloc[-1] > ma50 else 0) + (10 if ma50 > ma200 else 0) + (10 if close.iloc[-1] > ma200 else 0)
+            
             signals = []
             if range_pct < 0.06: signals.append("収縮")
             if is_dryup: signals.append("枯渇")
-            if trend_score >= 30: signals.append("整列")
+            if trend_score == 30: signals.append("整列")
             return {"score": tight_score + vol_score + trend_score, "atr": atr, "signals": signals, "is_dryup": is_dryup}
         except: return {"score": 0, "atr": 0, "signals": [], "is_dryup": False}
 
@@ -205,37 +212,34 @@ class RSAnalyzer:
 class BacktestEngine:
     @staticmethod
     def run_validation(df):
-        """v3.7 修正: ATRに基づいた動的バックテストで安定株を救済"""
+        """v3.3.1 の StrategyValidator ロジックを完全復刻"""
         try:
             if len(df) < 150: return 1.0
             close = df['Close']; high = df['High']; low = df['Low']
-            tr = pd.concat([(high-low), (high-close.shift()).abs(), (low-close.shift()).abs()], axis=1).max(axis=1)
-            atr = tr.rolling(14).mean()
+            tr = pd.concat([(high-low), (high-close.shift()).abs(), (low-close.shift()).abs()], axis=1).max(axis=1); atr = tr.rolling(14).mean()
             
-            trades = []; in_pos = False; entry_p = 0; stop_dist = 0; start_idx = max(50, len(df)-252)
+            trades = []; in_pos = False; entry_p = 0; stop_p = 0; start_idx = max(50, len(df)-250)
             
             for i in range(start_idx, len(df)):
                 if in_pos:
-                    if low.iloc[i] <= entry_p - stop_dist: # ストップ
-                        trades.append(-1.0); in_pos = False
-                    elif high.iloc[i] >= entry_p + stop_dist * 2.5: # ターゲット
-                        trades.append(2.5); in_pos = False
-                    elif i == len(df) - 1: # 未決済
-                        pnl = (close.iloc[i] - entry_p) / (stop_dist if stop_dist > 0 else 1)
-                        trades.append(max(-1.0, min(2.5, pnl))); in_pos = False
+                    if low.iloc[i] <= stop_p: trades.append(-1.0); in_pos = False
+                    elif high.iloc[i] >= entry_p + (entry_p - stop_p) * 2.5: trades.append(2.5); in_pos = False
+                    elif i == len(df) - 1:
+                        pnl = (close.iloc[i] - entry_p) / (entry_p - stop_p) if (entry_p - stop_p) > 0 else 0
+                        trades.append(pnl); in_pos = False
                 else:
-                    if i >= len(df) - 3: continue
-                    pivot = high.iloc[i-15:i].max()
+                    if i >= len(df) - 5: continue
+                    pivot = high.iloc[i-20:i].max() # v3.3.1 は20日
                     if close.iloc[i] > pivot and close.iloc[i] > close.rolling(50).mean().iloc[i]:
-                        in_pos = True; entry_p = close.iloc[i]; stop_dist = atr.iloc[i] * 2.0
+                        in_pos = True; entry_p = close.iloc[i]; stop_p = entry_p - (atr.iloc[i] * 2.0)
             
-            if not trades: return 1.1 # トレードなしは1.1で救済(優良株の可能性)
+            if not trades: return 1.0
             pos = sum([t for t in trades if t > 0]); neg = abs(sum([t for t in trades if t < 0]))
             return min(10.0, round(pos / neg, 2) if neg > 0 else 5.0)
         except: return 1.0
 
 # ==========================================
-# EXECUTION
+# PORTFOLIO
 # ==========================================
 
 def calculate_position(entry, stop, usd_jpy, exposure):
@@ -258,58 +262,47 @@ def filter_portfolio(candidates, return_map):
 
 def run():
     st = time.time()
-    print("=" * 50); print("🛡 SENTINEL PRO v3.7 MASTER-PIECE"); 
+    print("=" * 50); print("🛡 SENTINEL PRO v3.9 FINAL MASTER"); 
     usd_jpy = CurrencyEngine.get_usd_jpy(); m_msg, exposure, vix = MarketRegime.analyze()
     print(f"Rate: {usd_jpy} | Market: {m_msg}\n" + "=" * 50)
-
-    if exposure == 0.0:
-        send_line(f"🛡 SENTINEL PRO\n{m_msg}\n現在は静観推奨です。"); return
-
-    benchmark = DataEngine.get_data("^GSPC")
-    qualified = []; return_map = {}
     
+    if exposure == 0.0:
+        send_line(f"🛡 SENTINEL PRO\n{m_msg}\nキャッシュ維持。"); return
+    
+    benchmark = DataEngine.get_data("^GSPC"); qualified = []; return_map = {}
     print(f"Scanning {len(TICKERS)} tickers...")
-
+    
     for ticker in TICKERS:
         df = DataEngine.get_data(ticker)
         if df is None: continue
-        
         vcp = VCPAnalyzer.calculate(df); rs = RSAnalyzer.calculate(df, benchmark); pf = BacktestEngine.run_validation(df)
         
-        # 緩和: スコア下限チェック
+        # v3.3.1 基準の足切り
         if vcp["score"] < CONFIG["MIN_VCP_SCORE"] or rs < CONFIG["MIN_RS_RATING"] or pf < CONFIG["MIN_PROFIT_FACTOR"]: continue
         
         ma50 = df["Close"].rolling(50).mean().iloc[-1]; price = df["Close"].iloc[-1]
-        pivot_std = df["High"].iloc[-15:].max(); pivot_cheat = df["High"].iloc[-3:].max()
+        pivot_std = df["High"].iloc[-20:].max(); pivot_cheat = df["High"].iloc[-3:].max()
         
-        # 早期参入判定
         is_cheat = (rs > 80 and vcp["is_dryup"] and (ma50 * (1-CONFIG["CHEAT_MA50_RANGE"]) <= price <= ma50 * (1+CONFIG["CHEAT_MA50_RANGE"])))
         e_type = "⚡Cheat" if is_cheat else "Standard"
         entry = pivot_cheat if is_cheat else pivot_std
+        stop = entry - vcp["atr"] * 2.0; target = entry + (entry - stop) * 2.5; dist = (price - entry) / (entry if entry > 0 else 1)
         
-        stop = entry - vcp["atr"] * CONFIG["STOP_LOSS_ATR"]; target = entry + (entry - stop) * 2.5
+        # v3.3.1 のACTION判定
+        status = "ACTION" if -0.01 <= dist < 0.04 else ("WAIT" if price < entry else "EXTENDED")
         
-        # ステータス判定 (少し幅を持たせてACTIONを拾いやすく)
-        dist = (price - entry) / (entry if entry > 0 else 1)
-        if -0.01 <= dist < 0.04: status = "ACTION"
-        elif dist < -0.01: status = "WAIT"
-        else: status = "EXTENDED"
-
-        shares = calculate_position(entry, stop, usd_jpy, exposure)
-        return_map[ticker] = df["Close"].pct_change().dropna()
-
+        shares = calculate_position(entry, stop, usd_jpy, exposure); return_map[ticker] = df["Close"].pct_change().dropna()
         qualified.append({"ticker": ticker, "status": status, "price": round(price,2), "entry": round(entry,2), "stop": round(stop,2), "target": round(target,2), "shares": shares, "vcp": vcp, "rs": rs, "pf": pf, "type": e_type, "sector": DataEngine.get_sector(ticker)})
-
+    
     qualified.sort(key=lambda x: ({"ACTION": 3, "WAIT": 2, "EXTENDED": 1}.get(x["status"], 0), x["vcp"]["score"] + x["rs"]), reverse=True)
     selected = filter_portfolio(qualified, return_map)
-
-    # OUTPUT
+    
     today = datetime.now().strftime("%Y-%m-%d"); runtime = round(time.time() - st, 2)
     res = {"date": today, "runtime": f"{runtime}s", "usd_jpy": usd_jpy, "market": m_msg, "vix": vix, "exposure": exposure, "selected_count": len(selected), "qualified_count": len(qualified), "selected": selected, "qualified": qualified}
     with open(RESULTS_DIR / f"{today}.json", 'w', encoding='utf-8') as f: json.dump(res, f, ensure_ascii=False, indent=2, default=str)
     print("--- START JSON DATA ---"); print(json.dumps(res, ensure_ascii=False)); print("--- END JSON DATA ---")
     
-    msg = [f"🛡 SENTINEL PRO v3.7 (Rate:{usd_jpy})\nMarket: {m_msg}\nScan:{len(TICKERS)} | Sel:{len(selected)}\n" + "="*20]
+    msg = [f"🛡 SENTINEL PRO v3.9 (Rate:{usd_jpy})\nMarket: {m_msg}\nScan:{len(TICKERS)} | Sel:{len(selected)}\n" + "="*20]
     for s in selected:
         msg.append(f"\n{'💎' if s['status'] == 'ACTION' else '⏳'} {s['ticker']} [{s['status']}] {'🌟' if s['pf'] >= 3.0 else '✅'}PF:{s['pf']:.2f}\nVCP:{s['vcp']['score']} | RS:{s['rs']} | {s['type']}\n📍Entry:${s['entry']:.2f} 🛑Stop:${s['stop']:.2f}\n📦推奨:{s['shares']}株 | 💡{','.join(s['vcp']['signals'])}\n" + "-"*15)
     send_line("\n".join(msg))
