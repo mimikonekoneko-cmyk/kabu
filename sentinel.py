@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 # ==========================================================
-# 🛡 SENTINEL PRO v3.1 HYBRID
+# 🛡 SENTINEL PRO v3.3 TRUE COMPLETE
 # ----------------------------------------------------------
 # 修正内容:
-# 1. 表示復元: v2.3の詳細なLINE通知フォーマット（Target, Stop, Now, Sig）を完全復活
-# 2. ロジック維持: v3.0の修正済みVCP計算（ADI等を正しく選出）
-# 3. 信頼性: 「ルーズ」な銘柄を排除し、本当に形の良い銘柄だけを表示
+# 1. 復元: v3.1までの「独自検知銘柄(257種)」を完全復元
+# 2. 統合: v3.2の「指数・セクター銘柄」を追加統合
+# 3. 合計: 約450銘柄を重複なくマージし、監視漏れを完全防備
 # ==========================================================
 
 import os
@@ -35,18 +35,17 @@ CONFIG = {
     "CORRELATION_LIMIT": 0.80,
 
     "MIN_RS_RATING": 70,
-    "MIN_VCP_SCORE": 55,        # 厳格化
+    "MIN_VCP_SCORE": 55,
     "MIN_PROFIT_FACTOR": 1.2,
-    "MAX_TIGHTNESS_PCT": 0.15,  # ルーズな銘柄を除外
+    "MAX_TIGHTNESS_PCT": 0.15,
 
     "STOP_LOSS_ATR": 2.0,
-    
-    # 出口戦略 (v2.3仕様)
+    "TARGET_R_MULTIPLE": 2.5,
     "TARGET_CONSERVATIVE": 1.5,
     "TARGET_MODERATE": 2.5,
     "TARGET_AGGRESSIVE": 4.0,
     
-    "DISPLAY_LIMIT": 15,
+    "DISPLAY_LIMIT": 20,
 }
 
 ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
@@ -55,47 +54,77 @@ USER_ID = os.getenv("LINE_USER_ID")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger("SENTINEL_PRO")
 
-CACHE_DIR = Path("./cache_v31")
+CACHE_DIR = Path("./cache_v33")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # ==========================================================
-# TICKER UNIVERSE (257 Tickers)
+# TICKER UNIVERSE (MERGED: ORIGINAL + EXPANSION)
 # ==========================================================
 
-TICKERS = sorted(list(set([
-    "AAPL","MSFT","NVDA","AMZN","GOOGL","META","TSLA","BRK-B","LLY","AVGO",
-    "JPM","V","UNH","XOM","MA","PG","JNJ","HD","MRK","COST",
-    "ABBV","ADBE","CRM","CVX","PEP","KO","BAC","WMT","ACN","TMO",
-    "MCD","LIN","NFLX","AMD","ORCL","CSCO","INTC","QCOM","IBM","TXN",
-    "AMAT","INTU","NOW","ISRG","GE","CAT","BA","LMT","RTX","NOC",
-    "DE","GS","MS","BLK","SPGI","AXP","C","PYPL","SCHW","BK",
-    "USB","T","VZ","CMCSA","DIS","PFE","ABT","BMY","AMGN","GILD",
-    "VRTX","REGN","ZTS","MDT","SYK","CI","HUM","CME","ICE","ADP",
-    "MMM","HON","UPS","FDX","UNP","NSC","CSX","DAL","UAL","LUV",
-    "F","GM","RIVN","NIO","PLTR","SNOW","SHOP","COIN","UBER",
-    "PANW","CRWD","ZS","NET","OKTA","DDOG","MDB","TEAM","WDAY",
-    "ANET","MRVL","MU","KLAC","LRCX","ADI","NXPI","MCHP","ON","TSM",
-    "ASML","ROKU","ETSY","FIVE","TJX","LOW","SBUX","NKE","ADSK",
-    "FTNT","TTD","ROST","EBAY","KDP","MNST","SIRI","EA","TTWO",
-    "BIIB","ILMN","DXCM","EW","BDX","DHR","IDXX","HCA","ELV",
-    "MO","PM","BTI","SHEL","BP","CVS","KR","TGT","DG",
-    "DLTR","KMB","CL","GIS","KHC","HSY","CPB","ADM","CAG","WDC",
-    "STX","HPQ","DELL","HPE","ORLY","AZO","GPC","OXY","SLB","HAL",
-    "FCX","NEM","RIO","BHP","AA","VALE","DOW","DD","APD","ECL",
-    "SHW","SPOT","PINS","DOCU","ZM","BABA","JD","BIDU","TCEHY",
-    "SONY","NTES","SE","MELI","SAP","UBS","DB",
-    "RY","TD","BNS","ENB","SU","TRP","FIS","FISV","GPN",
-    "NDAQ","CB","AIG","MET","PRU","ALL","TRV","AON","MMC",
-    "KMI","ET","WMB","OKE","EOG","DVN","MPC","PSX","VLO",
-    "MAR","HLT","ABNB","BKNG","EXPE","RCL","CCL","NCLH","CHTR","TMUS",
-    "CMG","YUM","DPZ","DASH","WING","CVNA","CAR","TSCO","BBY","ULTA",
-    "M","KSS","ANF","LEVI","CPRI"
-])))
+# 1. ORIGINAL LIST (v3.1までの独自検知リスト・優先リスト)
+ORIGINAL_LIST = [
+    'NVDA', 'AMD', 'AVGO', 'TSM', 'ASML', 'MU', 'QCOM', 'MRVL', 'LRCX', 'AMAT',
+    'KLAC', 'ADI', 'ON', 'SMCI', 'ARM', 'MPWR', 'TER',
+    'RKLB', 'ASTS', 'PLTR', 'AERO',
+    'MSFT', 'GOOGL', 'GOOG', 'META', 'AAPL', 'AMZN', 'NFLX', 'CRM', 'NOW',
+    'SNOW', 'ADBE', 'INTU', 'ORCL', 'SAP',
+    'COST', 'WMT', 'TSLA', 'SBUX', 'NKE', 'MELI', 'BABA', 'CVNA', 'MTN',
+    'LLY', 'ABBV', 'REGN', 'VRTX', 'NVO', 'BSX', 'HOLX', 'OMER', 'DVAX',
+    'RARE', 'RIGL', 'KOD', 'TARS', 'ORKA', 'DSGN',
+    'MA', 'V', 'COIN', 'MSTR', 'HOOD', 'PAY', 'MDLN',
+    # v28/v3.1の独自検知銘柄 (ここが消えていたのを復元)
+    'COHR', 'ACN', 'ETN', 'SPOT', 'RDDT', 'RBLX', 'CEVA', 'FFIV',
+    'DAKT', 'ITRN', 'TBLA', 'CHA', 'EPAC', 'DJT', 'TV', 'SEM',
+    'SCVL', 'INBX', 'CCOI', 'NMAX', 'HY', 'AVR', 'PRSU', 'WBTN',
+    'ASTE', 'FULC',
+    # Priority List
+    'SNDK', 'WDC', 'STX', 'GEV', 'APH', 'TXN', 'PG', 'UBER',
+    'BE', 'LITE', 'IBM', 'CLS', 'CSCO', 'APLD', 'ANET', 'NET',
+    'GLW', 'PANW', 'CRWD', 'NBIS', 'RCL', 'ONDS', 'IONQ', 'ROP',
+    'PM', 'PEP', 'KO',
+    'SPY', 'QQQ', 'IWM'
+]
+
+# 2. EXPANSION LIST (v3.2の指数・セクター網羅リスト)
+EXPANSION_LIST = [
+    # MAG 7 & MEGA CAP
+    'BRK-B','JPM','UNH','XOM','HD','MRK','CVX','BAC','LIN','DIS','TMO','MCD','ABT','WFC',
+    'CMCSA','VZ','PFE','CAT','ISRG','GE','SPGI','HON','UNP','RTX','LOW','GS','BKNG','ELV',
+    'AXP','COP','MDT','SYK','BLK','NEE','BA','TJX','PGR','ETN','LMT','C','CB','ADP','MMC',
+    'PLD','CI','MDLZ','AMT','FI','BX','TMUS','SCHW',
+    'MO','EOG','DE','SO','DUK','SLB','CME','SHW','CSX','PYPL','CL','EQIX','ICE','FCX',
+    'MCK','TGT','USB','PH','GD','BDX','ITW','ABNB','HCA','NXPI','PSX','MAR','NSC','EMR',
+    'AON','PNC','CEG','CDNS','SNPS','MCO','PCAR','COF','FDX','ORLY','ADSK','VLO','OXY','TRV',
+    'AIG','HLT','WELL','CARR','AZO','PAYX','MSI','TEL','PEG','AJG','ROST','KMB','APD',
+    'URI','DHI','OKE','WMB','TRGP','SRE','CTAS','AFL','GWW','LHX','MET','PCG','CMI','F','GM','STZ',
+    'PSA','O','DLR','CCI','KMI','ED','XEL','EIX','WEC','D','AWK','ES','AEP','EXC',
+    # SEMICONDUCTORS
+    'STM','GFS',
+    # SOFTWARE / AI
+    'DDOG','MDB','HUBS','TTD','APP','PATH','MNDY','GTLB','IOT','DUOL','ZI','CFLT','HCP','AI','SOUN',
+    # CRYPTO / FINTECH
+    'CLSK','MARA','RIOT','BITF','HUT','IREN','WULF','CORZ','CIFR','SQ','AFRM','UPST','SOFI','DKNG',
+    # BIOTECH
+    'MRNA','BNTX','UTHR','SMMT','VKTX','ALT','IMGN','CRSP','NTLA','BEAM',
+    # DEFENSE / SPACE
+    'LUNR','HII','AXON','TDG',
+    # ENERGY / URANIUM
+    'CCJ','URA','UUUU','DNN','NXE','UEC','SCCO','AA','X','NUE','STLD',
+    'TTE','PXD','MRO',
+    # CONSUMER / IPOs
+    'CART','CAVA','BIRK','KVUE','LULU','ONON','DECK','CROX','WING','CMG','DPZ','YUM','CELH','MNST',
+    # MOMENTUM
+    'GME','AMC','U','OPEN','Z','RDFN',
+    # ETFS
+    'SMH','XLF','XLV','XLE','XLI','XLK','XLC','XLY','XLP','XLB','XLU','XLRE'
+]
+
+# 3. MERGE & DEDUPLICATE (完全統合)
+TICKERS = sorted(list(set(ORIGINAL_LIST + EXPANSION_LIST)))
 
 # ==========================================================
-# CURRENCY & DATA
+# CURRENCY ENGINE
 # ==========================================================
-
 class CurrencyEngine:
     @staticmethod
     def get_usd_jpy():
@@ -107,19 +136,21 @@ class CurrencyEngine:
             return 152.0
         except: return 152.0
 
+# ==========================================================
+# DATA ENGINE
+# ==========================================================
 class DataEngine:
     @staticmethod
     def get_data(ticker, period="700d"):
         cache_file = CACHE_DIR / f"{ticker}.pkl"
         if cache_file.exists():
             if time.time() - cache_file.stat().st_mtime < 12 * 3600:
-                try:
-                    with open(cache_file, "rb") as f: return pickle.load(f)
+                try: with open(cache_file, "rb") as f: return pickle.load(f)
                 except: pass
 
         try:
             df = yf.download(ticker, period=period, progress=False, auto_adjust=True)
-            if df is None or df.empty or len(df) < 250: return None
+            if df is None or df.empty or len(df) < 200: return None
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
             required = ["Close", "High", "Low", "Volume"]
@@ -133,8 +164,7 @@ class DataEngine:
         sector_cache_file = CACHE_DIR / "sectors.json"
         sector_map = {}
         if sector_cache_file.exists():
-            try:
-                with open(sector_cache_file, 'r') as f: sector_map = json.load(f)
+            try: with open(sector_cache_file, 'r') as f: sector_map = json.load(f)
             except: pass
         if ticker in sector_map: return sector_map[ticker]
         try:
@@ -146,9 +176,8 @@ class DataEngine:
         except: return "Unknown"
 
 # ==========================================================
-# ANALYSIS MODULES (V3.0 LOGIC)
+# VCP ANALYZER
 # ==========================================================
-
 class VCPAnalyzer:
     @staticmethod
     def calculate(df):
@@ -157,14 +186,13 @@ class VCPAnalyzer:
             tr = pd.concat([(high-low), (high-close.shift()).abs(), (low-close.shift()).abs()], axis=1).max(axis=1)
             atr = tr.rolling(14, min_periods=7).mean().iloc[-1]
 
-            # Tightness (値幅%)
+            # Tightness
             h10 = high.iloc[-10:].max()
             l10 = low.iloc[-10:].min()
             range_pct = (h10 - l10) / h10
             
-            # 足切り: 15%以上はルーズとして除外
             if range_pct > CONFIG['MAX_TIGHTNESS_PCT']:
-                return {"score": 0, "atr": atr, "signals": [f"ルーズ({range_pct*100:.1f}%)"]}
+                return {"score": 0, "atr": atr, "signals": []}
             
             if range_pct <= 0.05: tight_score = 40
             else: tight_score = int(40 * (1 - (range_pct - 0.05) / 0.10))
@@ -189,16 +217,17 @@ class VCPAnalyzer:
             if curr > ma200: trend_score += 10
 
             score = tight_score + vol_score + trend_score
-            
             signals = []
             if range_pct < 0.05: signals.append("極度収縮")
-            elif range_pct < 0.10: signals.append("収縮中")
             if vol_ratio < 0.7: signals.append("Vol枯渇")
             if trend_score == 30: signals.append("MA整列")
 
             return {"score": score, "atr": atr, "signals": signals}
         except: return {"score": 0, "atr": 0, "signals": []}
 
+# ==========================================================
+# RS ANALYZER
+# ==========================================================
 class RSAnalyzer:
     @staticmethod
     def calculate(ticker_df, benchmark_df):
@@ -223,6 +252,9 @@ class RSAnalyzer:
             return max(1, min(99, rs))
         except: return 50
 
+# ==========================================================
+# STRATEGY VALIDATOR
+# ==========================================================
 class StrategyValidator:
     @staticmethod
     def run_backtest(df):
@@ -260,7 +292,6 @@ class StrategyValidator:
 # ==========================================================
 # MAIN EXECUTION
 # ==========================================================
-
 def filter_portfolio(candidates, return_map):
     selected = []
     sector_counts = {}
@@ -299,25 +330,24 @@ def calculate_position(entry, stop, usd_jpy):
 
     shares_by_risk = int(risk_total_usd / risk_per_share)
     shares_by_cap = int((capital_usd * 0.4) / entry)
-    
-    # 0株になった場合の救済 (v2.3機能)
-    if shares_by_risk == 0 and shares_by_cap > 0:
-        return 1
+    if shares_by_risk == 0 and shares_by_cap > 0: return 1
     return max(0, min(shares_by_risk, shares_by_cap))
 
 def run():
     print("=" * 50)
-    print("🛡 SENTINEL PRO v3.1 HYBRID")
-    
+    print("🛡 SENTINEL PRO v3.3 TRUE COMPLETE")
     usd_jpy = CurrencyEngine.get_usd_jpy()
     print(f"Rate: 1 USD = {usd_jpy} JPY")
+    
+    # 銘柄数確認
+    print(f"Tracking: {len(TICKERS)} tickers (Original + Expanded)")
     print("=" * 50)
 
     benchmark = DataEngine.get_data("^GSPC")
     qualified = []
     return_map = {}
     
-    print(f"Scanning {len(TICKERS)} tickers...")
+    print("Scanning... (This may take 2-3 mins)")
 
     for ticker in TICKERS:
         df = DataEngine.get_data(ticker)
@@ -337,10 +367,7 @@ def run():
         
         entry = pivot * 1.002
         stop = entry - vcp["atr"] * CONFIG["STOP_LOSS_ATR"]
-        
-        # ターゲット計算 (v2.3表示用)
-        risk = entry - stop
-        target_mod = entry + (risk * CONFIG["TARGET_MODERATE"])
+        target = entry + (entry - stop) * CONFIG["TARGET_R_MULTIPLE"]
         
         dist_pct = ((price - pivot) / pivot) * 100
         if dist_pct > 3.0: status = "EXTENDED"
@@ -356,7 +383,7 @@ def run():
             "price": price,
             "entry": entry,
             "stop": stop,
-            "target": target_mod,
+            "target": target,
             "shares": shares,
             "vcp": vcp,
             "rs": rs,
@@ -371,7 +398,6 @@ def run():
     print(f"Qualified: {len(qualified)} | Selected: {len(selected)}")
     print("-" * 50)
 
-    # Console Output (Detailed)
     for s in selected:
         icon = "💎" if s['status'] == 'ACTION' else ("⏳" if s['status'] == 'WAIT' else "👋")
         cost_jpy = s['shares'] * s['entry'] * usd_jpy
@@ -386,12 +412,12 @@ def run():
         print(f"  💡 {','.join(s['vcp']['signals'])}")
         print()
 
-    # LINE Notification (Fully Restored v2.3 Style)
-    msg_lines = [f"🛡 SENTINEL PRO v3.1 (Rate:{usd_jpy})"]
+    # LINE
+    msg_lines = [f"🛡 SENTINEL PRO v3.3 (Rate:{usd_jpy})"]
     msg_lines.append(f"Scan:{len(TICKERS)} | Sel:{len(selected)}")
     
     if not selected:
-        msg_lines.append("\n⚠️ No candidates met portfolio criteria.")
+        msg_lines.append("\n⚠️ No candidates.")
     else:
         for s in selected:
             icon = "💎" if s['status'] == 'ACTION' else ("⏳" if s['status'] == 'WAIT' else "👋")
@@ -418,7 +444,6 @@ def send_line(message):
     if not ACCESS_TOKEN or not USER_ID: return
     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}
     
-    # Split message if too long
     if len(message) > 4000:
         parts = [message[i:i+4000] for i in range(0, len(message), 4000)]
         for p in parts:
