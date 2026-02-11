@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 # ==========================================================
-# 🛡 SENTINEL PRO v3.0 PERFECTED
+# 🛡 SENTINEL PRO v3.1 HYBRID
 # ----------------------------------------------------------
-# 修正・統合内容:
-# 1. 漏れ修正: セクター分散 & 相関フィルターを完全復元・適用
-# 2. 高速化: セクター情報の取得を「合格銘柄のみ」に限定(Lazy Load)
-# 3. 厳格化: VCPのTightness(収縮)が悪い銘柄は即除外(Gatekeeper)
-# 4. 安全性: リアルタイム為替レート + 厳密なリスク計算
+# 修正内容:
+# 1. 表示復元: v2.3の詳細なLINE通知フォーマット（Target, Stop, Now, Sig）を完全復活
+# 2. ロジック維持: v3.0の修正済みVCP計算（ADI等を正しく選出）
+# 3. 信頼性: 「ルーズ」な銘柄を排除し、本当に形の良い銘柄だけを表示
 # ==========================================================
 
 import os
@@ -29,22 +28,24 @@ warnings.filterwarnings("ignore")
 # ==========================================================
 
 CONFIG = {
-    # 資金管理
-    "CAPITAL_JPY": 350_000,     # 運用資金 (円)
-    "MAX_POSITIONS": 4,         # 最大銘柄数 (分散)
-    "ACCOUNT_RISK_PCT": 0.015,  # 1トレード許容リスク (1.5%)
-    "MAX_SAME_SECTOR": 2,       # 同一セクター許容数 (分散)
-    "CORRELATION_LIMIT": 0.80,  # 相関係数上限 (0.8以上は除外)
+    "CAPITAL_JPY": 350_000,
+    "MAX_POSITIONS": 4,
+    "ACCOUNT_RISK_PCT": 0.015,
+    "MAX_SAME_SECTOR": 2,
+    "CORRELATION_LIMIT": 0.80,
 
-    # 選定基準
-    "MIN_RS_RATING": 70,        # RS下限
-    "MIN_VCP_SCORE": 55,        # VCPスコア下限
-    "MIN_PROFIT_FACTOR": 1.2,   # PF下限
-    "MAX_TIGHTNESS_PCT": 0.15,  # 値幅15%以上のルーズな銘柄は除外
+    "MIN_RS_RATING": 70,
+    "MIN_VCP_SCORE": 55,        # 厳格化
+    "MIN_PROFIT_FACTOR": 1.2,
+    "MAX_TIGHTNESS_PCT": 0.15,  # ルーズな銘柄を除外
 
-    # 取引設定
     "STOP_LOSS_ATR": 2.0,
-    "TARGET_R_MULTIPLE": 2.5,
+    
+    # 出口戦略 (v2.3仕様)
+    "TARGET_CONSERVATIVE": 1.5,
+    "TARGET_MODERATE": 2.5,
+    "TARGET_AGGRESSIVE": 4.0,
+    
     "DISPLAY_LIMIT": 15,
 }
 
@@ -54,11 +55,11 @@ USER_ID = os.getenv("LINE_USER_ID")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger("SENTINEL_PRO")
 
-CACHE_DIR = Path("./cache_v30")
+CACHE_DIR = Path("./cache_v31")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # ==========================================================
-# TICKER UNIVERSE (257 Tickers - Validated)
+# TICKER UNIVERSE (257 Tickers)
 # ==========================================================
 
 TICKERS = sorted(list(set([
@@ -92,13 +93,12 @@ TICKERS = sorted(list(set([
 ])))
 
 # ==========================================================
-# CURRENCY ENGINE (REAL-TIME)
+# CURRENCY & DATA
 # ==========================================================
 
 class CurrencyEngine:
     @staticmethod
     def get_usd_jpy():
-        """リアルタイム為替レート取得 (失敗時フォールバック付)"""
         try:
             ticker = yf.Ticker("JPY=X")
             df = ticker.history(period="1d")
@@ -106,10 +106,6 @@ class CurrencyEngine:
             if 130 < rate < 180: return round(rate, 2)
             return 152.0
         except: return 152.0
-
-# ==========================================================
-# DATA ENGINE (ROBUST)
-# ==========================================================
 
 class DataEngine:
     @staticmethod
@@ -134,32 +130,23 @@ class DataEngine:
 
     @staticmethod
     def get_sector(ticker):
-        """セクター情報の取得 (キャッシュ付き・Lazy Load用)"""
         sector_cache_file = CACHE_DIR / "sectors.json"
         sector_map = {}
-        
         if sector_cache_file.exists():
             try:
                 with open(sector_cache_file, 'r') as f: sector_map = json.load(f)
             except: pass
-        
-        if ticker in sector_map:
-            return sector_map[ticker]
-            
+        if ticker in sector_map: return sector_map[ticker]
         try:
-            # API取得 (重いので合格銘柄のみ実行)
             info = yf.Ticker(ticker).info
             sector = info.get("sector", "Unknown")
             sector_map[ticker] = sector
-            
-            with open(sector_cache_file, 'w') as f:
-                json.dump(sector_map, f)
+            with open(sector_cache_file, 'w') as f: json.dump(sector_map, f)
             return sector
-        except:
-            return "Unknown"
+        except: return "Unknown"
 
 # ==========================================================
-# VCP ANALYZER (STRICT)
+# ANALYSIS MODULES (V3.0 LOGIC)
 # ==========================================================
 
 class VCPAnalyzer:
@@ -167,26 +154,23 @@ class VCPAnalyzer:
     def calculate(df):
         try:
             close = df["Close"]; high = df["High"]; low = df["Low"]; volume = df["Volume"]
-            
-            # ATR
-            tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
+            tr = pd.concat([(high-low), (high-close.shift()).abs(), (low-close.shift()).abs()], axis=1).max(axis=1)
             atr = tr.rolling(14, min_periods=7).mean().iloc[-1]
 
-            # 1. Tightness (値幅%) - 厳格な足切り
+            # Tightness (値幅%)
             h10 = high.iloc[-10:].max()
             l10 = low.iloc[-10:].min()
             range_pct = (h10 - l10) / h10
             
-            # 足切り: 15%以上の値幅がある銘柄は「ルーズ」として対象外
+            # 足切り: 15%以上はルーズとして除外
             if range_pct > CONFIG['MAX_TIGHTNESS_PCT']:
                 return {"score": 0, "atr": atr, "signals": [f"ルーズ({range_pct*100:.1f}%)"]}
             
-            # スコア計算 (0-5%で満点)
             if range_pct <= 0.05: tight_score = 40
             else: tight_score = int(40 * (1 - (range_pct - 0.05) / 0.10))
             tight_score = max(0, tight_score)
 
-            # 2. Volume
+            # Volume
             vol_ma = volume.rolling(50).mean().iloc[-1]
             vol_curr = volume.iloc[-1]
             vol_ratio = vol_curr / vol_ma if vol_ma > 0 else 1.0
@@ -195,7 +179,7 @@ class VCPAnalyzer:
             elif vol_ratio >= 1.2: vol_score = 0
             else: vol_score = int(30 * (1 - (vol_ratio - 0.6) / 0.6))
 
-            # 3. Trend
+            # Trend
             curr = close.iloc[-1]
             ma50 = close.rolling(50).mean().iloc[-1]
             ma200 = close.rolling(200).mean().iloc[-1]
@@ -209,16 +193,11 @@ class VCPAnalyzer:
             signals = []
             if range_pct < 0.05: signals.append("極度収縮")
             elif range_pct < 0.10: signals.append("収縮中")
-            
             if vol_ratio < 0.7: signals.append("Vol枯渇")
             if trend_score == 30: signals.append("MA整列")
 
             return {"score": score, "atr": atr, "signals": signals}
         except: return {"score": 0, "atr": 0, "signals": []}
-
-# ==========================================================
-# RS ANALYZER
-# ==========================================================
 
 class RSAnalyzer:
     @staticmethod
@@ -244,10 +223,6 @@ class RSAnalyzer:
             return max(1, min(99, rs))
         except: return 50
 
-# ==========================================================
-# STRATEGY VALIDATOR (BREAKOUT PF)
-# ==========================================================
-
 class StrategyValidator:
     @staticmethod
     def run_backtest(df):
@@ -262,22 +237,17 @@ class StrategyValidator:
         entry_price = 0
         stop_price = 0
         reward_mult = 2.5
-        
         start_idx = max(50, len(df)-250)
         
         for i in range(start_idx, len(df)-10):
             if in_pos:
-                if low.iloc[i] <= stop_price:
-                    trades.append(-1.0); in_pos = False
-                elif high.iloc[i] >= entry_price + (entry_price - stop_price) * reward_mult:
-                    trades.append(reward_mult); in_pos = False
-                elif i - entry_idx > 20 and close.iloc[i] < entry_price:
-                    trades.append((close.iloc[i] - entry_price) / (entry_price - stop_price)); in_pos = False
+                if low.iloc[i] <= stop_price: trades.append(-1.0); in_pos = False
+                elif high.iloc[i] >= entry_price + (entry_price - stop_price) * reward_mult: trades.append(reward_mult); in_pos = False
+                elif i - entry_idx > 20 and close.iloc[i] < entry_price: trades.append((close.iloc[i] - entry_price) / (entry_price - stop_price)); in_pos = False
             else:
                 pivot = high.iloc[i-20:i].max()
                 if close.iloc[i] > pivot and close.iloc[i-1] <= pivot:
-                    ma50 = close.rolling(50).mean().iloc[i]
-                    if close.iloc[i] > ma50:
+                    if close.iloc[i] > close.rolling(50).mean().iloc[i]:
                         in_pos = True; entry_price = close.iloc[i]; entry_idx = i
                         stop_price = entry_price - (atr.iloc[i] * CONFIG['STOP_LOSS_ATR'])
         
@@ -288,51 +258,35 @@ class StrategyValidator:
         return round(float(wins / losses), 2)
 
 # ==========================================================
-# FILTERS (RESTORED)
+# MAIN EXECUTION
 # ==========================================================
 
 def filter_portfolio(candidates, return_map):
-    """
-    セクター分散と相関チェックを同時に行う最終フィルター
-    """
     selected = []
     sector_counts = {}
     
-    # スコア順に並んでいる候補を上からチェック
     for c in candidates:
         ticker = c['ticker']
-        
-        # 1. セクター情報の取得 (Lazy Load)
         sector = DataEngine.get_sector(ticker)
-        c['sector'] = sector # 結果に反映
+        c['sector'] = sector
         
-        # 2. セクター制限チェック
-        current_count = sector_counts.get(sector, 0)
-        if current_count >= CONFIG['MAX_SAME_SECTOR'] and sector != "Unknown":
-            continue # スキップ
+        if sector_counts.get(sector, 0) >= CONFIG['MAX_SAME_SECTOR'] and sector != "Unknown": continue
             
-        # 3. 相関チェック
         is_correlated = False
         if selected:
             my_ret = return_map.get(ticker)
             for s in selected:
                 s_ret = return_map.get(s['ticker'])
                 try:
-                    corr = my_ret.corr(s_ret)
-                    if corr > CONFIG['CORRELATION_LIMIT']:
+                    if my_ret.corr(s_ret) > CONFIG['CORRELATION_LIMIT']:
                         is_correlated = True
                         break
                 except: pass
-        
-        if is_correlated:
-            continue # スキップ
+        if is_correlated: continue
             
-        # 合格
         selected.append(c)
-        sector_counts[sector] = current_count + 1
-        
-        if len(selected) >= CONFIG['MAX_POSITIONS']:
-            break
+        sector_counts[sector] = sector_counts.get(sector, 0) + 1
+        if len(selected) >= CONFIG['MAX_POSITIONS']: break
             
     return selected
 
@@ -344,19 +298,19 @@ def calculate_position(entry, stop, usd_jpy):
     if risk_per_share <= 0: return 0
 
     shares_by_risk = int(risk_total_usd / risk_per_share)
-    shares_by_cap = int((capital_usd * 0.4) / entry) # Max 40% allocation
+    shares_by_cap = int((capital_usd * 0.4) / entry)
+    
+    # 0株になった場合の救済 (v2.3機能)
+    if shares_by_risk == 0 and shares_by_cap > 0:
+        return 1
     return max(0, min(shares_by_risk, shares_by_cap))
-
-# ==========================================================
-# MAIN ENGINE
-# ==========================================================
 
 def run():
     print("=" * 50)
-    print("🛡 SENTINEL PRO v3.0 PERFECTED")
+    print("🛡 SENTINEL PRO v3.1 HYBRID")
     
     usd_jpy = CurrencyEngine.get_usd_jpy()
-    print(f"Global Rate: 1 USD = {usd_jpy} JPY")
+    print(f"Rate: 1 USD = {usd_jpy} JPY")
     print("=" * 50)
 
     benchmark = DataEngine.get_data("^GSPC")
@@ -369,25 +323,24 @@ def run():
         df = DataEngine.get_data(ticker)
         if df is None: continue
         
-        # 1. VCP Check (Tightness Gatekeeper)
         vcp = VCPAnalyzer.calculate(df)
         if vcp["score"] < CONFIG["MIN_VCP_SCORE"]: continue
 
-        # 2. RS Check
         rs = RSAnalyzer.calculate(df, benchmark)
         if rs < CONFIG["MIN_RS_RATING"]: continue
 
-        # 3. PF Check
         pf = StrategyValidator.run_backtest(df)
         if pf < CONFIG["MIN_PROFIT_FACTOR"]: continue
 
-        # Setup
         pivot = df["High"].iloc[-20:].max()
         price = df["Close"].iloc[-1]
         
         entry = pivot * 1.002
         stop = entry - vcp["atr"] * CONFIG["STOP_LOSS_ATR"]
-        target = entry + (entry - stop) * CONFIG["TARGET_R_MULTIPLE"]
+        
+        # ターゲット計算 (v2.3表示用)
+        risk = entry - stop
+        target_mod = entry + (risk * CONFIG["TARGET_MODERATE"])
         
         dist_pct = ((price - pivot) / pivot) * 100
         if dist_pct > 3.0: status = "EXTENDED"
@@ -395,8 +348,6 @@ def run():
         else: status = "ACTION"
 
         shares = calculate_position(entry, stop, usd_jpy)
-        
-        # リターンデータを保存 (相関チェック用)
         return_map[ticker] = df["Close"].pct_change().dropna()
 
         qualified.append({
@@ -405,60 +356,79 @@ def run():
             "price": price,
             "entry": entry,
             "stop": stop,
+            "target": target_mod,
             "shares": shares,
             "vcp": vcp,
             "rs": rs,
             "pf": pf
         })
 
-    # Sort: Status > Score
     status_prio = {"ACTION": 3, "WAIT": 2, "EXTENDED": 1}
-    qualified.sort(key=lambda x: (
-        status_prio.get(x["status"], 0),
-        x["vcp"]["score"] + x["rs"] + x["pf"]
-    ), reverse=True)
+    qualified.sort(key=lambda x: (status_prio.get(x["status"], 0), x["vcp"]["score"] + x["rs"] + x["pf"]), reverse=True)
 
-    # Apply Portfolio Filters (Sector & Correlation)
-    # ここで初めてセクター情報を取得・判定する (高速化)
     selected = filter_portfolio(qualified, return_map)
 
-    # Output
     print(f"Qualified: {len(qualified)} | Selected: {len(selected)}")
     print("-" * 50)
 
+    # Console Output (Detailed)
     for s in selected:
         icon = "💎" if s['status'] == 'ACTION' else ("⏳" if s['status'] == 'WAIT' else "👋")
         cost_jpy = s['shares'] * s['entry'] * usd_jpy
         
-        print(f"{icon} {s['ticker']} [{s['status']}] ({s['sector']})")
+        print(f"{icon} {s['ticker']} [{s['status']}]")
         print(f"  VCP:{s['vcp']['score']} RS:{s['rs']} PF:{s['pf']}")
-        print(f"  Entry:${round(s['entry'],2)} Stop:${round(s['stop'],2)}")
-        print(f"  推奨:{s['shares']}株 (約{int(cost_jpy/10000)}万円)")
-        print(f"  {','.join(s['vcp']['signals'])}")
+        print(f"  Now:${s['price']:.2f}")
+        print(f"  📍 Entry:${s['entry']:.2f}")
+        print(f"  🛑 Stop :${s['stop']:.2f}")
+        print(f"  🎯 Target:${s['target']:.2f}")
+        print(f"  📦 推奨:{s['shares']}株 (約{int(cost_jpy/10000)}万円)")
+        print(f"  💡 {','.join(s['vcp']['signals'])}")
         print()
 
-    # LINE Notification
-    msg_lines = [f"🛡 SENTINEL PRO v3.0 (Rate:{usd_jpy})"]
-    msg_lines.append(f"Qualified: {len(qualified)}")
+    # LINE Notification (Fully Restored v2.3 Style)
+    msg_lines = [f"🛡 SENTINEL PRO v3.1 (Rate:{usd_jpy})"]
+    msg_lines.append(f"Scan:{len(TICKERS)} | Sel:{len(selected)}")
     
     if not selected:
-        msg_lines.append("No candidates met portfolio criteria.")
+        msg_lines.append("\n⚠️ No candidates met portfolio criteria.")
     else:
         for s in selected:
-            icon = "💎" if s['status'] == 'ACTION' else "⏳"
-            msg_lines.append(f"\n{icon} {s['ticker']} ({s['status']})")
-            msg_lines.append(f"VCP:{s['vcp']['score']} RS:{s['rs']}")
-            msg_lines.append(f"Entry:${s['entry']:.2f}")
-            msg_lines.append(f"Rec:{s['shares']}株 ({s['sector'][:8]})")
+            icon = "💎" if s['status'] == 'ACTION' else ("⏳" if s['status'] == 'WAIT' else "👋")
+            risk_pct = ((s['entry'] - s['stop']) / s['entry']) * 100
+            tgt_pct = ((s['target'] - s['entry']) / s['entry']) * 100
+            
+            msg_lines.append(f"\n{icon} {s['ticker']} [{s['status']}]")
+            msg_lines.append(f"   VCP:{s['vcp']['score']} | RS:{s['rs']} | PF:{s['pf']:.2f}")
+            msg_lines.append(f"   Now:${s['price']:.2f}")
+            msg_lines.append(f"   📍 Entry:${s['entry']:.2f}")
+            msg_lines.append(f"   🛑 Stop :${s['stop']:.2f} (-{risk_pct:.1f}%)")
+            msg_lines.append(f"   🎯 T2tgt:${s['target']:.2f} (+{tgt_pct:.1f}%)")
+            
+            shares_msg = f"{s['shares']}株"
+            if s['shares'] == 1 and s['entry']*usd_jpy*0.015 < (s['entry']-s['stop'])*usd_jpy:
+                 shares_msg += "(Min)"
+            
+            msg_lines.append(f"   📦 推奨:{shares_msg} ({s['sector'][:7]})")
+            msg_lines.append(f"   💡 {','.join(s['vcp']['signals'])}")
     
     send_line("\n".join(msg_lines))
 
 def send_line(message):
     if not ACCESS_TOKEN or not USER_ID: return
     headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}
-    payload = {"to": USER_ID, "messages": [{"type": "text", "text": message}]}
-    try: requests.post("https://api.line.me/v2/bot/message/push", headers=headers, json=payload, timeout=10)
-    except: pass
+    
+    # Split message if too long
+    if len(message) > 4000:
+        parts = [message[i:i+4000] for i in range(0, len(message), 4000)]
+        for p in parts:
+            payload = {"to": USER_ID, "messages": [{"type": "text", "text": p}]}
+            try: requests.post("https://api.line.me/v2/bot/message/push", headers=headers, json=payload, timeout=10)
+            except: pass
+    else:
+        payload = {"to": USER_ID, "messages": [{"type": "text", "text": message}]}
+        try: requests.post("https://api.line.me/v2/bot/message/push", headers=headers, json=payload, timeout=10)
+        except: pass
 
 if __name__ == "__main__":
     run()
