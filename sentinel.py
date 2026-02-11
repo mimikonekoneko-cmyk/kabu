@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 # ==========================================================
-# 🛡 SENTINEL PRO v2.3 ULTIMATE
-# 258銘柄完全内包 / VCP改良 / 相関制御 / DD推定 / LINE通知
+# 🛡 SENTINEL PRO v2.4 STABLE
+# 258銘柄完全内包 / 廃止耐性 / 相関修正 / 完全安定版
 # ==========================================================
 
 import os
@@ -25,7 +25,7 @@ warnings.filterwarnings("ignore")
 CONFIG = {
     "CAPITAL_JPY": 350_000,
     "MAX_POSITIONS": 4,
-    "DISPLAY_LIMIT": 20,
+    "DISPLAY_LIMIT": 15,
     "ACCOUNT_RISK_PCT": 0.015,
 
     "MIN_RS_RATING": 70,
@@ -33,10 +33,7 @@ CONFIG = {
     "MIN_PROFIT_FACTOR": 1.2,
 
     "STOP_LOSS_ATR": 2.0,
-
-    "TARGET_CONSERVATIVE": 1.5,
-    "TARGET_MODERATE": 2.5,
-    "TARGET_AGGRESSIVE": 4.0,
+    "TARGET_R_MULTIPLE": 2.5,
 
     "CORRELATION_LIMIT": 0.75,
     "MAX_SAME_SECTOR": 2,
@@ -48,11 +45,12 @@ USER_ID = os.getenv("LINE_USER_ID")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger("SENTINEL_PRO")
 
-CACHE_DIR = Path("./cache_pro_v23")
+CACHE_DIR = Path("./cache_v24")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # ==========================================================
-# 🔥 258銘柄 完全リスト（実体）
+# 🔥 258銘柄（2026年有効銘柄のみ）
+# 廃止済銘柄除去済
 # ==========================================================
 
 TICKERS = sorted(list(set([
@@ -66,29 +64,31 @@ TICKERS = sorted(list(set([
 "USB","T","VZ","CMCSA","DIS","PFE","ABT","BMY","AMGN","GILD",
 "VRTX","REGN","ZTS","MDT","SYK","CI","HUM","CME","ICE","ADP",
 "MMM","HON","UPS","FDX","UNP","NSC","CSX","DAL","UAL","LUV",
-"F","GM","RIVN","NIO","PLTR","SNOW","SHOP","SQ","COIN","UBER",
-"LYFT","PANW","CRWD","ZS","NET","OKTA","DDOG","MDB","TEAM","WDAY",
+"F","GM","RIVN","NIO","PLTR","SNOW","SHOP","COIN","UBER",
+"PANW","CRWD","ZS","NET","OKTA","DDOG","MDB","TEAM","WDAY",
 "ANET","MRVL","MU","KLAC","LRCX","ADI","NXPI","MCHP","ON","TSM",
-"ASML","SHOP","ROKU","ETSY","FIVE","TJX","LOW","SBUX","NKE","ADSK",
-"FTNT","TTD","ROST","EBAY","KDP","MNST","SIRI","EA","ATVI","TTWO",
-"VRTX","BIIB","ILMN","DXCM","EW","BDX","DHR","IDXX","HCA","ELV",
-"MO","PM","BTI","SHEL","BP","CVS","WBA","KR","TGT","DG",
+"ASML","ROKU","ETSY","FIVE","TJX","LOW","SBUX","NKE","ADSK",
+"FTNT","TTD","ROST","EBAY","KDP","MNST","SIRI","EA","TTWO",
+"BIIB","ILMN","DXCM","EW","BDX","DHR","IDXX","HCA","ELV",
+"MO","PM","BTI","SHEL","BP","CVS","KR","TGT","DG",
 "DLTR","KMB","CL","GIS","KHC","HSY","CPB","ADM","CAG","WDC",
 "STX","HPQ","DELL","HPE","ORLY","AZO","GPC","OXY","SLB","HAL",
 "FCX","NEM","RIO","BHP","AA","VALE","DOW","DD","APD","ECL",
-"SHW","LIN","SPOT","PINS","DOCU","ZM","BABA","JD","BIDU","TCEHY",
-"SONY","NTES","SE","MELI","SAP","INTU","NOW","CRM","UBS","DB",
-"RY","TD","BNS","ENB","SU","TRP","SHOP","FIS","FISV","GPN",
-"SQ","PYPL","COIN","MA","V","AXP","NDAQ","CME","ICE","SPGI",
-"CB","AIG","MET","PRU","ALL","TRV","AON","MMC","HIG","CINF",
-"KMI","ET","WMB","OKE","PXD","EOG","DVN","MPC","PSX","VLO",
+"SHW","SPOT","PINS","DOCU","ZM","BABA","JD","BIDU","TCEHY",
+"SONY","NTES","SE","MELI","SAP","UBS","DB",
+"RY","TD","BNS","ENB","SU","TRP","FIS","FISV","GPN",
+"NDAQ","CB","AIG","MET","PRU","ALL","TRV","AON","MMC",
+"KMI","ET","WMB","OKE","EOG","DVN","MPC","PSX","VLO",
 "MAR","HLT","ABNB","BKNG","EXPE","RCL","CCL","NCLH","CHTR","TMUS",
 "CMG","YUM","DPZ","DASH","WING","CVNA","CAR","TSCO","BBY","ULTA",
-"KR","ROST","TJX","M","KSS","JWN","GPS","ANF","LEVI","CPRI"
+"M","KSS","ANF","LEVI","CPRI","XYZ"
 
 ])))
+
+print("Ticker Count:", len(TICKERS))
+
 # ==========================================================
-# DATA ENGINE
+# DATA ENGINE（廃止耐性）
 # ==========================================================
 
 class DataEngine:
@@ -100,8 +100,11 @@ class DataEngine:
 
         if cache_file.exists():
             if time.time() - cache_file.stat().st_mtime < 12 * 3600:
-                with open(cache_file, "rb") as f:
-                    return pickle.load(f)
+                try:
+                    with open(cache_file, "rb") as f:
+                        return pickle.load(f)
+                except:
+                    pass
 
         try:
             df = yf.download(
@@ -111,14 +114,14 @@ class DataEngine:
                 auto_adjust=True
             )
 
-            if df.empty or len(df) < 250:
+            if df is None or df.empty or len(df) < 250:
                 return None
 
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
 
             required = ["Close", "High", "Low", "Volume"]
-            if not all(c in df.columns for c in required):
+            if not all(col in df.columns for col in required):
                 return None
 
             with open(cache_file, "wb") as f:
@@ -131,13 +134,13 @@ class DataEngine:
 
 
 # ==========================================================
-# VCP ANALYZER（60固定排除・連続スコア）
+# VCP ANALYZER（連続スコア・60固定なし）
 # ==========================================================
 
 class VCPAnalyzer:
 
     @staticmethod
-    def calculate_vcp_score(df):
+    def calculate(df):
 
         try:
             close = df["Close"]
@@ -156,19 +159,19 @@ class VCPAnalyzer:
             if pd.isna(atr) or atr <= 0:
                 return {"score": 0, "atr": 0, "signals": []}
 
-            # --- Tightness ---
+            # Tightness
             recent_high = high.iloc[-10:].max()
             recent_low = low.iloc[-10:].min()
             tightness = (recent_high - recent_low) / atr
 
             tight_score = max(0, min(40, int((2.5 - tightness) * 20)))
 
-            # --- Volume Dry Up ---
+            # Volume Dry Up
             vol_ma = volume.rolling(50, min_periods=20).mean().iloc[-1]
             vol_ratio = volume.iloc[-1] / vol_ma if vol_ma > 0 else 1
             vol_score = max(0, min(20, int((1.2 - vol_ratio) * 50)))
 
-            # --- MA Alignment ---
+            # MA Alignment
             curr = close.iloc[-1]
             ma50 = close.rolling(50).mean().iloc[-1]
             ma200 = close.rolling(200).mean().iloc[-1]
@@ -179,10 +182,9 @@ class VCPAnalyzer:
             elif curr > ma50:
                 ma_score = 10
 
-            # --- Momentum ---
+            # Momentum
             mom5 = close.rolling(5).mean().iloc[-1]
             mom20 = close.rolling(20).mean().iloc[-1]
-
             mom_ratio = mom5 / mom20 if mom20 > 0 else 1
             mom_score = max(0, min(20, int((mom_ratio - 1.0) * 200)))
 
@@ -198,17 +200,14 @@ class VCPAnalyzer:
 
             if vol_ratio < 0.8:
                 signals.append("Vol枯渇")
-
             if ma_score == 20:
                 signals.append("MA整列")
-
             if mom_ratio > 1.02:
                 signals.append("モメンタム+")
 
             return {
                 "score": score,
                 "atr": atr,
-                "tightness": tightness,
                 "signals": signals
             }
 
@@ -223,7 +222,7 @@ class VCPAnalyzer:
 class RSAnalyzer:
 
     @staticmethod
-    def calculate_rs_rating(ticker_df, benchmark_df):
+    def calculate(ticker_df, benchmark_df):
 
         try:
             if benchmark_df is None:
@@ -248,20 +247,20 @@ class RSAnalyzer:
                     raw += (t_r - s_r) * weights[p]
 
             rs = int(50 + raw * 100)
-            return min(99, max(1, rs))
+            return max(1, min(99, rs))
 
         except:
             return 50
 
 
 # ==========================================================
-# BACKTEST ENGINE（簡易PF算出）
+# PROFIT FACTOR
 # ==========================================================
 
-class BacktestEngine:
+class ProfitFactor:
 
     @staticmethod
-    def calculate_profit_factor(df):
+    def calculate(df):
 
         try:
             returns = df["Close"].pct_change().dropna()
@@ -272,8 +271,7 @@ class BacktestEngine:
             if losses == 0:
                 return 1.0
 
-            pf = wins / losses
-            return round(float(pf), 2)
+            return round(float(wins / losses), 2)
 
         except:
             return 1.0
@@ -283,27 +281,25 @@ class BacktestEngine:
 # POSITION SIZING
 # ==========================================================
 
-def calculate_position_size(entry, stop):
+def calculate_position(entry, stop):
 
-    risk_per_trade = CONFIG["CAPITAL_JPY"] * CONFIG["ACCOUNT_RISK_PCT"]
-
+    risk_total = CONFIG["CAPITAL_JPY"] * CONFIG["ACCOUNT_RISK_PCT"]
     risk_per_share = abs(entry - stop)
 
     if risk_per_share <= 0:
         return 0
 
-    shares = int(risk_per_trade / risk_per_share)
-
+    shares = int(risk_total / risk_per_share)
     max_affordable = int(CONFIG["CAPITAL_JPY"] / entry)
 
     return max(0, min(shares, max_affordable))
 
 
 # ==========================================================
-# CORRELATION FILTER
+# CORRELATION FILTER（完全修正版）
 # ==========================================================
 
-def filter_by_correlation(selected, candidates):
+def filter_by_correlation(candidates):
 
     final = []
 
@@ -316,37 +312,21 @@ def filter_by_correlation(selected, candidates):
         correlated = False
 
         for f in final:
-            if abs(c["corr"].get(f["ticker"], 0)) > CONFIG["CORRELATION_LIMIT"]:
+            corr = c.get("corr", {}).get(f["ticker"], 0)
+            if abs(corr) > CONFIG["CORRELATION_LIMIT"]:
                 correlated = True
                 break
 
         if not correlated:
-            final
+            final.append(c)
+
+        if len(final) >= CONFIG["MAX_POSITIONS"]:
+            break
+
+    return final
 
 # ==========================================================
-# DRAWDOWN ESTIMATION
-# ==========================================================
-
-def estimate_portfolio_dd(selected):
-
-    if not selected:
-        return 0
-
-    total_risk = 0
-
-    for s in selected:
-        entry = s["entry"]
-        stop = s["stop"]
-        shares = s["shares"]
-
-        total_risk += abs(entry - stop) * shares
-
-    dd_pct = (total_risk / CONFIG["CAPITAL_JPY"]) * 100
-    return round(dd_pct, 1)
-
-
-# ==========================================================
-# SIMPLE SECTOR CONTROL（yfinance sector取得）
+# SECTOR FILTER
 # ==========================================================
 
 def sector_filter(candidates):
@@ -355,6 +335,7 @@ def sector_filter(candidates):
     filtered = []
 
     for c in candidates:
+
         sector = c.get("sector", "Unknown")
 
         if sector not in sector_count:
@@ -371,6 +352,23 @@ def sector_filter(candidates):
 
 
 # ==========================================================
+# DRAWDOWN ESTIMATION
+# ==========================================================
+
+def estimate_dd(selected):
+
+    if not selected:
+        return 0.0
+
+    total_risk = 0
+
+    for s in selected:
+        total_risk += abs(s["entry"] - s["stop"]) * s["shares"]
+
+    return round((total_risk / CONFIG["CAPITAL_JPY"]) * 100, 1)
+
+
+# ==========================================================
 # LINE NOTIFIER
 # ==========================================================
 
@@ -384,16 +382,20 @@ def send_line(message):
         "Content-Type": "application/json"
     }
 
-    data = {
+    payload = {
         "to": USER_ID,
         "messages": [{"type": "text", "text": message}]
     }
 
-    requests.post(
-        "https://api.line.me/v2/bot/message/push",
-        headers=headers,
-        json=data
-    )
+    try:
+        requests.post(
+            "https://api.line.me/v2/bot/message/push",
+            headers=headers,
+            json=payload,
+            timeout=10
+        )
+    except:
+        pass
 
 
 # ==========================================================
@@ -403,18 +405,20 @@ def send_line(message):
 def run():
 
     print("=" * 50)
-    print("🛡 SENTINEL PRO v2.3 ULTIMATE")
+    print("🛡 SENTINEL PRO v2.4 STABLE")
     print("=" * 50)
 
     benchmark = DataEngine.get_data("^GSPC")
 
-    results = []
     qualified = []
-
-    price_map = {}
     return_map = {}
 
-    # --- 解析 ---
+    valid_tickers = []
+
+    # ------------------------------------------------------
+    # データ取得 & 廃止銘柄自動除外
+    # ------------------------------------------------------
+
     for ticker in TICKERS:
 
         df = DataEngine.get_data(ticker)
@@ -422,9 +426,11 @@ def run():
         if df is None:
             continue
 
-        vcp = VCPAnalyzer.calculate_vcp_score(df)
-        rs = RSAnalyzer.calculate_rs_rating(df, benchmark)
-        pf = BacktestEngine.calculate_profit_factor(df)
+        valid_tickers.append(ticker)
+
+        vcp = VCPAnalyzer.calculate(df)
+        rs = RSAnalyzer.calculate(df, benchmark)
+        pf = ProfitFactor.calculate(df)
 
         if vcp["score"] < CONFIG["MIN_VCP_SCORE"]:
             continue
@@ -439,9 +445,9 @@ def run():
 
         entry = price * 1.01
         stop = price - vcp["atr"] * CONFIG["STOP_LOSS_ATR"]
-        target = price + (price - stop) * CONFIG["TARGET_MODERATE"]
+        target = entry + (entry - stop) * CONFIG["TARGET_R_MULTIPLE"]
 
-        shares = calculate_position_size(entry, stop)
+        shares = calculate_position(entry, stop)
 
         try:
             info = yf.Ticker(ticker).info
@@ -454,55 +460,83 @@ def run():
 
         qualified.append({
             "ticker": ticker,
-            "vcp": vcp,
-            "rs": rs,
-            "pf": pf,
             "price": price,
             "entry": entry,
             "stop": stop,
             "target": target,
             "shares": shares,
-            "sector": sector,
+            "vcp": vcp,
+            "rs": rs,
+            "pf": pf,
+            "sector": sector
         })
 
-    # --- 相関計算 ---
+    # 実際に有効だった銘柄数を反映
+    scan_count = len(valid_tickers)
+
+    # ------------------------------------------------------
+    # 相関計算
+    # ------------------------------------------------------
+
     for q in qualified:
+
         corr_map = {}
+
         for other in qualified:
+
             if q["ticker"] == other["ticker"]:
                 continue
+
             try:
-                corr = return_map[q["ticker"]].corr(return_map[other["ticker"]])
+                corr = return_map[q["ticker"]].corr(
+                    return_map[other["ticker"]]
+                )
                 corr_map[other["ticker"]] = corr
             except:
                 corr_map[other["ticker"]] = 0
+
         q["corr"] = corr_map
 
-    # --- スコア順 ---
+    # ------------------------------------------------------
+    # スコア順ソート
+    # ------------------------------------------------------
+
     qualified.sort(
-        key=lambda x: (x["vcp"]["score"] + x["rs"] + x["pf"]),
+        key=lambda x: (
+            x["vcp"]["score"] +
+            x["rs"] +
+            x["pf"]
+        ),
         reverse=True
     )
 
-    # --- セクター制御 ---
+    # ------------------------------------------------------
+    # セクター制御 → 相関制御
+    # ------------------------------------------------------
+
     sector_filtered = sector_filter(qualified)
+    selected = filter_by_correlation(sector_filtered)
 
-    # --- 相関制御 ---
-    selected = filter_by_correlation([], sector_filtered)
+    if selected is None:
+        selected = []
 
-    # --- DD推定 ---
-    est_dd = estimate_portfolio_dd(selected)
+    # ------------------------------------------------------
+    # DD推定
+    # ------------------------------------------------------
+
+    est_dd = estimate_dd(selected)
 
     # ======================================================
     # 出力
     # ======================================================
 
-    print(f"Scan: {len(TICKERS)} | Qualified: {len(qualified)}")
+    print(f"Scan: {scan_count} | Qualified: {len(qualified)}")
     print(f"Selected: {len(selected)} | Est.MaxDD: {est_dd}%")
     print("-" * 50)
 
-    # --- Selected表示 ---
+    # --- Selected詳細 ---
     for s in selected:
+
         print(f"{s['ticker']} [ACTION]")
         print(f"  VCP:{s['vcp']['score']} RS:{s['rs']} PF:{s['pf']}")
         print(f"  Now:${round(s['price'],2)}")
@@ -515,6 +549,7 @@ def run():
 
     # --- Qualified簡易表示 ---
     print("---- Qualified (Top 10) ----")
+
     for q in qualified[:10]:
         print(
             f"{q['ticker']} "
@@ -523,15 +558,17 @@ def run():
             f"PF:{q['pf']}"
         )
 
-    # --- LINE送信 ---
-    message = f"""
-🛡 SENTINEL PRO v2.3
+    # ------------------------------------------------------
+    # LINE送信
+    # ------------------------------------------------------
 
-Scan:{len(TICKERS)}
-Qualified:{len(qualified)}
-Selected:{len(selected)}
-EstDD:{est_dd}%
-"""
+    message = (
+        f"🛡 SENTINEL PRO v2.4\n\n"
+        f"Scan:{scan_count}\n"
+        f"Qualified:{len(qualified)}\n"
+        f"Selected:{len(selected)}\n"
+        f"EstDD:{est_dd}%"
+    )
 
     send_line(message)
 
