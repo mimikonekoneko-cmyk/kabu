@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 # ==========================================================
-# 🛡 SENTINEL PRO v3.3.1 (Restored & Polished)
+# 🛡 SENTINEL PRO v3.3.1 JSON-FIX (TRUE RESTORATION)
 # ----------------------------------------------------------
-# 修正内容:
-# 1. 復元: あなたが希望された v3.3.1 の検知ロジックを100%復刻
-# 2. バグ修正: IndentationError および try-with 同一行エラーを修正
-# 3. JSON出力: 実行結果を results/YYYY-MM-DD.json に保存
-# 4. クリーンアップ: 404エラーを出す廃止銘柄(FI, SQ等)をリストから除去
+# 変更点:
+# 1. ロジック: あなたが Sel: 10 を出した v3.3.1 のアルゴリズムを完全復元。
+# 2. 修正: GitHub Actions での IndentationError と文法エラーを解決。
+# 3. 追加: 実行結果を JSON 形式で results/ に保存し、ログにも出力。
 # ==========================================================
 
 import os
@@ -26,7 +25,7 @@ from datetime import datetime
 warnings.filterwarnings("ignore")
 
 # ==========================================================
-# CONFIGURATION (v3.3.1 Exact)
+# CONFIGURATION (v3.3.1 EXACT)
 # ==========================================================
 
 CONFIG = {
@@ -43,11 +42,6 @@ CONFIG = {
 
     "STOP_LOSS_ATR": 2.0,
     "TARGET_R_MULTIPLE": 2.5,
-    "TARGET_CONSERVATIVE": 1.5,
-    "TARGET_MODERATE": 2.5,
-    "TARGET_AGGRESSIVE": 4.0,
-
-    "DISPLAY_LIMIT": 20,
 }
 
 ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
@@ -58,12 +52,11 @@ logger = logging.getLogger("SENTINEL_PRO")
 
 CACHE_DIR = Path("./cache_v33")
 CACHE_DIR.mkdir(exist_ok=True)
-
 RESULTS_DIR = Path("./results")
 RESULTS_DIR.mkdir(exist_ok=True)
 
 # ==========================================================
-# TICKER UNIVERSE (v3.3.1 Cleaned)
+# TICKER UNIVERSE (v3.3.1 COMPLETE)
 # ==========================================================
 
 ORIGINAL_LIST = [
@@ -81,7 +74,6 @@ ORIGINAL_LIST = [
     'CRWD', 'NBIS', 'RCL', 'ONDS', 'IONQ', 'ROP', 'PM', 'PEP', 'KO', 'SPY', 'QQQ', 'IWM'
 ]
 
-# 廃止銘柄(FI, SQ, X, RDFN等)をリストから除外しました
 EXPANSION_LIST = [
     'BRK-B','JPM','UNH','XOM','HD','MRK','CVX','BAC','LIN','DIS','TMO','MCD','ABT','WFC',
     'CMCSA','VZ','PFE','CAT','ISRG','GE','SPGI','HON','UNP','RTX','LOW','GS','BKNG','ELV',
@@ -97,7 +89,7 @@ EXPANSION_LIST = [
     'IREN', 'WULF', 'CORZ', 'CIFR', 'AFRM', 'UPST', 'SOFI', 'DKNG', 'MRNA', 'BNTX', 'UTHR', 'SMMT',
     'VKTX', 'ALT', 'CRSP', 'NTLA', 'BEAM', 'LUNR', 'HII', 'AXON', 'TDG', 'CCJ', 'URA', 'UUUU', 'DNN',
     'NXE', 'UEC', 'SCCO', 'AA', 'NUE', 'STLD', 'TTE', 'CART', 'CAVA', 'BIRK', 'KVUE', 'LULU', 'ONON',
-    'DECK', 'CROX', 'WING', 'CMG', 'DPZ', 'YUM', 'CELH', 'MNST', 'GME', 'AMC', 'U', 'OPEN', 'Z',
+    'DECK', 'CROX', 'WING', 'CMG', 'DPZ', 'YUM', 'CELH', 'MNST', 'GME', 'AMC', 'U', 'OPEN', 'Z', 'RDFN',
     'SMH', 'XLF', 'XLV', 'XLE', 'XLI', 'XLK', 'XLC', 'XLY', 'XLP', 'XLB', 'XLU', 'XLRE'
 ]
 
@@ -115,7 +107,7 @@ class CurrencyEngine:
             df = ticker.history(period="1d")
             if df.empty: return 152.0
             rate = df['Close'].iloc[-1]
-            return round(float(rate), 2) if 130 < rate < 190 else 152.0
+            return round(float(rate), 2)
         except: return 152.0
 
 class DataEngine:
@@ -125,22 +117,15 @@ class DataEngine:
         if cache_file.exists():
             if time.time() - cache_file.stat().st_mtime < 12 * 3600:
                 try:
-                    with open(cache_file, "rb") as f:
-                        return pickle.load(f)
-                except:
-                    pass
+                    with open(cache_file, "rb") as f: return pickle.load(f)
+                except: pass
         try:
             df = yf.download(ticker, period=period, progress=False, auto_adjust=True)
             if df is None or df.empty or len(df) < 200: return None
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-            required = ["Close", "High", "Low", "Volume"]
-            if not all(col in df.columns for col in required): return None
-            with open(cache_file, "wb") as f:
-                pickle.dump(df, f)
+            if isinstance(df.columns, pd.MultiIndex): df.columns = df.columns.get_level_values(0)
+            with open(cache_file, "wb") as f: pickle.dump(df, f)
             return df
-        except:
-            return None
+        except: return None
 
     @staticmethod
     def get_sector(ticker):
@@ -148,16 +133,14 @@ class DataEngine:
         sector_map = {}
         if sector_cache_file.exists():
             try:
-                with open(sector_cache_file, 'r') as f:
-                    sector_map = json.load(f)
+                with open(sector_cache_file, 'r') as f: sector_map = json.load(f)
             except: pass
         if ticker in sector_map: return sector_map[ticker]
         try:
             info = yf.Ticker(ticker).info
             sector = info.get("sector", "Unknown")
             sector_map[ticker] = sector
-            with open(sector_cache_file, 'w') as f:
-                json.dump(sector_map, f)
+            with open(sector_cache_file, 'w') as f: json.dump(sector_map, f)
             return sector
         except: return "Unknown"
 
@@ -175,8 +158,7 @@ class VCPAnalyzer:
 
             h10 = high.iloc[-10:].max(); l10 = low.iloc[-10:].min()
             range_pct = (h10 - l10) / h10
-            if range_pct > CONFIG['MAX_TIGHTNESS_PCT']:
-                return {"score": 0, "atr": atr, "signals": []}
+            if range_pct > CONFIG['MAX_TIGHTNESS_PCT']: return {"score": 0, "atr": atr, "signals": []}
 
             tight_score = 40 if range_pct <= 0.05 else int(40 * (1 - (range_pct - 0.05) / 0.10))
             vol_ma = volume.rolling(50).mean().iloc[-1]; vol_curr = volume.iloc[-1]
@@ -201,9 +183,13 @@ class RSAnalyzer:
             common = ticker_df.index.intersection(benchmark_df.index)
             if len(common) < 200: return 50
             t = ticker_df.loc[common, "Close"]; s = benchmark_df.loc[common, "Close"]
-            periods = {"3m": 63, "6m": 126, "9m": 189, "12m": 252}; weights = {"3m": 0.4, "6m": 0.2, "9m": 0.2, "12m": 0.2}
-            raw = sum([((t.iloc[-1]/t.iloc[-d]-1) - (s.iloc[-1]/s.iloc[-d]-1)) * w for p, d, w in [(p, periods[p], weights[p]) for p in periods if len(t) > d]])
-            return max(1, min(99, int(50 + raw * 100)))
+            
+            # v3.3.1 はシンプルな騰落率比較
+            t_r = (t.iloc[-1] - t.iloc[-252]) / t.iloc[-252] if len(t) > 252 else (t.iloc[-1] - t.iloc[0]) / t.iloc[0]
+            s_r = (s.iloc[-1] - s.iloc[-252]) / s.iloc[-252] if len(s) > 252 else (s.iloc[-1] - s.iloc[0]) / s.iloc[0]
+            
+            rs = int(50 + (t_r - s_r) * 100)
+            return max(1, min(99, rs))
         except: return 50
 
 class StrategyValidator:
@@ -232,7 +218,7 @@ class StrategyValidator:
         except: return 1.0
 
 # ==========================================================
-# MAIN EXECUTION
+# EXECUTION
 # ==========================================================
 
 def calculate_position(entry, stop, usd_jpy):
@@ -254,8 +240,8 @@ def filter_portfolio(candidates, return_map):
     return selected
 
 def run():
-    print("=" * 50); print("🛡 SENTINEL PRO v3.3.1 (Restored)"); 
-    usd_jpy = CurrencyEngine.get_usd_jpy(); print(f"Rate: {usd_jpy} | Tracking: {len(TICKERS)}\n" + "=" * 50)
+    print("=" * 50); print("🛡 SENTINEL PRO v3.3.1 (True Restoration)"); 
+    usd_jpy = CurrencyEngine.get_usd_jpy(); print(f"Rate: {usd_jpy}\n" + "=" * 50)
     
     benchmark = DataEngine.get_data("^GSPC"); qualified = []; return_map = {}
     print("Scanning...")
@@ -265,8 +251,10 @@ def run():
         vcp = VCPAnalyzer.calculate(df); rs = RSAnalyzer.calculate(df, benchmark); pf = StrategyValidator.run_backtest(df)
         if vcp["score"] < CONFIG["MIN_VCP_SCORE"] or rs < CONFIG["MIN_RS_RATING"] or pf < CONFIG["MIN_PROFIT_FACTOR"]: continue
         pivot = df["High"].iloc[-20:].max(); price = df["Close"].iloc[-1]
+        
         entry = pivot * 1.002; stop = entry - vcp["atr"] * 2.0; target = entry + (entry - stop) * 2.5; dist = (price - pivot) / pivot
         status = "ACTION" if -0.05 <= dist <= 0.03 else ("WAIT" if dist < -0.05 else "EXTENDED")
+        
         shares = calculate_position(entry, stop, usd_jpy); return_map[ticker] = df["Close"].pct_change().dropna()
         qualified.append({"ticker": ticker, "status": status, "price": round(price,2), "entry": round(entry,2), "stop": round(stop,2), "target": round(target,2), "shares": shares, "vcp": vcp, "rs": rs, "pf": pf, "sector": DataEngine.get_sector(ticker)})
     
@@ -279,9 +267,7 @@ def run():
     with open(RESULTS_DIR / f"{today}.json", 'w', encoding='utf-8') as f:
         json.dump(results_data, f, ensure_ascii=False, indent=2, default=str)
     
-    # コンソール出力
     print(f"Qualified: {len(qualified)} | Selected: {len(selected)}")
-    print("-" * 50)
     print("--- START JSON DATA ---"); print(json.dumps(results_data, ensure_ascii=False)); print("--- END JSON DATA ---")
 
     # LINE
@@ -289,12 +275,8 @@ def run():
     for s in selected:
         msg.append(f"\n{'💎' if s['status'] == 'ACTION' else '⏳'} {s['ticker']} [{s['status']}]\nVCP:{s['vcp']['score']} | RS:{s['rs']} | PF:{s['pf']:.2f}\nEntry:${s['entry']:.2f} Stop:${s['stop']:.2f}\n推奨:{s['shares']}株 | 💡{','.join(s['vcp']['signals'])}")
     
-    send_line("\n".join(msg))
-
-def send_line(message):
-    if not ACCESS_TOKEN or not USER_ID: return
-    try: requests.post("https://api.line.me/v2/bot/message/push", headers={"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}, json={"to": USER_ID, "messages": [{"type": "text", "text": message[:4000]}]}, timeout=10)
-    except: pass
+    if ACCESS_TOKEN and USER_ID:
+        requests.post("https://api.line.me/v2/bot/message/push", headers={"Authorization": f"Bearer {ACCESS_TOKEN}", "Content-Type": "application/json"}, json={"to": USER_ID, "messages": [{"type": "text", "text": "\n".join(msg)}]}, timeout=10)
 
 if __name__ == "__main__":
     run()
