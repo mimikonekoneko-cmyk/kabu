@@ -6,7 +6,7 @@ import os
 import yfinance as yf
 import altair as alt
 
-# ページ設定（スマホでも見やすいようにwide）
+# ページ設定（スマホ対応を強化）
 st.set_page_config(
     page_title="SENTINEL PRO 分析ダッシュボード",
     page_icon="🛡",
@@ -15,9 +15,9 @@ st.set_page_config(
 )
 
 st.title("🛡 SENTINEL PRO 分析ダッシュボード")
-st.markdown("毎日蓄積されたACTION / WAITデータを分析します。株価推移もyfinanceでリアルタイム取得。")
+st.markdown("毎日蓄積されたACTION / WAITデータを分析します。株価推移（始値・終値・ローソク足）はyfinanceでリアルタイム取得。")
 
-# データ読み込み関数
+# データ読み込み関数（キャッシュで高速化）
 @st.cache_data(ttl=3600)  # 1時間キャッシュ
 def load_all_data():
     data_dir = Path("results")
@@ -88,8 +88,8 @@ st.subheader("概要")
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("総エントリ数", len(df_filtered))
 col2.metric("ユニーク銘柄数", df_filtered["ticker"].nunique())
-col3.metric("平均RS", round(df_filtered["rs"].mean(), 1))
-col4.metric("平均VCPスコア", round(df_filtered["vcp_score"].mean(), 1))
+col3.metric("平均RS", round(df_filtered["rs"].mean(), 1) if not df_filtered.empty else 0)
+col4.metric("平均VCPスコア", round(df_filtered["vcp_score"].mean(), 1) if not df_filtered.empty else 0)
 
 # 時系列トレンド
 st.subheader("RS / VCPスコア推移（日次平均）")
@@ -121,7 +121,7 @@ if ticker:
     st.markdown(f"**{ticker} の履歴**")
     st.dataframe(ticker_df[["date", "status", "rs", "vcp_score", "pf", "price", "entry", "target"]])
     
-    # RS / VCP 推移チャート
+    # RS / VCP 推移
     st.markdown("**RS / VCPスコア推移**")
     st.line_chart(ticker_df.set_index("date")[["rs", "vcp_score"]])
     
@@ -129,18 +129,22 @@ if ticker:
     st.markdown("**株価推移（始値・終値・ローソク足）**")
     with st.spinner(f"{ticker} の株価データを取得中..."):
         try:
-            period = st.selectbox("期間", ["1mo", "3mo", "6mo", "1y"], index=0)
+            period = st.selectbox("期間", ["1mo", "3mo", "6mo", "1y"], index=0, key=f"period_{ticker}")
             stock_data = yf.download(ticker, period=period, progress=False)
             
             if not stock_data.empty:
-                # テーブル
+                # MultiIndex対策（yfinanceの最近の仕様変更対応）
+                if isinstance(stock_data.columns, pd.MultiIndex):
+                    stock_data.columns = stock_data.columns.get_level_values(0)  # 'Open', 'Close' だけ残す
+                
+                # テーブル（最新10日）
                 st.dataframe(stock_data[['Open', 'High', 'Low', 'Close', 'Volume']].tail(10))
                 
                 # 線チャート（Open/Close）
                 chart_data = stock_data[['Open', 'Close']].reset_index()
                 st.line_chart(chart_data.set_index('Date'))
                 
-                # ローソク足（Altair）
+                # ローソク足チャート（Altair）
                 c = alt.Chart(stock_data.reset_index()).mark_candlestick(
                     open='Open', high='High', low='Low', close='Close'
                 ).encode(
@@ -154,7 +158,7 @@ if ticker:
                 ).interactive()
                 st.altair_chart(c, use_container_width=True)
             else:
-                st.warning(f"{ticker} のデータが取得できませんでした。")
+                st.warning(f"{ticker} のデータが取得できませんでした。ティッカーを確認してください。")
         except Exception as e:
             st.error(f"株価取得エラー: {e}")
 
