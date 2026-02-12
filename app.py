@@ -31,15 +31,16 @@ st.markdown("""
     }
     .ai-report {
         background-color: #0E1117; 
-        border-left: 5px solid #4285F4; 
+        border-left: 5px solid #00FF00; 
         padding: 20px; 
         margin-bottom: 20px; 
         border-radius: 5px;
         font-family: 'Helvetica Neue', sans-serif;
+        line-height: 1.6;
     }
     .ai-individual {
         background-color: #1c2333; 
-        border: 1px solid #4285F4; 
+        border: 1px solid #00FF00; 
         padding: 15px; 
         border-radius: 8px; 
         margin-top: 10px;
@@ -49,7 +50,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 🧠 分析ロジック
+# 🧠 分析エンジン (VCP & バックテスト)
 # ==============================================================================
 
 class VCPAnalyzer:
@@ -133,11 +134,11 @@ def load_historical_json():
 df_history, meta_history = load_historical_json()
 
 # ==============================================================================
-# 🤖 AIエンジン (Gemini 2.0 Flash - 修正版)
+# 🤖 AIエンジン (Gemini 2.0 Flash - ニュース注入型)
 # ==============================================================================
 
-def call_gemini_ai(prompt, use_search=False):
-    """Google Gemini API呼び出し (検索機能: Proto型指定/安全装置付き)"""
+def call_gemini_pure(prompt):
+    """Gemini API呼び出し (ツールを使わない安定版)"""
     api_key = None
     try: api_key = st.secrets["GEMINI_API_KEY"]
     except: api_key = os.getenv("GEMINI_API_KEY")
@@ -146,49 +147,30 @@ def call_gemini_ai(prompt, use_search=False):
 
     try:
         genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
-        # -------------------------------------------------------
-        # 🛠️ 修正ポイント: 検索ツールの指定方法
-        # 辞書型だとエラーになりやすいため、ツールなしでも動くように設計
-        # -------------------------------------------------------
-        tools = []
-        if use_search:
-            try:
-                # 検索機能を使うためのツール設定 (安全のため dict で渡す)
-                # バージョンによってはエラーになるので、ここを try-except で囲む
-                tools = [{"google_search": {}}] 
-            except Exception:
-                tools = []
-        
-        # モデル設定 (gemini-2.0-flash)
-        model = genai.GenerativeModel(
-            'gemini-2.0-flash',
-            tools=tools
-        )
-
         safety_settings = {
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
         }
-
-        # 生成実行
+        
         response = model.generate_content(prompt, safety_settings=safety_settings)
         return response.text
-
-    except Exception as e:
-        return f"Gemini Error: {str(e)}"
+    except Exception as e: return f"Gemini Error: {str(e)}"
 
 # ==============================================================================
 # 🖥️ UI構成
 # ==============================================================================
 
 st.title("🛡️ SENTINEL PRO DASHBOARD")
-st.caption("Powered by Google Gemini 2.0 Flash")
 
 mode = st.sidebar.radio("モード選択", ["📊 市場レポート (Batch)", "🔍 個別銘柄診断 (Realtime)"])
 
+# ------------------------------------------------------------------------------
+# MODE 1: 市場レポート
+# ------------------------------------------------------------------------------
 if mode == "📊 市場レポート (Batch)":
     if df_history.empty:
         st.error("データが見つかりません。")
@@ -199,123 +181,112 @@ if mode == "📊 市場レポート (Batch)":
         
         st.markdown(f"### 🤖 SENTINEL AI Briefing")
         
-        if "market_ai_gemini" not in st.session_state:
-            with st.spinner("GeminiがGoogle検索と内部データを統合分析中...🌍"):
+        if "market_ai_pure" not in st.session_state:
+            with st.spinner("AIがスキャンデータを精査中..."):
+                # 市場全体のニュースとして S&P500(SPY) のニュースを取得して注入
+                spy_news = yf.Ticker("SPY").news
+                news_context = "\n".join([f"- {n['title']}" for n in spy_news[:5]])
+                
                 action_list = latest_df[latest_df['status']=='ACTION']['ticker'].tolist()
-                wait_list = latest_df[latest_df['status']=='WAIT']['ticker'].tolist()
                 top_sector = latest_df['sector'].value_counts().idxmax() if not latest_df.empty else "None"
-                avg_vcp = latest_df['vcp_score'].mean() if not latest_df.empty else 0
-                today_str = datetime.date.today().strftime("%Y-%m-%d")
-
+                
                 prompt = f"""
-                あなたはウォール街のトップストラテジストAI「SENTINEL」です。
-                【内部スキャンデータ ({latest_date})】とGoogle検索による【最新市況】を統合し、
-                日本の個人投資家向けに具体的かつ洞察に満ちた市場レポートを作成してください。
-
+                あなたは伝説の投資戦略家AI「SENTINEL」です。
+                以下の【内部データ】と【市場ニュース】を読み解き、今日の戦い方を400文字程度で論理的に解説してください。
+                
+                【最新ニュース(SPY)】
+                {news_context}
+                
                 【内部データ】
-                - ACTION (即エントリー): {len(action_list)}銘柄 ({', '.join(action_list[:5]) if action_list else 'なし'})
-                - WAIT (監視): {len(wait_list)}銘柄
+                - ACTION(即戦力): {len(action_list)}銘柄 ({', '.join(action_list[:5])})
                 - 主導セクター: {top_sector}
-                - 市場VCP平均: {avg_vcp:.1f} (基準55)
-
-                【要件】
-                今日({today_str})の米国市場重要ニュース(FOMC, 経済指標等)を検索・加味し、
-                内部データの数値と関連付けて分析してください。
-
-                【フォーマット】
-                マークダウン形式、**400〜600文字**。
-                ### 1. Market Overview (市況概況)
-                ### 2. Sector Rotation (資金の流れ)
-                ### 3. Sentinel Strategy (投資戦略)
+                - VCP平均点: {latest_df['vcp_score'].mean():.1f}
+                
+                【構成】
+                1. 市況判断（ニュースとの関連付け）
+                2. セクター動向
+                3. 今日の具体的戦略
                 """
-                st.session_state.market_ai_gemini = call_gemini_ai(prompt, use_search=True)
+                st.session_state.market_ai_pure = call_gemini_pure(prompt)
         
-        st.markdown(f"""<div class="ai-report">{st.session_state.market_ai_gemini}</div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="ai-report">{st.session_state.market_ai_pure}</div>""", unsafe_allow_html=True)
 
-        st.markdown("### 🗺️ Sector Heatmap")
+        # セクターマップ
         if not latest_df.empty:
-            fig_treemap = px.treemap(latest_df, path=['sector', 'ticker'], values='vcp_score', color='rs', color_continuous_scale='RdYlGn', title="セクター別ヒートマップ")
+            fig_treemap = px.treemap(latest_df, path=['sector', 'ticker'], values='vcp_score', color='rs', color_continuous_scale='RdYlGn')
             st.plotly_chart(fig_treemap, use_container_width=True)
 
-        st.markdown("### 📋 Scan Results")
-        filter_status = st.multiselect("ステータス", options=["ACTION", "WAIT"], default=["ACTION", "WAIT"])
-        show_df = latest_df[latest_df["status"].isin(filter_status)]
-        st.dataframe(show_df[["ticker", "status", "price", "rs", "vcp_score", "pf", "sector"]].style.background_gradient(subset=["vcp_score"], cmap="Greens"), use_container_width=True)
+        st.dataframe(latest_df[["ticker", "status", "price", "rs", "vcp_score", "pf", "sector"]].style.background_gradient(subset=["vcp_score"], cmap="Greens"), use_container_width=True)
 
+# ------------------------------------------------------------------------------
+# MODE 2: 個別銘柄診断 (ニュース自動取得注入型)
+# ------------------------------------------------------------------------------
 elif mode == "🔍 個別銘柄診断 (Realtime)":
     st.subheader("Realtime Ticker Analyzer 🤖")
     col_input, col_btn = st.columns([3, 1])
-    with col_input: ticker_input = st.text_input("ティッカー (例: TSLA)", value="").upper()
+    with col_input: ticker_input = st.text_input("ティッカー (例: NVDA)", value="").upper()
     with col_btn: 
         st.write(""); st.write("")
         analyze_btn = st.button("診断開始 🚀", type="primary")
 
     if analyze_btn and ticker_input:
-        with st.spinner(f"{ticker_input} をGeminiが徹底分析中..."):
+        with st.spinner(f"{ticker_input} をAIがニュースと共に入念にチェックしています..."):
             try:
-                data = yf.download(ticker_input, period="2y", interval="1d", progress=False, auto_adjust=True)
-                if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
+                # 1. 株価とニュースを取得
+                ticker_obj = yf.Ticker(ticker_input)
+                data = ticker_obj.history(period="2y", auto_adjust=True)
+                news = ticker_obj.news # 👈 ここがポイント！無料・高速
                 
-                if data.empty or len(data) < 200: st.error("データ不足です。")
+                if data.empty:
+                    st.error("データが取れませんでした。")
                 else:
                     vcp_res = VCPAnalyzer.calculate(data)
                     pf_res = StrategyValidator.run_backtest(data)
-                    try: info = yf.Ticker(ticker_input).info; sector = info.get("sector", "Unknown"); price = data["Close"].iloc[-1]
-                    except: sector="Unknown"; price=0
+                    sector = ticker_obj.info.get("sector", "Unknown")
+                    price = data["Close"].iloc[-1]
 
+                    # 2. ニュースをプロンプトにまとめる
+                    news_text = "\n".join([f"・{n['title']}" for n in news[:5]])
+                    
                     prompt_ind = f"""
-                    あなたはプロトレーダーAIです。以下の銘柄を診断し、投資判断を下してください。
-                    Google検索で「{ticker_input} stock news」を検索し、直近の材料も加味してください。
-
-                    【銘柄】{ticker_input} (${price:.2f}) - {sector}
-                    【テクニカル】VCP:{vcp_res['score']}/100, PF:{pf_res:.2f}, Signal:{vcp_res['signals']}
-
-                    【出力要件】
-                    - 結論: 「BUY」「WAIT」「PASS」のいずれかを太字で。
-                    - 分析: テクニカルとニュースの両面から、なぜその結論なのかを300文字程度で辛口解説。
+                    プロ投資家AIとして【{ticker_input}】を診断します。
+                    
+                    【直近ニュース】
+                    {news_text}
+                    
+                    【テクニカル】
+                    VCPスコア: {vcp_res['score']}, PF: {pf_res:.2f}, シグナル: {vcp_res['signals']}
+                    
+                    【指示】
+                    ニュースの材料とテクニカルを合算して「BUY」「WAIT」「PASS」を断言してください。
+                    なぜその判断なのか、300文字程度で論理的に、かつ厳しく解説してください。
                     """
-                    ai_comment = call_gemini_ai(prompt_ind, use_search=True)
+                    ai_comment = call_gemini_pure(prompt_ind)
 
+                    # 3. 表示
                     st.markdown("---")
-                    st.markdown(f"""<div class="ai-individual"><h5>🤖 Gemini 2.0 Diagnosis</h5><div style="font-size: 1.05em;">{ai_comment}</div></div>""", unsafe_allow_html=True)
+                    st.markdown(f"""<div class="ai-individual"><h5>🤖 SENTINEL AI Diagnosis</h5>{ai_comment}</div>""", unsafe_allow_html=True)
 
+                    # メトリクス & チャート
                     c1, c2, c3, c4 = st.columns(4)
                     c1.metric("Price", f"${price:.2f}")
-                    c2.metric("VCP Score", f"{vcp_res['score']}/100")
+                    c2.metric("VCP Score", f"{vcp_res['score']}")
                     c3.metric("Profit Factor", f"{pf_res:.2f}")
                     c4.metric("Sector", sector)
 
-                    col_g, col_c = st.columns([1, 2])
-                    with col_g:
-                        categories = ['VCP Score', 'Profit Factor', 'RS (Strength)']
-                        if not df_history.empty:
-                            peers = df_history[df_history["sector"]==sector]
-                            avg_vcp = peers["vcp_score"].mean() if not peers.empty else 50
-                            avg_pf = peers["pf"].mean() if not peers.empty else 1.0
-                            avg_rs = peers["rs"].mean() if not peers.empty else 50
-                        else: avg_vcp, avg_pf, avg_rs = 50, 1.0, 50
-                        
-                        hist_data = df_history[df_history["ticker"] == ticker_input]
-                        if not hist_data.empty: my_rs = hist_data.iloc[0]["rs"]
-                        else:
-                            try:
-                                y_low = data["Low"].min(); y_high = data["High"].max()
-                                my_rs = ((price - y_low)/(y_high - y_low))*100
-                            except: my_rs = 50
+                    # レーダーチャート
+                    categories = ['VCP Score', 'Profit Factor', 'RS Rating']
+                    hist_data = df_history[df_history["ticker"] == ticker_input]
+                    my_rs = hist_data.iloc[0]["rs"] if not hist_data.empty else (((price - data["Low"].min())/(data["High"].max() - data["Low"].min()))*100)
 
-                        fig_radar = go.Figure()
-                        fig_radar.add_trace(go.Scatterpolar(r=[vcp_res['score'], min(100, pf_res*20), my_rs], theta=categories, fill='toself', name=ticker_input, line_color='#00FF00'))
-                        fig_radar.add_trace(go.Scatterpolar(r=[avg_vcp, min(100, avg_pf*20), avg_rs], theta=categories, fill='toself', name='Sector Avg', line_color='#666666', line_dash='dash'))
-                        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100])), template="plotly_dark", height=300, margin=dict(l=30,r=30,t=30,b=30))
-                        st.plotly_chart(fig_radar, use_container_width=True)
+                    fig_radar = go.Figure()
+                    fig_radar.add_trace(go.Scatterpolar(r=[vcp_res['score'], min(100, pf_res*20), my_rs], theta=categories, fill='toself', name=ticker_input, line_color='#00FF00'))
+                    fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100])), template="plotly_dark", height=300)
+                    st.plotly_chart(fig_radar, use_container_width=True)
 
-                    with col_c:
-                        chart_df = data.iloc[-126:]
-                        fig = go.Figure(data=[go.Candlestick(x=chart_df.index, open=chart_df['Open'], high=chart_df['High'], low=chart_df['Low'], close=chart_df['Close'], name=ticker_input)])
-                        fig.update_layout(title=f"{ticker_input} Daily Chart", template="plotly_dark", height=400, xaxis_rangeslider_visible=False)
-                        st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(go.Figure(data=[go.Candlestick(x=data.index[-126:], open=data['Open'][-126:], high=data['High'][-126:], low=data['Low'][-126:], close=data['Close'][-126:])]).update_layout(template="plotly_dark", xaxis_rangeslider_visible=False), use_container_width=True)
 
             except Exception as e: st.error(f"Error: {e}")
 
 st.markdown("---")
-st.caption("Powered by SENTINEL PRO ELITE & Google Gemini")
+st.caption("Powered by SENTINEL PRO ELITE & Google Gemini 2.0 Flash (Pure Mode)")
