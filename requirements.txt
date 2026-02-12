@@ -4,4 +4,5 @@ numpy
 yfinance
 requests
 cachetools
-streamlit
+streamlit==1.19.0
+altair<5  # ← これを追加！Altair v4.xに固定
