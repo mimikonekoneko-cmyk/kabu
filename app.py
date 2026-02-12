@@ -13,8 +13,7 @@ import yfinance as yf
 import plotly.graph_objects as go
 import plotly.express as px
 import feedparser
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from openai import OpenAI
 from pathlib import Path
 from typing import Optional
 
@@ -331,21 +330,24 @@ def calc_vcp(df: pd.DataFrame) -> dict:
 # ==============================================================================
 
 def call_gemini(prompt: str) -> str:
-    api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    """DeepSeek-Reasoner を呼び出す（関数名は互換性のため維持）。"""
+    api_key = st.secrets.get("DEEPSEEK_API_KEY") or os.getenv("DEEPSEEK_API_KEY")
     if not api_key:
-        return "⚠️ GEMINI_API_KEY が未設定です。"
+        return "⚠️ DEEPSEEK_API_KEY が未設定です。Streamlit secrets に追加してください。"
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        safety = {c: HarmBlockThreshold.BLOCK_NONE for c in [
-            HarmCategory.HARM_CATEGORY_HARASSMENT,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        ]}
-        return model.generate_content(prompt, safety_settings=safety).text
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.deepseek.com",
+        )
+        response = client.chat.completions.create(
+            model="deepseek-reasoner",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        # reasoner は reasoning_content（思考過程）と content（最終回答）を返す
+        # UIには最終回答のみ表示
+        return response.choices[0].message.content or ""
     except Exception as e:
-        return f"Gemini Error: {e}"
+        return f"DeepSeek Error: {e}"
 
 # ==============================================================================
 # 📋 Watchlist I/O
