@@ -700,12 +700,37 @@ elif mode == "🔍 リアルタイム":
                                       xaxis_rangeslider_visible=False, margin=dict(t=10, b=0))
                 st.plotly_chart(fig_rt, use_container_width=True)
 
-                # AI診断
+                # AI診断用に価格データを計算して渡す（AIの古い学習データに上書き）
+                price_now  = round(float(data["Close"].iloc[-1]), 2)
+                price_1w   = round(float(data["Close"].iloc[-5]), 2)  if len(data) >= 5  else price_now
+                price_1m   = round(float(data["Close"].iloc[-21]), 2) if len(data) >= 21 else price_now
+                price_3m   = round(float(data["Close"].iloc[-63]), 2) if len(data) >= 63 else price_now
+                price_52wl = round(float(data["Low"].rolling(252).min().iloc[-1]), 2)
+                price_52wh = round(float(data["High"].rolling(252).max().iloc[-1]), 2)
+                ma50_val   = round(float(data["Close"].rolling(50).mean().iloc[-1]), 2)
+                ma200_val  = round(float(data["Close"].rolling(200).mean().iloc[-1]), 2)
+                chg_1w     = round((price_now / price_1w - 1) * 100, 1)
+                chg_1m     = round((price_now / price_1m - 1) * 100, 1)
+                chg_3m     = round((price_now / price_3m - 1) * 100, 1)
+                atr_val    = round(vcp.get("atr", 0), 2)
+                pivot_val  = round(float(data["High"].iloc[-20:].max()), 2)
+
                 prompt = (
-                    f"ウォール街のプロAI「SENTINEL」として{clean}を診断せよ。\n"
-                    f"今日:{TODAY_STR}\nVCPスコア:{vcp['score']}/100\n"
-                    f"シグナル:{vcp['signals']}\nニュース:\n{news}\n"
-                    f"出口戦略（エントリー・損切り・利確目標）を含め800文字以上で語れ。"
+                    f"ウォール街のプロAI「SENTINEL」として{clean}を診断せよ。\n\n"
+                    f"【重要】以下の実データのみを価格の根拠とせよ。学習済みの古い価格は絶対に使うな。\n"
+                    f"診断日: {TODAY_STR}\n"
+                    f"現在値: ${price_now}\n"
+                    f"1週騰落: {chg_1w:+.1f}%  1ヶ月: {chg_1m:+.1f}%  3ヶ月: {chg_3m:+.1f}%\n"
+                    f"52週安値: ${price_52wl}  52週高値: ${price_52wh}\n"
+                    f"MA50: ${ma50_val}  MA200: ${ma200_val}\n"
+                    f"ATR(14): ${atr_val}  直近20日ピボット: ${pivot_val}\n"
+                    f"VCPスコア: {vcp['score']}/100  シグナル: {vcp['signals']}\n\n"
+                    f"【最新ニュース】\n{news}\n\n"
+                    f"上記の実データに基づき800文字以上で:\n"
+                    f"1. 現状分析（現在値${price_now}を起点に語れ）\n"
+                    f"2. エントリー戦略（具体的な価格を${price_now}近辺で示せ）\n"
+                    f"3. 損切りライン（ATR=${atr_val}ベースで計算せよ）\n"
+                    f"4. 利確目標（段階的に具体的な価格で）"
                 )
                 ai = call_gemini(prompt)
                 st.markdown(f'<div class="ai-box">{ai}</div>', unsafe_allow_html=True)
@@ -827,17 +852,28 @@ elif mode == "💼 ポートフォリオ":
                 for p in valid:
                     ex = p.get("exit", {})
                     pos_lines.append(
-                        f"・{p['ticker']}: {p['shares']}株 取得${p['avg_cost']:.2f}→現在${p.get('current_price','?')} "
-                        f"{p['pnl_pct']:+.1f}% | {ex.get('cur_r',0):.1f}R | {p.get('status','')}"
+                        f"・{p['ticker']}: {p['shares']}株 "
+                        f"取得${p['avg_cost']:.2f} 現在${p.get('current_price','?')} "
+                        f"損益{p['pnl_pct']:+.1f}%(¥{p.get('pnl_jpy',0):+,.0f}) "
+                        f"R={ex.get('cur_r',0):.1f} ATR=${ex.get('atr',0):.2f} "
+                        f"損切${ex.get('eff_stop',0):.2f} 目標${ex.get('eff_tgt',0):.2f} "
+                        f"状態:{p.get('status','')}"
                     )
                 t = summary["total"]
                 prompt = (
-                    f"プロのポートフォリオマネージャー「SENTINEL」として分析せよ。\n"
+                    f"プロのポートフォリオマネージャー「SENTINEL」として分析せよ。\n\n"
+                    f"【重要】以下の実データを唯一の価格根拠とせよ。学習済みの古い株価は絶対に使うな。\n"
+                    f"診断日: {TODAY_STR}  USD/JPY: {usd_jpy:.1f}\n"
                     f"保有{t.get('count',0)}銘柄 時価¥{t.get('mv_jpy',0):,.0f} "
-                    f"含損益{t.get('pnl_pct',0):+.2f}% 余力¥{t.get('cash_jpy',0):,.0f}\n"
-                    f"【保有詳細】\n{chr(10).join(pos_lines)}\n"
-                    f"以下4点を800文字以上で:\n"
-                    f"1.出口戦略（緊急対応含む）2.リスク評価 3.売買タイミング 4.追加推奨銘柄2〜3つ"
+                    f"含損益{t.get('pnl_pct',0):+.2f}%(¥{t.get('pnl_jpy',0):+,.0f}) "
+                    f"エクスポージャー{t.get('exposure',0):.1f}% 余力¥{t.get('cash_jpy',0):,.0f}\n\n"
+                    f"【保有ポジション詳細 — 現在値は実測値】\n"
+                    f"{chr(10).join(pos_lines)}\n\n"
+                    f"上記の実測価格のみを使い800文字以上で:\n"
+                    f"1. 出口戦略（緊急対応含む。価格は実測値で語れ）\n"
+                    f"2. リスク評価（集中・相関・エクスポージャー）\n"
+                    f"3. 売買タイミング（各銘柄の具体的な判断基準）\n"
+                    f"4. 追加推奨銘柄2〜3つ（余力¥{t.get('cash_jpy',0):,.0f}を考慮）"
                 )
                 with st.spinner("SENTINELが分析中..."):
                     ai_adv = call_gemini(prompt)
