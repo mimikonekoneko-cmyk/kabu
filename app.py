@@ -2,182 +2,222 @@ import streamlit as st
 import pandas as pd
 import json
 from pathlib import Path
-import os
 import yfinance as yf
-import altair as alt
+import plotly.graph_objects as go
+import plotly.express as px
 
-# ページ設定（スマホ対応を強化）
+# --- ページ設定 ---
 st.set_page_config(
-    page_title="SENTINEL PRO 分析ダッシュボード",
-    page_icon="🛡",
+    page_title="SENTINEL PRO Dashboard",
+    page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed" # スマホで見やすくするため最初は閉じる
 )
 
-st.title("🛡 SENTINEL PRO 分析ダッシュボード")
-st.markdown("毎日蓄積されたACTION / WAITデータを分析します。株価推移（始値・終値・ローソク足）はyfinanceでリアルタイム取得。")
+# --- カスタムCSS（ダークモード最適化 & スマホ調整） ---
+st.markdown("""
+<style>
+    .metric-card {
+        background-color: #1E1E1E;
+        border: 1px solid #333;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .stProgress > div > div > div > div {
+        background-color: #00FF00;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# データ読み込み関数（キャッシュで高速化）
-@st.cache_data(ttl=3600)  # 1時間キャッシュ
-def load_all_data():
+st.title("🛡️ SENTINEL PRO ELITE")
+st.caption("AI-Powered US Stock Screening System")
+
+# --- データ読み込み (キャッシュ) ---
+@st.cache_data(ttl=3600)
+def load_data():
     data_dir = Path("results")
     all_data = []
-
     if data_dir.exists():
-        for file in sorted(data_dir.glob("*.json")):
+        for file in sorted(data_dir.glob("*.json"), reverse=True): # 最新順
             try:
                 with open(file, "r", encoding="utf-8") as f:
                     daily = json.load(f)
                     date = daily.get("date", file.stem)
-
-                    # selected (ACTION)
+                    # ACTION
                     for item in daily.get("selected", []):
-                        row = item.copy()
-                        row["date"] = date
-                        row["status"] = "ACTION"
-                        vcp = row.pop("vcp", {})
-                        row["vcp_score"] = vcp.get("score")
-                        row["vcp_signals"] = ", ".join(vcp.get("signals", []))
-                        all_data.append(row)
-
-                    # watchlist_wait (WAIT)
+                        item["status"] = "ACTION"
+                        item["date"] = date
+                        # VCPの階層をフラット化
+                        vcp = item.pop("vcp", {})
+                        item["vcp_score"] = vcp.get("score", 0)
+                        item["signals"] = vcp.get("signals", [])
+                        all_data.append(item)
+                    # WAIT
                     for item in daily.get("watchlist_wait", []):
-                        row = item.copy()
-                        row["date"] = date
-                        row["status"] = "WAIT"
-                        vcp = row.pop("vcp", {})
-                        row["vcp_score"] = vcp.get("score")
-                        row["vcp_signals"] = ", ".join(vcp.get("signals", []))
-                        all_data.append(row)
-            except Exception as e:
-                st.warning(f"ファイル読み込みエラー: {file} → {e}")
-
-    if not all_data:
-        st.info("resultsフォルダにJSONデータがありません。GitHub Actionsの実行をお待ちください。")
-        return pd.DataFrame()
-
+                        item["status"] = "WAIT"
+                        item["date"] = date
+                        vcp = item.pop("vcp", {})
+                        item["vcp_score"] = vcp.get("score", 0)
+                        item["signals"] = vcp.get("signals", [])
+                        all_data.append(item)
+            except: pass
+            
+    if not all_data: return pd.DataFrame()
     df = pd.DataFrame(all_data)
     df["date"] = pd.to_datetime(df["date"])
-    return df.sort_values("date", ascending=False)
+    return df
 
-# データ読み込み
-df = load_all_data()
-
+df = load_data()
 if df.empty:
+    st.error("データがありません。")
     st.stop()
 
-# サイドバー：フィルタ
-st.sidebar.header("フィルタ")
-status_filter = st.sidebar.multiselect(
-    "ステータス",
-    options=["ACTION", "WAIT"],
-    default=["ACTION"]
-)
+# --- 最新データのみ抽出 ---
+latest_date = df["date"].max()
+latest_df = df[df["date"] == latest_date].copy()
 
-min_rs = st.sidebar.slider("最低RS", 50, 99, 70)
-min_vcp = st.sidebar.slider("最低VCPスコア", 0, 100, 50)
-
-df_filtered = df[
-    (df["status"].isin(status_filter)) &
-    (df["rs"] >= min_rs) &
-    (df["vcp_score"] >= min_vcp)
-]
-
-# 概要メトリクス
-st.subheader("概要")
+# --- 1. トップ指標（KPI）エリア ---
+st.markdown("### 📊 Market Pulse")
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("総エントリ数", len(df_filtered))
-col2.metric("ユニーク銘柄数", df_filtered["ticker"].nunique())
-col3.metric("平均RS", round(df_filtered["rs"].mean(), 1) if not df_filtered.empty else 0)
-col4.metric("平均VCPスコア", round(df_filtered["vcp_score"].mean(), 1) if not df_filtered.empty else 0)
-
-# 時系列トレンド
-st.subheader("RS / VCPスコア推移（日次平均）")
-if not df_filtered.empty:
-    trend = df_filtered.groupby("date")[["rs", "vcp_score"]].mean().reset_index()
-    st.line_chart(trend.set_index("date"))
-
-# セクター分布
-st.subheader("セクター分布")
-sector_counts = df_filtered["sector"].value_counts()
-st.bar_chart(sector_counts)
-
-# 全データテーブル
-st.subheader("全データテーブル")
-display_cols = [
-    "date", "ticker", "status", "rs", "vcp_score", "vcp_signals",
-    "pf", "sector", "price", "entry", "target", "shares"
-]
-st.dataframe(df_filtered[display_cols])
-
-# 銘柄別詳細 + 株価チャート
-st.subheader("銘柄詳細 & 株価推移")
-available_tickers = sorted(df["ticker"].unique())
-ticker = st.selectbox("銘柄を選択", options=available_tickers)
-
-if ticker:
-    ticker_df = df[df["ticker"] == ticker].sort_values("date")
-
-    st.markdown(f"**{ticker} の履歴**")
-    st.dataframe(ticker_df[["date", "status", "rs", "vcp_score", "pf", "price", "entry", "target"]])
-
-    # RS / VCP 推移
-    st.markdown("**RS / VCPスコア推移**")
-    st.line_chart(ticker_df.set_index("date")[["rs", "vcp_score"]])
-
-    # 株価チャート（yfinance）
-    st.markdown("**株価推移（始値・終値・ローソク足）**")
-    with st.spinner(f"{ticker} の株価データを取得中..."):
-        try:
-            period = st.selectbox("期間", ["1mo", "3mo", "6mo", "1y"], index=0, key=f"period_{ticker}")
-            stock_data = yf.download(ticker, period=period, progress=False)
-
-            if not stock_data.empty:
-                # MultiIndex対策
-                if isinstance(stock_data.columns, pd.MultiIndex):
-                    stock_data.columns = stock_data.columns.get_level_values(0)
-
-                # Reset index to make Date a column for Altair
-                stock_data_reset = stock_data.reset_index()
-
-                # テーブル（最新10日）
-                st.dataframe(stock_data[['Open', 'High', 'Low', 'Close', 'Volume']].tail(10))
-
-                # --- 修正箇所: Altairでローソク足を作成 ---
-                
-                # ベースとなるチャート
-                base = alt.Chart(stock_data_reset).encode(
-                    x=alt.X('Date:T', axis=alt.Axis(title='Date'))
-                )
-
-                # 1. ローソクの「ひげ」(High - Low)
-                rule = base.mark_rule().encode(
-                    y=alt.Y('Low:Q', title='Price', scale=alt.Scale(zero=False)),
-                    y2='High:Q'
-                )
-
-                # 2. ローソクの「実体」(Open - Close)
-                bar = base.mark_bar().encode(
-                    y='Open:Q',
-                    y2='Close:Q',
-                    color=alt.condition(
-                        "datum.Open <= datum.Close",
-                        alt.value("#00cc00"),  # 上昇時（緑）
-                        alt.value("#ff3333")   # 下落時（赤）
-                    )
-                )
-
-                # 3. 合体して表示
-                c = (rule + bar).interactive()
-                
-                st.altair_chart(c, use_container_width=True)
-                # ----------------------------------------
-
-            else:
-                st.warning(f"{ticker} のデータが取得できませんでした。ティッカーを確認してください。")
-        except Exception as e:
-            st.error(f"株価取得エラー: {e}")
+with col1:
+    action_count = len(latest_df[latest_df['status']=='ACTION'])
+    st.metric("ACTION Signals", f"{action_count} 銘柄", delta="即エントリー可", delta_color="normal")
+with col2:
+    wait_count = len(latest_df[latest_df['status']=='WAIT'])
+    st.metric("WAIT List", f"{wait_count} 銘柄", delta="監視候補", delta_color="off")
+with col3:
+    avg_rs = latest_df[latest_df['status']=='ACTION']['rs'].mean()
+    st.metric("Avg RS Rating", f"{avg_rs:.1f}", delta="市場強度")
+with col4:
+    avg_vcp = latest_df[latest_df['status']=='ACTION']['vcp_score'].mean()
+    st.metric("Avg VCP Score", f"{avg_vcp:.1f}", delta="チャート品質")
 
 st.markdown("---")
-st.caption("データはGitHub Actionsで毎日更新 | 株価はyfinanceリアルタイム取得 | 最終更新: " + 
-           (df["date"].max().strftime("%Y-%m-%d") if not df.empty else "データなし"))
+
+# --- 2. セクターヒートマップ（Plotly） ---
+st.markdown("### 🗺️ Sector Heatmap")
+if not latest_df.empty:
+    # セクターごとの銘柄数をカウント
+    sector_df = latest_df.groupby('sector').size().reset_index(name='count')
+    # 平均RSも計算して色に使う
+    sector_rs = latest_df.groupby('sector')['rs'].mean().reset_index(name='avg_rs')
+    sector_data = pd.merge(sector_df, sector_rs, on='sector')
+    
+    fig_treemap = px.treemap(
+        latest_df, 
+        path=['sector', 'ticker'], 
+        values='rs',
+        color='rs',
+        color_continuous_scale='RdYlGn', # 赤→黄→緑
+        title="セクター別・銘柄強度マップ (サイズ=RS, 色=RS)"
+    )
+    st.plotly_chart(fig_treemap, use_container_width=True)
+
+# --- 3. メインリスト & 詳細 ---
+st.markdown("### 💎 Focus List")
+
+# タブで表示切り替え
+tab1, tab2 = st.tabs(["📋 リスト表示", "📈 詳細チャート"])
+
+with tab1:
+    # データフレームに装飾をつける
+    def highlight_status(val):
+        color = '#06982d' if val == 'ACTION' else '#b38600'
+        return f'background-color: {color}'
+
+    display_df = latest_df[["ticker", "status", "price", "entry", "target", "stop", "rs", "vcp_score", "pf", "shares", "sector"]]
+    st.dataframe(
+        display_df.style.applymap(highlight_status, subset=['status'])
+        .format({"price": "{:.2f}", "entry": "{:.2f}", "target": "{:.2f}", "stop": "{:.2f}", "pf": "{:.2f}"}),
+        use_container_width=True,
+        height=400
+    )
+
+with tab2:
+    tickers = latest_df["ticker"].unique()
+    selected_ticker = st.selectbox("分析する銘柄を選択", tickers)
+    
+    if selected_ticker:
+        row = latest_df[latest_df["ticker"] == selected_ticker].iloc[0]
+        
+        # 3カラムレイアウト
+        c1, c2, c3 = st.columns([1, 2, 1])
+        
+        with c1:
+            st.markdown(f"## {row['ticker']}")
+            st.caption(f"{row['sector']}")
+            st.metric("現在値", f"${row['price']}", delta=f"Entryまで {row['entry'] - row['price']:.2f}")
+            
+            # リスクリワード計算
+            risk = row['entry'] - row['stop']
+            reward = row['target'] - row['entry']
+            rr_ratio = reward / risk if risk > 0 else 0
+            st.markdown(f"**リスクリワード比:** 1 : {rr_ratio:.2f}")
+            
+            st.info(f"推奨株数: **{row['shares']}株**")
+            st.success(f"利確目標: **${row['target']}**")
+            st.error(f"損切ライン: **${row['stop']}**")
+
+        with c2:
+            # yfinanceでデータ取得 & Plotly CandleStick
+            with st.spinner("Loading Chart..."):
+                stock = yf.download(selected_ticker, period="6mo", interval="1d", progress=False)
+                if isinstance(stock.columns, pd.MultiIndex):
+                    stock.columns = stock.columns.get_level_values(0)
+                
+                # Plotlyチャート（TradingView風）
+                fig = go.Figure(data=[go.Candlestick(
+                    x=stock.index,
+                    open=stock['Open'],
+                    high=stock['High'],
+                    low=stock['Low'],
+                    close=stock['Close'],
+                    name=selected_ticker
+                )])
+                
+                # エントリー、利確、損切ラインを描画
+                fig.add_hline(y=row['entry'], line_dash="dash", line_color="yellow", annotation_text="ENTRY")
+                fig.add_hline(y=row['target'], line_dash="dash", line_color="green", annotation_text="TARGET")
+                fig.add_hline(y=row['stop'], line_dash="dash", line_color="red", annotation_text="STOP")
+
+                fig.update_layout(
+                    title=f"{selected_ticker} Technical Chart",
+                    yaxis_title="Price (USD)",
+                    template="plotly_dark", # ダークモード
+                    height=500,
+                    margin=dict(l=20, r=20, t=40, b=20)
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+        with c3:
+            st.markdown("### 🤖 Signals")
+            # VCPスコアをゲージで表示
+            fig_gauge = go.Figure(go.Indicator(
+                mode = "gauge+number",
+                value = row['vcp_score'],
+                title = {'text': "VCP Score"},
+                gauge = {
+                    'axis': {'range': [0, 100]},
+                    'bar': {'color': "#00ff00" if row['vcp_score'] > 70 else "#f1c40f"},
+                    'steps': [{'range': [0, 50], 'color': "gray"}]
+                }
+            ))
+            fig_gauge.update_layout(height=250, margin=dict(l=20, r=20, t=0, b=0))
+            st.plotly_chart(fig_gauge, use_container_width=True)
+            
+            st.markdown("**検出シグナル:**")
+            if row['signals']:
+                for sig in row['signals']:
+                    st.markdown(f"- ✅ {sig}")
+            else:
+                st.markdown("- 特になし")
+            
+            st.markdown("---")
+            st.markdown(f"**RS Rating:** {row['rs']}/99")
+            st.progress(row['rs'] / 100)
+            
+            st.markdown(f"**Profit Factor:** {row['pf']}")
+
+st.markdown("---")
+st.caption("Generated by SENTINEL PRO ELITE Engine")
