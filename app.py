@@ -50,7 +50,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 🧠 分析エンジン (VCP & バックテスト)
+# 🧠 分析エンジン
 # ==============================================================================
 
 class VCPAnalyzer:
@@ -138,24 +138,21 @@ df_history, meta_history = load_historical_json()
 # ==============================================================================
 
 def call_gemini_pure(prompt):
-    """Gemini API呼び出し (ツールを使わない安定版)"""
     api_key = None
     try: api_key = st.secrets["GEMINI_API_KEY"]
     except: api_key = os.getenv("GEMINI_API_KEY")
 
-    if not api_key: return "⚠️ APIキー未設定 (Secrets: GEMINI_API_KEY)"
+    if not api_key: return "⚠️ APIキー未設定"
 
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.0-flash')
-        
         safety_settings = {
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
         }
-        
         response = model.generate_content(prompt, safety_settings=safety_settings)
         return response.text
     except Exception as e: return f"Gemini Error: {str(e)}"
@@ -168,9 +165,6 @@ st.title("🛡️ SENTINEL PRO DASHBOARD")
 
 mode = st.sidebar.radio("モード選択", ["📊 市場レポート (Batch)", "🔍 個別銘柄診断 (Realtime)"])
 
-# ------------------------------------------------------------------------------
-# MODE 1: 市場レポート
-# ------------------------------------------------------------------------------
 if mode == "📊 市場レポート (Batch)":
     if df_history.empty:
         st.error("データが見つかりません。")
@@ -182,30 +176,32 @@ if mode == "📊 市場レポート (Batch)":
         st.markdown(f"### 🤖 SENTINEL AI Briefing")
         
         if "market_ai_pure" not in st.session_state:
-            with st.spinner("AIがスキャンデータを精査中..."):
-                # 市場全体のニュースとして S&P500(SPY) のニュースを取得して注入
-                spy_news = yf.Ticker("SPY").news
-                news_context = "\n".join([f"- {n['title']}" for n in spy_news[:5]])
+            with st.spinner("AIが市況を分析中..."):
+                # 安全なニュース取得
+                try:
+                    spy_news = yf.Ticker("SPY").news
+                    # キー名が変わっても対応できるように .get() を使用
+                    news_context = "\n".join([f"- {n.get('headline', n.get('title', 'No Headline'))}" for n in (spy_news or [])[:5]])
+                except:
+                    news_context = "ニュースの取得に失敗しました。"
                 
                 action_list = latest_df[latest_df['status']=='ACTION']['ticker'].tolist()
                 top_sector = latest_df['sector'].value_counts().idxmax() if not latest_df.empty else "None"
                 
                 prompt = f"""
                 あなたは伝説の投資戦略家AI「SENTINEL」です。
-                以下の【内部データ】と【市場ニュース】を読み解き、今日の戦い方を400文字程度で論理的に解説してください。
                 
                 【最新ニュース(SPY)】
                 {news_context}
                 
-                【内部データ】
+                【内部スキャンデータ】
                 - ACTION(即戦力): {len(action_list)}銘柄 ({', '.join(action_list[:5])})
                 - 主導セクター: {top_sector}
                 - VCP平均点: {latest_df['vcp_score'].mean():.1f}
                 
-                【構成】
-                1. 市況判断（ニュースとの関連付け）
-                2. セクター動向
-                3. 今日の具体的戦略
+                【指示】
+                市場環境を読み解き、今日の戦い方を400文字程度で論理的に解説してください。
+                1. 市況判断 2. セクター動向 3. 今日の具体的戦略 の順で。
                 """
                 st.session_state.market_ai_pure = call_gemini_pure(prompt)
         
@@ -218,9 +214,6 @@ if mode == "📊 市場レポート (Batch)":
 
         st.dataframe(latest_df[["ticker", "status", "price", "rs", "vcp_score", "pf", "sector"]].style.background_gradient(subset=["vcp_score"], cmap="Greens"), use_container_width=True)
 
-# ------------------------------------------------------------------------------
-# MODE 2: 個別銘柄診断 (ニュース自動取得注入型)
-# ------------------------------------------------------------------------------
 elif mode == "🔍 個別銘柄診断 (Realtime)":
     st.subheader("Realtime Ticker Analyzer 🤖")
     col_input, col_btn = st.columns([3, 1])
@@ -230,24 +223,32 @@ elif mode == "🔍 個別銘柄診断 (Realtime)":
         analyze_btn = st.button("診断開始 🚀", type="primary")
 
     if analyze_btn and ticker_input:
-        with st.spinner(f"{ticker_input} をAIがニュースと共に入念にチェックしています..."):
+        with st.spinner(f"{ticker_input} 分析中..."):
             try:
-                # 1. 株価とニュースを取得
                 ticker_obj = yf.Ticker(ticker_input)
                 data = ticker_obj.history(period="2y", auto_adjust=True)
-                news = ticker_obj.news # 👈 ここがポイント！無料・高速
+                
+                # ニュース取得の安全対策
+                try:
+                    raw_news = ticker_obj.news or []
+                    news_text = "\n".join([f"・{n.get('headline', n.get('title', 'No Headline'))}" for n in raw_news[:5]])
+                except:
+                    news_text = "個別ニュースなし"
                 
                 if data.empty:
                     st.error("データが取れませんでした。")
                 else:
                     vcp_res = VCPAnalyzer.calculate(data)
                     pf_res = StrategyValidator.run_backtest(data)
-                    sector = ticker_obj.info.get("sector", "Unknown")
-                    price = data["Close"].iloc[-1]
+                    # セクター情報の安全な取得
+                    try:
+                        info = ticker_obj.info
+                        sector = info.get("sector", "Unknown")
+                        price = data["Close"].iloc[-1]
+                    except:
+                        sector = "Unknown"
+                        price = data["Close"].iloc[-1]
 
-                    # 2. ニュースをプロンプトにまとめる
-                    news_text = "\n".join([f"・{n['title']}" for n in news[:5]])
-                    
                     prompt_ind = f"""
                     プロ投資家AIとして【{ticker_input}】を診断します。
                     
@@ -258,16 +259,14 @@ elif mode == "🔍 個別銘柄診断 (Realtime)":
                     VCPスコア: {vcp_res['score']}, PF: {pf_res:.2f}, シグナル: {vcp_res['signals']}
                     
                     【指示】
-                    ニュースの材料とテクニカルを合算して「BUY」「WAIT」「PASS」を断言してください。
-                    なぜその判断なのか、300文字程度で論理的に、かつ厳しく解説してください。
+                    材料とテクニカルを総合し「BUY」「WAIT」「PASS」を断言してください。
+                    厳しいプロの視点で、300文字程度で解説してください。
                     """
                     ai_comment = call_gemini_pure(prompt_ind)
 
-                    # 3. 表示
                     st.markdown("---")
                     st.markdown(f"""<div class="ai-individual"><h5>🤖 SENTINEL AI Diagnosis</h5>{ai_comment}</div>""", unsafe_allow_html=True)
 
-                    # メトリクス & チャート
                     c1, c2, c3, c4 = st.columns(4)
                     c1.metric("Price", f"${price:.2f}")
                     c2.metric("VCP Score", f"{vcp_res['score']}")
@@ -289,4 +288,4 @@ elif mode == "🔍 個別銘柄診断 (Realtime)":
             except Exception as e: st.error(f"Error: {e}")
 
 st.markdown("---")
-st.caption("Powered by SENTINEL PRO ELITE & Google Gemini 2.0 Flash (Pure Mode)")
+st.caption("Powered by SENTINEL PRO ELITE & Google Gemini 2.0 Flash")
