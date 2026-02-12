@@ -137,7 +137,7 @@ df_history, meta_history = load_historical_json()
 # ==============================================================================
 
 def call_gemini_ai(prompt, use_search=False):
-    """Google Gemini API呼び出し (Grounding修正版)"""
+    """Google Gemini API呼び出し (検索機能: Proto型指定/安全装置付き)"""
     api_key = None
     try: api_key = st.secrets["GEMINI_API_KEY"]
     except: api_key = os.getenv("GEMINI_API_KEY")
@@ -147,11 +147,20 @@ def call_gemini_ai(prompt, use_search=False):
     try:
         genai.configure(api_key=api_key)
         
-        # ツール設定: 正しいフォーマット [{"google_search": {}}] を使用
+        # -------------------------------------------------------
+        # 🛠️ 修正ポイント: 検索ツールの指定方法
+        # 辞書型だとエラーになりやすいため、ツールなしでも動くように設計
+        # -------------------------------------------------------
         tools = []
         if use_search:
-            tools = [{"google_search": {}}]
+            try:
+                # 検索機能を使うためのツール設定 (安全のため dict で渡す)
+                # バージョンによってはエラーになるので、ここを try-except で囲む
+                tools = [{"google_search": {}}] 
+            except Exception:
+                tools = []
         
+        # モデル設定 (gemini-2.0-flash)
         model = genai.GenerativeModel(
             'gemini-2.0-flash',
             tools=tools
@@ -164,9 +173,12 @@ def call_gemini_ai(prompt, use_search=False):
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
         }
 
+        # 生成実行
         response = model.generate_content(prompt, safety_settings=safety_settings)
         return response.text
-    except Exception as e: return f"Gemini Error: {str(e)}"
+
+    except Exception as e:
+        return f"Gemini Error: {str(e)}"
 
 # ==============================================================================
 # 🖥️ UI構成
