@@ -25,6 +25,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# 今日の日付を取得（AIへの指示に使用）
+CURRENT_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
+
 st.markdown("""
 <style>
     .metric-card {
@@ -67,14 +70,18 @@ class VCPAnalyzer:
 
             h10 = high.iloc[-10:].max(); l10 = low.iloc[-10:].min()
             range_pct = float((h10 - l10) / h10)
+            
+            # ボラティリティ収縮スコア (0-40)
             tight_score = 40 if range_pct <= 0.05 else int(40 * (1 - (range_pct - 0.05) / 0.15))
             tight_score = max(0, min(40, tight_score))
 
+            # 出来高枯渇スコア (0-30)
             vol_ma = volume.rolling(50).mean().iloc[-1]
             vol_ratio = float(volume.iloc[-1] / vol_ma) if vol_ma > 0 else 1.0
             is_dryup = bool(vol_ratio < 0.7)
             vol_score = 30 if is_dryup else (15 if vol_ratio < 1.1 else 0)
 
+            # トレンドスコア (0-30)
             ma50 = close.rolling(50).mean().iloc[-1]
             ma200 = close.rolling(200).mean().iloc[-1]
             trend_score = (10 if close.iloc[-1] > ma50 else 0) + (10 if ma50 > ma200 else 0) + (10 if close.iloc[-1] > ma200 else 0)
@@ -84,7 +91,9 @@ class VCPAnalyzer:
             if is_dryup: signals.append("Vol枯渇")
             if trend_score == 30: signals.append("MA整列")
 
-            return {"score": int(max(0, tight_score + vol_score + trend_score)), "atr": atr, "signals": signals}
+            res = {"score": int(max(0, tight_score + vol_score + trend_score)), "atr": atr, "signals": signals}
+            res["raw_data"] = {"range_pct": round(range_pct, 4), "vol_ratio": round(vol_ratio, 2)} # AIへの詳細渡し用
+            return res
         except: return {"score": 0, "atr": 0, "signals": []}
 
 class StrategyValidator:
@@ -115,7 +124,7 @@ class StrategyValidator:
         except: return 1.0
 
 # ==============================================================================
-# 📂 データ読み込み関数
+# 📂 データ読み込み
 # ==============================================================================
 
 @st.cache_data(ttl=3600)
@@ -140,7 +149,7 @@ def load_historical_json():
     return pd.DataFrame(all_data), meta_data
 
 # ==============================================================================
-# 🛰️ ニュース収集エンジン
+# 🛰️ ニュース収集
 # ==============================================================================
 
 def fetch_safe_news(ticker):
@@ -157,14 +166,14 @@ def fetch_safe_news(ticker):
             title = f"- {entry.title}"
             if title not in headlines: headlines.append(title)
     except: pass
-    
+
     context = "\n".join(headlines)
     if not context or "No Headline" in context:
-        return "※現在、最新ニュースを外部確認中...（取得制限により一時的に表示されませんが、材料がないことを意味しません）"
+        return "※現在、最新材料を市場から取得中（ニュースなしを不人気と判断しないでください）。"
     return context
 
 # ==============================================================================
-# 🤖 AIエンジン (Gemini 2.0 Flash)
+# 🤖 AIエンジン
 # ==============================================================================
 
 def call_gemini_pure(prompt):
@@ -185,12 +194,10 @@ def call_gemini_pure(prompt):
     except Exception as e: return f"Gemini Error: {str(e)}"
 
 # ==============================================================================
-# 🖥️ メインUI構成
+# 🖥️ メインUI
 # ==============================================================================
 
 st.title("🛡️ SENTINEL PRO DASHBOARD")
-
-# 先に関数を定義してから呼び出す
 df_history, meta_history = load_historical_json()
 
 mode = st.sidebar.radio("モード選択", ["📊 市場レポート (Batch)", "🔍 個別銘柄診断 (Realtime)"])
@@ -201,79 +208,82 @@ if mode == "📊 市場レポート (Batch)":
     else:
         latest_date = df_history["date"].max()
         latest_df = df_history[df_history["date"] == latest_date].copy().drop_duplicates(subset=["ticker"])
-        
-        st.markdown(f"### 🤖 SENTINEL AI Briefing")
-        
-        if "market_ai_pure" not in st.session_state:
+
+        st.markdown(f"### 🤖 SENTINEL AI Briefing ({latest_date})")
+
+        if "market_ai_pure" not in st.session_state or st.session_state.get("last_date") != latest_date:
             with st.spinner("AIが市況を深く精査中..."):
                 spy_news = fetch_safe_news("SPY")
                 action_list = latest_df[latest_df['status']=='ACTION']['ticker'].tolist()
-                top_sector = latest_df['sector'].value_counts().idxmax() if not latest_df.empty else "None"
                 
                 prompt = f"""
                 あなたは伝説の投資家AI「SENTINEL」です。
+                【今日の日付】{CURRENT_DATE}
+                【データの日付】{latest_date} (この日付の市場レポートを作成してください)
+                
                 【最新ニュース(SPY)】\n{spy_news}
-                【内部データ】\n- ACTION: {len(action_list)}銘柄 ({', '.join(action_list[:5])})\n- 主導セクター: {top_sector}\n- VCP平均: {latest_df['vcp_score'].mean():.1f}
+                【内部データ】\n- ACTION銘柄: {', '.join(action_list[:5])}\n- VCP平均スコア: {latest_df['vcp_score'].mean():.1f}
+                
                 【指示】
-                市場環境を読み解き、今日の戦い方を800文字程度で論理的に解説してください。
-                1. 市況判断 2. セクター動向 3. 今日の具体的戦略。スコアが高いほど強気であることを忘れずに。
+                市場環境を読み解き、今日の戦い方を500文字以上で論理的に解説してください。
+                1. 市況判断 2. セクター動向 3. 今日の具体的戦略。
+                古いニュース(2025年以前)に惑わされず、直近のトレンドを重視してください。
                 """
                 st.session_state.market_ai_pure = call_gemini_pure(prompt)
-        
-        st.markdown(f"""<div class="ai-report">{st.session_state.market_ai_pure}</div>""", unsafe_allow_html=True)
+                st.session_state.last_date = latest_date
 
-        if not latest_df.empty:
-            st.plotly_chart(px.treemap(latest_df, path=['sector', 'ticker'], values='vcp_score', color='rs', color_continuous_scale='RdYlGn'), use_container_width=True)
+        st.markdown(f"""<div class="ai-report">{st.session_state.market_ai_pure}</div>""", unsafe_allow_html=True)
+        st.plotly_chart(px.treemap(latest_df, path=['sector', 'ticker'], values='vcp_score', color='rs', color_continuous_scale='RdYlGn'), use_container_width=True)
         st.dataframe(latest_df[["ticker", "status", "price", "rs", "vcp_score", "pf", "sector"]].style.background_gradient(subset=["vcp_score"], cmap="Greens"), use_container_width=True)
 
 elif mode == "🔍 個別銘柄診断 (Realtime)":
     st.subheader("Realtime Ticker Analyzer 🤖")
-    ticker_input = st.text_input("ティッカー (例: WDC)", value="").upper()
+    ticker_input = st.text_input("ティッカーを入力", value="").upper()
     if st.button("診断開始 🚀", type="primary") and ticker_input:
         with st.spinner(f"{ticker_input} を深層分析中..."):
             try:
                 ticker_obj = yf.Ticker(ticker_input)
                 data = ticker_obj.history(period="2y", auto_adjust=True)
                 news_context = fetch_safe_news(ticker_input)
-                
+
                 if data.empty: st.error("データ取得失敗")
                 else:
                     vcp = VCPAnalyzer().calculate(data)
                     pf_res = StrategyValidator().run_backtest(data)
                     price = data["Close"].iloc[-1]
-                    try: sector = ticker_obj.info.get("sector", "Unknown")
-                    except: sector = "Unknown"
                     
                     prompt = f"""
-                    あなたはウォール街の冷徹なプロ投資家AIです。【{ticker_input}】を技術的・ファンダメンタルズ両面から診断します。
+                    あなたはウォール街の冷徹なプロ投資家AIです。【{ticker_input}】を診断します。
+                    【今日の日付】{CURRENT_DATE}
+                    
                     【最新ニュース】\n{news_context}
-                    【テクニカル】\n- VCPスコア: {vcp['score']} / 100\n- PF: {pf_res:.2f}\n- シグナル: {vcp['signals']}
+                    【テクニカル】\n- VCPスコア: {vcp['score']}/100\n- PF: {pf_res:.2f}\n- 振れ幅(Range): {vcp['raw_data']['range_pct']:.2%}\n- 出来高比率: {vcp['raw_data']['vol_ratio']}
+                    
                     【最重要ルール】
-                    1. スコアが高いほど「買い推奨」です。低いスコアを無理に褒めないでください。
-                    2. 直近で大きな材料（自社株買い等）があった場合、一時的にボラティリティが拡大しスコアが下がることがありますが、これは「ふるい落とし（Shakeout）」である可能性を考慮してください。
+                    1. スコアが高いほど「買い推奨」です。
+                    2. 直近の株価急騰(WDCの自社株買い等)でスコアが一時的に下がるのは「ふるい落とし(Shakeout)」の過程である可能性を考慮してください。
+                    3. スコアがBatch版(過去)とズレている場合、それは古いノイズが消えてチャートが完成に近づいている証拠（ポジティブ）として解釈してください。
+                    
                     【指示】
-                    現在の状況を800文字程度で論理的に解説し、最後に「BUY」「WAIT」「PASS」を断言してください。
+                    500文字以上で論理的に解説し、最後に「BUY」「WAIT」「PASS」を断言してください。
                     """
                     ai_report = call_gemini_pure(prompt)
-                    
-                    st.markdown("---")
+
                     st.markdown(f"""<div class="ai-individual"><h5>🤖 SENTINEL Deep Diagnosis</h5>{ai_report}</div>""", unsafe_allow_html=True)
                     
                     c1, c2, c3, c4 = st.columns(4)
                     c1.metric("Price", f"${price:.2f}")
                     c2.metric("VCP Score", f"{vcp['score']}")
                     c3.metric("Profit Factor", f"{pf_res:.2f}")
-                    c4.metric("Sector", sector)
+                    c4.metric("Signals", ", ".join(vcp['signals']) if vcp['signals'] else "None")
 
-                    # レーダーチャート
+                    # レーダーチャート (最新版の3項目)
                     categories = ['VCP Score', 'Profit Factor', 'RS Rating']
                     h_max = data["High"].max(); l_min = data["Low"].min()
                     est_rs = ((price - l_min) / (h_max - l_min)) * 100 if h_max > l_min else 50
-                    hist_data = df_history[df_history["ticker"] == ticker_input]
-                    my_rs = hist_data.iloc[0]["rs"] if not hist_data.empty else est_rs
-
+                    
                     fig_radar = go.Figure()
-                    fig_radar.add_trace(go.Scatterpolar(r=[vcp['score'], min(100, pf_res*20), my_rs], theta=categories, fill='toself', name=ticker_input, line_color='#00FF00'))
+                    fig_radar.add_trace(go.Scatterpolar(r=[vcp['score'], min(100, pf_res*20), est_rs], theta=categories, fill='toself', name=ticker_input, line_color='#00FF00'))
                     fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100])), template="plotly_dark", height=300)
                     st.plotly_chart(fig_radar, use_container_width=True)
 
@@ -281,4 +291,4 @@ elif mode == "🔍 個別銘柄診断 (Realtime)":
             except Exception as e: st.error(f"Error: {e}")
 
 st.markdown("---")
-st.caption("Powered by SENTINEL PRO ELITE & Google Gemini 2.0 Flash")
+st.caption(f"SENTINEL System Time: {CURRENT_DATE} | Powered by Gemini 2.0 Flash")
