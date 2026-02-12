@@ -624,10 +624,9 @@ if mode == "📊 スキャン":
                 f"300文字以内で簡潔に語れ。"
             )
             st.session_state[brief_key] = call_gemini(prompt)
-        with st.container():
-            st.markdown('<div class="ai-box">', unsafe_allow_html=True)
-            st.markdown(st.session_state[brief_key])
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown(st.session_state[brief_key])
+        st.markdown("---")
 
     st.markdown('<div class="section-header">📈 セクターマップ</div>', unsafe_allow_html=True)
     if "vcp_score" in latest_df.columns and "sector" in latest_df.columns:
@@ -754,16 +753,15 @@ elif mode == "🔍 リアルタイム":
                     f"━━━ 出力形式（800文字以上、Markdown形式で出力せよ） ━━━\n"
                     f"1. 【現状分析】現在値${price_now}を起点に、ニュース内容を具体的に引用しながら語れ\n"
                     f"2. 【隠れたリスク】ニュースの表面には出ていないが実は危険な要素を暴け\n"
-                    f"3. 【エントリー戦略】押し目 or ブレイクアウト、具体的価格を${price_now}近辺で示せ\n"
+                    f"3. 【エントリー戦略】押し目は現在値${price_now}から5〜15%以内の現実的な水準で示せ（MA50=${ma50_val}まで下がることを前提にするな）\n"
                     f"4. 【損切りライン】ATR=${atr_val}ベースで計算した数値を明記\n"
                     f"5. 【利確目標】段階的に具体的な価格で（Target1/2/3）\n"
                     f"6. 【総合判断】Buy/Watch/Avoidのどれかを明言し、その根拠を一言で"
                 )
                 ai = call_gemini(prompt)
-                with st.container():
-                    st.markdown('<div class="ai-box">', unsafe_allow_html=True)
-                    st.markdown(ai)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("---")
+                st.markdown(ai)
+                st.markdown("---")
 
                 with st.expander("📰 ニュース詳細"):
                     st.write(news)
@@ -916,10 +914,9 @@ elif mode == "💼 ポートフォリオ":
                 st.session_state["pf_ai"] = ai_adv
 
             if "pf_ai" in st.session_state:
-                with st.container():
-                    st.markdown('<div class="ai-box">', unsafe_allow_html=True)
-                    st.markdown(st.session_state["pf_ai"])
-                    st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("---")
+                st.markdown(st.session_state["pf_ai"])
+                st.markdown("---")
 
     # ------------------------------------------------------------------
     # TAB: 銘柄登録
