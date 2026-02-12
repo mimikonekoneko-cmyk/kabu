@@ -22,14 +22,14 @@ st.markdown("毎日蓄積されたACTION / WAITデータを分析します。株
 def load_all_data():
     data_dir = Path("results")
     all_data = []
-    
+
     if data_dir.exists():
         for file in sorted(data_dir.glob("*.json")):
             try:
                 with open(file, "r", encoding="utf-8") as f:
                     daily = json.load(f)
                     date = daily.get("date", file.stem)
-                    
+
                     # selected (ACTION)
                     for item in daily.get("selected", []):
                         row = item.copy()
@@ -39,7 +39,7 @@ def load_all_data():
                         row["vcp_score"] = vcp.get("score")
                         row["vcp_signals"] = ", ".join(vcp.get("signals", []))
                         all_data.append(row)
-                    
+
                     # watchlist_wait (WAIT)
                     for item in daily.get("watchlist_wait", []):
                         row = item.copy()
@@ -51,11 +51,11 @@ def load_all_data():
                         all_data.append(row)
             except Exception as e:
                 st.warning(f"ファイル読み込みエラー: {file} → {e}")
-    
+
     if not all_data:
         st.info("resultsフォルダにJSONデータがありません。GitHub Actionsの実行をお待ちください。")
         return pd.DataFrame()
-    
+
     df = pd.DataFrame(all_data)
     df["date"] = pd.to_datetime(df["date"])
     return df.sort_values("date", ascending=False)
@@ -117,46 +117,62 @@ ticker = st.selectbox("銘柄を選択", options=available_tickers)
 
 if ticker:
     ticker_df = df[df["ticker"] == ticker].sort_values("date")
-    
+
     st.markdown(f"**{ticker} の履歴**")
     st.dataframe(ticker_df[["date", "status", "rs", "vcp_score", "pf", "price", "entry", "target"]])
-    
+
     # RS / VCP 推移
     st.markdown("**RS / VCPスコア推移**")
     st.line_chart(ticker_df.set_index("date")[["rs", "vcp_score"]])
-    
+
     # 株価チャート（yfinance）
     st.markdown("**株価推移（始値・終値・ローソク足）**")
     with st.spinner(f"{ticker} の株価データを取得中..."):
         try:
             period = st.selectbox("期間", ["1mo", "3mo", "6mo", "1y"], index=0, key=f"period_{ticker}")
             stock_data = yf.download(ticker, period=period, progress=False)
-            
+
             if not stock_data.empty:
-                # MultiIndex対策（yfinanceの最近の仕様変更対応）
+                # MultiIndex対策
                 if isinstance(stock_data.columns, pd.MultiIndex):
-                    stock_data.columns = stock_data.columns.get_level_values(0)  # 'Open', 'Close' だけ残す
-                
+                    stock_data.columns = stock_data.columns.get_level_values(0)
+
+                # Reset index to make Date a column for Altair
+                stock_data_reset = stock_data.reset_index()
+
                 # テーブル（最新10日）
                 st.dataframe(stock_data[['Open', 'High', 'Low', 'Close', 'Volume']].tail(10))
+
+                # --- 修正箇所: Altairでローソク足を作成 ---
                 
-                # 線チャート（Open/Close）
-                chart_data = stock_data[['Open', 'Close']].reset_index()
-                st.line_chart(chart_data.set_index('Date'))
-                
-                # ローソク足チャート（Altair）
-                c = alt.Chart(stock_data.reset_index()).mark_candlestick(
-                    open='Open', high='High', low='Low', close='Close'
-                ).encode(
-                    x='Date:T',
-                    y='Close:Q',
+                # ベースとなるチャート
+                base = alt.Chart(stock_data_reset).encode(
+                    x=alt.X('Date:T', axis=alt.Axis(title='Date'))
+                )
+
+                # 1. ローソクの「ひげ」(High - Low)
+                rule = base.mark_rule().encode(
+                    y=alt.Y('Low:Q', title='Price', scale=alt.Scale(zero=False)),
+                    y2='High:Q'
+                )
+
+                # 2. ローソクの「実体」(Open - Close)
+                bar = base.mark_bar().encode(
+                    y='Open:Q',
+                    y2='Close:Q',
                     color=alt.condition(
-                        alt.datum.Close >= alt.datum.Open,
-                        alt.value("#00cc00"),  # 上昇：緑
-                        alt.value("#ff3333")   # 下降：赤
+                        "datum.Open <= datum.Close",
+                        alt.value("#00cc00"),  # 上昇時（緑）
+                        alt.value("#ff3333")   # 下落時（赤）
                     )
-                ).interactive()
+                )
+
+                # 3. 合体して表示
+                c = (rule + bar).interactive()
+                
                 st.altair_chart(c, use_container_width=True)
+                # ----------------------------------------
+
             else:
                 st.warning(f"{ticker} のデータが取得できませんでした。ティッカーを確認してください。")
         except Exception as e:
