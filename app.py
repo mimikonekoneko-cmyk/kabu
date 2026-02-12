@@ -95,7 +95,7 @@ st.markdown("""
     font-weight: 600;
   }
 
-  /* AIレポートボックス */
+  /* AIレポートボックス — Markdownレンダリング対応 */
   .ai-box {
     background: #0d1117;
     border-left: 4px solid #00ff7f;
@@ -104,6 +104,12 @@ st.markdown("""
     line-height: 1.85;
     font-size: 0.95rem;
   }
+  /* st.markdownのdiv直下に適用 */
+  .ai-box p  { margin: 0.4em 0; }
+  .ai-box h3, .ai-box h4 { color: #00ff7f; margin: 0.8em 0 0.3em; }
+  .ai-box strong { color: #ffffff; }
+  .ai-box ul, .ai-box ol { padding-left: 1.2em; }
+  .ai-box li { margin: 0.2em 0; }
 
   /* ポジションカード */
   .pos-card {
@@ -205,7 +211,15 @@ def fetch_price_data(ticker: str, period: str = "1y") -> Optional[pd.DataFrame]:
 @st.cache_data(ttl=300)
 def get_current_price(ticker: str) -> Optional[float]:
     try:
-        df = yf.Ticker(ticker).history(period="2d", auto_adjust=True)
+        t = yf.Ticker(ticker)
+        info = t.fast_info
+        # regularMarketPrice = 直近の通常取引時間内の終値（時間外を含まない）
+        price = getattr(info, "regular_market_price", None) \
+             or getattr(info, "last_price", None)
+        if price:
+            return round(float(price), 4)
+        # フォールバック: historyの終値（前日終値）
+        df = t.history(period="2d", auto_adjust=True)
         return round(float(df["Close"].iloc[-1]), 4) if not df.empty else None
     except:
         return None
@@ -610,7 +624,10 @@ if mode == "📊 スキャン":
                 f"300文字以内で簡潔に語れ。"
             )
             st.session_state[brief_key] = call_gemini(prompt)
-    st.markdown(f'<div class="ai-box">{st.session_state[brief_key]}</div>', unsafe_allow_html=True)
+        with st.container():
+            st.markdown('<div class="ai-box">', unsafe_allow_html=True)
+            st.markdown(st.session_state[brief_key])
+            st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="section-header">📈 セクターマップ</div>', unsafe_allow_html=True)
     if "vcp_score" in latest_df.columns and "sector" in latest_df.columns:
@@ -700,8 +717,8 @@ elif mode == "🔍 リアルタイム":
                                       xaxis_rangeslider_visible=False, margin=dict(t=10, b=0))
                 st.plotly_chart(fig_rt, use_container_width=True)
 
-                # AI診断用に価格データを計算して渡す（AIの古い学習データに上書き）
-                price_now  = round(float(data["Close"].iloc[-1]), 2)
+                # AI診断用に価格データを計算（price_nowはKPIと同じ正規終値で統一）
+                price_now  = round(float(cp), 2)   # get_current_price()の値で統一（時間外を除外）
                 price_1w   = round(float(data["Close"].iloc[-5]), 2)  if len(data) >= 5  else price_now
                 price_1m   = round(float(data["Close"].iloc[-21]), 2) if len(data) >= 21 else price_now
                 price_3m   = round(float(data["Close"].iloc[-63]), 2) if len(data) >= 63 else price_now
@@ -734,7 +751,7 @@ elif mode == "🔍 リアルタイム":
                     f"・ガイダンスの強弱→上方/下方修正の有無と市場の反応\n"
                     f"・競合との比較→シェア変動・技術的優位性の変化\n"
                     f"・空売り比率・機関投資家動向→買い増しor利確売りか\n\n"
-                    f"━━━ 出力形式（800文字以上、歯切れよく語れ） ━━━\n"
+                    f"━━━ 出力形式（800文字以上、Markdown形式で出力せよ） ━━━\n"
                     f"1. 【現状分析】現在値${price_now}を起点に、ニュース内容を具体的に引用しながら語れ\n"
                     f"2. 【隠れたリスク】ニュースの表面には出ていないが実は危険な要素を暴け\n"
                     f"3. 【エントリー戦略】押し目 or ブレイクアウト、具体的価格を${price_now}近辺で示せ\n"
@@ -743,7 +760,10 @@ elif mode == "🔍 リアルタイム":
                     f"6. 【総合判断】Buy/Watch/Avoidのどれかを明言し、その根拠を一言で"
                 )
                 ai = call_gemini(prompt)
-                st.markdown(f'<div class="ai-box">{ai}</div>', unsafe_allow_html=True)
+                with st.container():
+                    st.markdown('<div class="ai-box">', unsafe_allow_html=True)
+                    st.markdown(ai)
+                    st.markdown('</div>', unsafe_allow_html=True)
 
                 with st.expander("📰 ニュース詳細"):
                     st.write(news)
@@ -885,7 +905,7 @@ elif mode == "💼 ポートフォリオ":
                     f"・同一セクターへの集中リスクを数値で評価せよ\n"
                     f"・余力¥{t.get('cash_jpy',0):,.0f}で買える具体的な銘柄を価格込みで提案せよ\n"
                     f"・インサイダー売却・決算リスクがある銘柄は必ず警告を出せ\n\n"
-                    f"━━━ 出力形式（800文字以上、各銘柄名と実際の価格を必ず使え） ━━━\n"
+                    f"━━━ 出力形式（800文字以上、Markdown形式で出力せよ） ━━━\n"
                     f"1. 【緊急対応】要対処ポジションを優先順位つきで列挙\n"
                     f"2. 【リスク評価】集中・相関・エクスポージャーを数値で\n"
                     f"3. 【売買タイミング】銘柄ごとに判断基準と具体的な価格を明記\n"
@@ -896,7 +916,10 @@ elif mode == "💼 ポートフォリオ":
                 st.session_state["pf_ai"] = ai_adv
 
             if "pf_ai" in st.session_state:
-                st.markdown(f'<div class="ai-box">{st.session_state["pf_ai"]}</div>', unsafe_allow_html=True)
+                with st.container():
+                    st.markdown('<div class="ai-box">', unsafe_allow_html=True)
+                    st.markdown(st.session_state["pf_ai"])
+                    st.markdown('</div>', unsafe_allow_html=True)
 
     # ------------------------------------------------------------------
     # TAB: 銘柄登録
