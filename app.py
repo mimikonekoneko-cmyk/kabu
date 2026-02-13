@@ -26,16 +26,24 @@ warnings.filterwarnings("ignore")
 NOW       = datetime.datetime.now()
 TODAY_STR = NOW.strftime("%Y-%m-%d")
 
+def _cfg_int(key, default):
+    return int(st.secrets.get(key, os.getenv(key, default)))
+def _cfg_float(key, default):
+    return float(st.secrets.get(key, os.getenv(key, default)))
+
 CONFIG = {
-    "CAPITAL_JPY":        350_000,
-    "MAX_POSITIONS":      20,
-    "ACCOUNT_RISK_PCT":   0.015,
-    "MAX_SAME_SECTOR":    2,
-    "MIN_RS_RATING":      70,
-    "MIN_VCP_SCORE":      55,
-    "MIN_PROFIT_FACTOR":  1.1,
-    "STOP_LOSS_ATR":      2.0,
-    "TARGET_R_MULTIPLE":  2.5,
+    # 運用資金・リスク設定（secrets.toml または環境変数で上書き可能）
+    "CAPITAL_JPY":        _cfg_int("CAPITAL_JPY", 1_000_000),
+    "MAX_POSITIONS":      _cfg_int("MAX_POSITIONS", 20),
+    "ACCOUNT_RISK_PCT":   _cfg_float("ACCOUNT_RISK_PCT", 0.015),
+    "MAX_SAME_SECTOR":    _cfg_int("MAX_SAME_SECTOR", 2),
+    # スキャンフィルタ
+    "MIN_RS_RATING":      _cfg_int("MIN_RS_RATING", 70),
+    "MIN_VCP_SCORE":      _cfg_int("MIN_VCP_SCORE", 55),
+    "MIN_PROFIT_FACTOR":  _cfg_float("MIN_PROFIT_FACTOR", 1.1),
+    # 出口戦略
+    "STOP_LOSS_ATR":      _cfg_float("STOP_LOSS_ATR", 2.0),
+    "TARGET_R_MULTIPLE":  _cfg_float("TARGET_R_MULTIPLE", 2.5),
     "CACHE_EXPIRY":       12 * 3600,
 }
 
@@ -278,22 +286,95 @@ def load_historical_json() -> pd.DataFrame:
 # 📰 ニュース取得
 # ==============================================================================
 
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=1800)
 def fetch_news(ticker: str) -> str:
-    headlines = []
+    """見出し＋本文抜粋を返す（v5.0）"""
+    articles = []
+    seen = set()
     try:
         for n in (yf.Ticker(ticker).news or [])[:5]:
-            headlines.append(f"• {n.get('headline', n.get('title', ''))}")
+            t = n.get("title", n.get("headline", ""))
+            u = n.get("link", n.get("url", ""))
+            if t and t not in seen:
+                seen.add(t); articles.append({"title": t, "url": u, "body": ""})
     except: pass
     try:
         feed = feedparser.parse(
-            f"https://news.google.com/rss/search?q={ticker}+stock+when:24h&hl=en-US&gl=US&ceid=US:en"
+            f"https://news.google.com/rss/search?q={ticker}+stock+when:3d&hl=en-US&gl=US&ceid=US:en"
         )
         for e in feed.entries[:5]:
-            headlines.append(f"• {e.title}")
+            if e.title not in seen:
+                seen.add(e.title)
+                articles.append({"title": e.title, "url": getattr(e, "link", ""), "body": ""})
     except: pass
-    unique = list(dict.fromkeys(headlines))
-    return "\n".join(unique[:8]) if unique else "本日、新規材料は未検出。"
+
+    # 上位3記事の本文fetch
+    try:
+        from bs4 import BeautifulSoup
+        import requests as _req
+        for art in articles[:3]:
+            if not art["url"]: continue
+            try:
+                r = _req.get(art["url"], headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
+                soup = BeautifulSoup(r.text, "html.parser")
+                paras = [p.get_text().strip() for p in soup.find_all("p") if len(p.get_text().strip()) > 50]
+                art["body"] = " ".join(paras)[:300]
+            except: pass
+    except ImportError: pass
+
+    lines = []
+    for a in articles[:8]:
+        lines.append(f"• {a['title']}")
+        if a.get("body"): lines.append(f"  抜粋: {a['body'][:200]}")
+    return "\n".join(lines) if lines else "本日、新規材料は未検出。"
+
+
+@st.cache_data(ttl=3600)
+def fetch_fundamental(ticker: str) -> dict:
+    """アナリスト目標株価・空売り比率・インサイダー保有率（v5.0）"""
+    try:
+        info = yf.Ticker(ticker).info
+        price = info.get("regularMarketPrice") or info.get("currentPrice", 0)
+        target = info.get("targetMeanPrice")
+        upside = round((target / price - 1) * 100, 1) if target and price else None
+        return {
+            "analyst_target":  target,
+            "analyst_upside":  upside,
+            "analyst_count":   info.get("numberOfAnalystOpinions"),
+            "recommendation":  info.get("recommendationKey", ""),
+            "short_ratio":     info.get("shortRatio"),
+            "short_pct":       info.get("shortPercentOfFloat"),
+            "insider_pct":     info.get("heldPercentInsiders"),
+            "institution_pct": info.get("heldPercentInstitutions"),
+            "pe_forward":      info.get("forwardPE"),
+            "revenue_growth":  info.get("revenueGrowth"),
+            "earnings_growth": info.get("earningsGrowth"),
+        }
+    except: return {}
+
+
+@st.cache_data(ttl=3600)
+def fetch_insider(ticker: str) -> dict:
+    """インサイダー取引サマリー（v5.0）"""
+    result = {"buy_count": 0, "sell_count": 0, "net_shares": 0, "alert": False, "summary": ""}
+    try:
+        it = yf.Ticker(ticker).insider_transactions
+        if it is None or it.empty: return result
+        for _, row in it.head(15).iterrows():
+            txn    = str(row.get("Transaction", "")).lower()
+            shares = int(row.get("Shares", 0) or 0)
+            if "sell" in txn or "sale" in txn:
+                result["sell_count"] += 1
+                result["net_shares"] -= shares
+            elif "buy" in txn or "purchase" in txn:
+                result["buy_count"]  += 1
+                result["net_shares"] += shares
+        result["alert"]   = (result["sell_count"] >= 2 and result["sell_count"] > result["buy_count"] * 2)
+        result["summary"] = f"直近: 買{result['buy_count']}件 / 売{result['sell_count']}件  純:{result['net_shares']:+,}株"
+    except: pass
+    return result
+
+
 
 # ==============================================================================
 # 🧠 VCP分析
@@ -625,7 +706,7 @@ if mode == "📊 スキャン":
             )
             st.session_state[brief_key] = call_gemini(prompt)
         st.markdown("---")
-        st.markdown(st.session_state[brief_key])
+        st.markdown(st.session_state[brief_key].replace("$", r"\$"))
         st.markdown("---")
 
     st.markdown('<div class="section-header">📈 セクターマップ</div>', unsafe_allow_html=True)
@@ -691,8 +772,10 @@ elif mode == "🔍 リアルタイム":
         clean = re.sub(r'[^A-Z0-9.\-]', '', ticker_in)[:10]
 
         with st.spinner(f"{clean} を解析中..."):
-            data = fetch_price_data(clean, "2y")
-            news = fetch_news(clean)
+            data    = fetch_price_data(clean, "2y")
+            news    = fetch_news(clean)
+            fund    = fetch_fundamental(clean)
+            insider = fetch_insider(clean)
 
             if data is None or data.empty:
                 st.error("データ取得失敗。ティッカーを確認してください。")
@@ -700,11 +783,23 @@ elif mode == "🔍 リアルタイム":
                 vcp = calc_vcp(data)
                 cp  = get_current_price(clean)
 
-                # KPI
-                k1, k2, k3 = st.columns(3)
+                # KPI（4列）
+                k1, k2, k3, k4 = st.columns(4)
                 k1.metric("💰 現在値", f"${cp:.2f}" if cp else "N/A")
                 k2.metric("🎯 VCPスコア", f"{vcp['score']}/100")
                 k3.metric("📊 シグナル", ", ".join(vcp["signals"]) or "なし")
+                if fund.get("analyst_upside") is not None:
+                    k4.metric("🎯 アナリスト乖離",
+                              f"{fund['analyst_upside']:+.1f}%",
+                              f"目標 ${fund['analyst_target']:.1f}" if fund.get("analyst_target") else "")
+                else:
+                    k4.metric("📋 推奨", (fund.get("recommendation") or "N/A").upper())
+
+                # インサイダーアラート
+                if insider.get("alert"):
+                    st.warning(f"⚠️ インサイダー大量売却検出: {insider.get('summary','')}")
+                elif insider.get("summary"):
+                    st.caption(f"👤 インサイダー動向: {insider.get('summary','')}")
 
                 # チャート
                 tail = data.tail(60)
@@ -716,9 +811,9 @@ elif mode == "🔍 リアルタイム":
                                       xaxis_rangeslider_visible=False, margin=dict(t=10, b=0))
                 st.plotly_chart(fig_rt, use_container_width=True)
 
-                # AI診断用に価格データを計算（price_nowはKPIと同じ正規終値で統一）
-                price_now  = round(float(cp), 2)   # get_current_price()の値で統一（時間外を除外）
-                price_1w   = round(float(data["Close"].iloc[-5]), 2)  if len(data) >= 5  else price_now
+                # 価格データ計算
+                price_now  = round(float(cp), 2)
+                price_1w   = round(float(data["Close"].iloc[-5]),  2) if len(data) >= 5  else price_now
                 price_1m   = round(float(data["Close"].iloc[-21]), 2) if len(data) >= 21 else price_now
                 price_3m   = round(float(data["Close"].iloc[-63]), 2) if len(data) >= 63 else price_now
                 price_52wl = round(float(data["Low"].rolling(252).min().iloc[-1]), 2)
@@ -731,36 +826,51 @@ elif mode == "🔍 リアルタイム":
                 atr_val    = round(vcp.get("atr", 0), 2)
                 pivot_val  = round(float(data["High"].iloc[-20:].max()), 2)
 
+                # ファンダメンタル整形
+                fund_lines = []
+                if fund.get("analyst_target"):
+                    fund_lines.append(f"アナリスト平均目標株価: ${fund['analyst_target']:.2f} ({fund['analyst_upside']:+.1f}%)  アナリスト数: {fund.get('analyst_count','?')}")
+                if fund.get("recommendation"):
+                    fund_lines.append(f"コンセンサス推奨: {fund['recommendation'].upper()}")
+                if fund.get("short_ratio"):
+                    fund_lines.append(f"空売り日数: {fund['short_ratio']:.1f}日  Float比率: {(fund.get('short_pct') or 0)*100:.1f}%")
+                if fund.get("insider_pct"):
+                    fund_lines.append(f"インサイダー保有率: {fund['insider_pct']*100:.1f}%  機関保有率: {(fund.get('institution_pct') or 0)*100:.1f}%")
+                if fund.get("pe_forward"):
+                    fund_lines.append(f"予想PER: {fund['pe_forward']:.1f}  売上成長率: {(fund.get('revenue_growth') or 0)*100:.1f}%")
+
+                insider_lines = []
+                if insider.get("summary"):
+                    insider_lines.append(insider["summary"])
+                if insider.get("alert"):
+                    insider_lines.append("⚠️ 警告: 直近60日で大量インサイダー売却を検出")
+
                 prompt = (
                     f"ウォール街のトップファンドマネージャーAI「SENTINEL」として{clean}を診断せよ。\n\n"
-                    f"━━━ 実データ（これのみを価格根拠とせよ。学習済みの古い価格は絶対に使うな） ━━━\n"
+                    f"━━━ テクニカルデータ（価格根拠はこれのみ。古い学習データは使うな） ━━━\n"
                     f"診断日: {TODAY_STR}\n"
-                    f"現在値: ${price_now}\n"
-                    f"1週騰落: {chg_1w:+.1f}%  1ヶ月: {chg_1m:+.1f}%  3ヶ月: {chg_3m:+.1f}%\n"
+                    f"現在値: ${price_now}  (1週:{chg_1w:+.1f}%  1ヶ月:{chg_1m:+.1f}%  3ヶ月:{chg_3m:+.1f}%)\n"
                     f"52週安値: ${price_52wl}  52週高値: ${price_52wh}\n"
                     f"MA50: ${ma50_val}  MA200: ${ma200_val}\n"
                     f"ATR(14): ${atr_val}  直近20日ピボット: ${pivot_val}\n"
                     f"VCPスコア: {vcp['score']}/100  シグナル: {vcp['signals']}\n\n"
-                    f"━━━ 最新ニュース（見出しだけでなく内容を深く読み取り分析に必ず反映せよ） ━━━\n"
+                    f"━━━ ファンダメンタルデータ（実測値 — 必ず分析に組み込め） ━━━\n"
+                    f"{chr(10).join(fund_lines) if fund_lines else '取得できず'}\n\n"
+                    + (f"━━━ インサイダー取引（実測値） ━━━\n{chr(10).join(insider_lines)}\n\n" if insider_lines else "")
+                    + f"━━━ 最新ニュース（本文抜粋含む — 内容を深く読み取り必ず反映せよ） ━━━\n"
                     f"{news}\n\n"
-                    f"━━━ ニュース読解の必須チェック項目（該当するものは必ず分析に組み込め） ━━━\n"
-                    f"・決算発表の有無→好決算でも売られた場合は「出尽くし」として警戒シグナルに\n"
-                    f"・インサイダー売却の有無→あれば必ずリスクとして明記\n"
-                    f"・アナリスト目標株価→現在値との乖離を計算して記載\n"
-                    f"・ガイダンスの強弱→上方/下方修正の有無と市場の反応\n"
-                    f"・競合との比較→シェア変動・技術的優位性の変化\n"
-                    f"・空売り比率・機関投資家動向→買い増しor利確売りか\n\n"
-                    f"━━━ 出力形式（800文字以上、Markdown形式で出力せよ） ━━━\n"
-                    f"1. 【現状分析】現在値${price_now}を起点に、ニュース内容を具体的に引用しながら語れ\n"
-                    f"2. 【隠れたリスク】ニュースの表面には出ていないが実は危険な要素を暴け\n"
-                    f"3. 【エントリー戦略】押し目は現在値${price_now}から5〜15%以内の現実的な水準で示せ（MA50=${ma50_val}まで下がることを前提にするな）\n"
-                    f"4. 【損切りライン】ATR=${atr_val}ベースで計算した数値を明記\n"
-                    f"5. 【利確目標】段階的に具体的な価格で（Target1/2/3）\n"
-                    f"6. 【総合判断】Buy/Watch/Avoidのどれかを明言し、その根拠を一言で"
+                    f"━━━ 出力形式（800文字以上、Markdown形式） ━━━\n"
+                    f"1. 【現状分析】現在値${price_now}を起点に、ニュース・ファンダメンタルを引用して語れ\n"
+                    f"2. 【隠れたリスク】アナリスト目標乖離/インサイダー動向/空売り比率を必ず言及せよ\n"
+                    f"3. 【エントリー戦略】現在値${price_now}から5〜15%以内の現実的な押し目水準を示せ\n"
+                    f"4. 【損切りライン】ATR=${atr_val}ベースで数値を明記\n"
+                    f"5. 【利確目標】Target1/2/3を具体的な価格で\n"
+                    f"6. 【総合判断】Buy/Watch/Avoidを明言し根拠を一言で"
                 )
                 ai = call_gemini(prompt)
+                ai_safe = ai.replace("$", r"\$")
                 st.markdown("---")
-                st.markdown(ai)
+                st.markdown(ai_safe)
                 st.markdown("---")
 
                 with st.expander("📰 ニュース詳細"):
@@ -915,7 +1025,7 @@ elif mode == "💼 ポートフォリオ":
 
             if "pf_ai" in st.session_state:
                 st.markdown("---")
-                st.markdown(st.session_state["pf_ai"])
+                st.markdown(st.session_state["pf_ai"].replace("$", r"\$"))
                 st.markdown("---")
 
     # ------------------------------------------------------------------
