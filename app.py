@@ -27,9 +27,11 @@ NOW       = datetime.datetime.now()
 TODAY_STR = NOW.strftime("%Y-%m-%d")
 
 def _cfg_int(key, default):
-    return int(st.secrets.get(key, os.getenv(key, default)))
+    v = str(st.secrets.get(key, os.getenv(key, ""))).strip()
+    return int(v) if v else int(default)
 def _cfg_float(key, default):
-    return float(st.secrets.get(key, os.getenv(key, default)))
+    v = str(st.secrets.get(key, os.getenv(key, ""))).strip()
+    return float(v) if v else float(default)
 
 CONFIG = {
     # 運用資金・リスク設定（secrets.toml または環境変数で上書き可能）
