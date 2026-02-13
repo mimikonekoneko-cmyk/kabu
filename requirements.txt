@@ -12,4 +12,5 @@ openai
 google-generativeai>=0.8.3
 feedparser
 beautifulsoup4  
-lxml            
+lxml
+feedparser            
