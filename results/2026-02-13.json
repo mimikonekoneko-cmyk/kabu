@@ -1,231 +1,11 @@
 {
   "date": "2026-02-13",
-  "runtime": "119.19s",
-  "usd_jpy": 153.51,
+  "runtime": "21.7s",
+  "usd_jpy": 152.84,
   "scan_count": 323,
-  "qualified_count": 18,
-  "selected_count": 11,
+  "qualified_count": 16,
+  "selected_count": 10,
   "selected": [
-    {
-      "ticker": "PH",
-      "status": "ACTION",
-      "price": 982.21,
-      "entry": 1014.51,
-      "stop": 969.81,
-      "target": 1126.27,
-      "shares": 2,
-      "vcp": {
-        "score": 70,
-        "atr": 22.351405928981162,
-        "signals": [
-          "MA Aligned"
-        ],
-        "is_dryup": false
-      },
-      "rs": 77,
-      "pf": 6.13,
-      "sector": "Industrials",
-      "analyst_target": 1017.8261,
-      "analyst_upside": 3.6,
-      "analyst_count": 23,
-      "recommendation": "buy",
-      "short_ratio": 2.09,
-      "short_pct": 0.0107,
-      "insider_pct": 0.00156,
-      "institution_pct": 0.89194,
-      "pe_forward": 28.89482,
-      "revenue_growth": 0.091,
-      "insider_alert": false,
-      "insider_detail": {
-        "buy_count": 0,
-        "sell_count": 0,
-        "net_shares": 0,
-        "recent": [
-          {
-            "date": "",
-            "name": [
-              "HAVERTY FURNITURE COMPANIES INC  (HVT, HVT-A)  (CIK 0000216085)",
-              "HAVERTY RAWSON JR  (CIK 0001214531)"
-            ],
-            "filed": "2007-07-24"
-          },
-          {
-            "date": "",
-            "name": [
-              "PETCOFF JAMES G  (CIK 0001115666)",
-              "Conifer Holdings, Inc.  (CNFR, CNFRZ)  (CIK 0001502292)"
-            ],
-            "filed": "2021-12-17"
-          },
-          {
-            "date": "",
-            "name": [
-              "PETCOFF JAMES G  (CIK 0001115666)",
-              "Conifer Holdings, Inc.  (CNFR, CNFRZ)  (CIK 0001502292)"
-            ],
-            "filed": "2021-12-14"
-          },
-          {
-            "date": "",
-            "name": [
-              "CANADA PENSION PLAN INVESTMENT BOARD  (CIK 0001283718)",
-              "CPP Investment Board Private Holdings (4) Inc.  (CIK 0001978825)",
-              "VIASAT INC  (VSAT)  (CIK 0000797721)"
-            ],
-            "filed": "2024-08-14"
-          },
-          {
-            "date": "",
-            "name": [
-              "CANADA PENSION PLAN INVESTMENT BOARD  (CIK 0001283718)",
-              "CPP Investment Board Private Holdings (4) Inc.  (CIK 0001978825)",
-              "VIASAT INC  (CIK 0000797721)"
-            ],
-            "filed": "2025-02-11"
-          },
-          {
-            "date": "",
-            "name": [
-              "PIZZANI PAUL G  (CIK 0001021358)",
-              "PRIMUS TELECOMMUNICATIONS GROUP INC  (VATE)  (CIK 0001006837)"
-            ],
-            "filed": "2003-12-01"
-          },
-          {
-            "date": "",
-            "name": [
-              "ICAHN CARL C  (CIK 0000921669)",
-              "ICAHN PARTNERS LP  (CIK 0001313666)",
-              "ICAHN PARTNERS MASTER FUND LP  (CIK 0001322827)",
-              "Xerox Holdings Corp  (XRX)  (CIK 0001770450)"
-            ],
-            "filed": "2020-08-07"
-          },
-          {
-            "date": "",
-            "name": [
-              "HAVERTY RAWSON JR  (CIK 0001214531)",
-              "HAVERTY FURNITURE COMPANIES INC  (HVT, HVT-A)  (CIK 0000216085)"
-            ],
-            "filed": "2019-05-08"
-          },
-          {
-            "date": "",
-            "name": [
-              "AGIOS PHARMACEUTICALS INC  (AGIO)  (CIK 0001439222)",
-              "Flagship Ventures 2007 General Partner LLC  (CIK 0001508053)",
-              "KANIA EDWIN M JR  (CIK 0001255927)",
-              "AFEYAN NOUBAR  (CIK 0001222012)",
-              "Flagship Ventures Fund 2007, L.P.  (CIK 0001508052)"
-            ],
-            "filed": "2014-06-25"
-          },
-          {
-            "date": "",
-            "name": [
-              "AFEYAN NOUBAR  (CIK 0001222012)",
-              "KANIA EDWIN M JR  (CIK 0001255927)",
-              "TETRAPHASE PHARMACEUTICALS INC  (CIK 0001373707)",
-              "Flagship Ventures Fund 2004 L P  (CIK 0001299790)",
-              "Flagship Ventures General Partner LLC  (CIK 0001400249)",
-              "Flagship Ventures Fund 2007, L.P.  (CIK 0001508052)",
-              "Flagship Ventures 2007 General Partner LLC  (CIK 0001508053)"
-            ],
-            "filed": "2013-03-27"
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "BRACHT BEREND",
-            "trans": "",
-            "shares": 1457
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "BRACHT BEREND",
-            "trans": "",
-            "shares": 3370
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "JACOBSON MATTHEW A.",
-            "trans": "",
-            "shares": 564
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "JACOBSON MATTHEW A.",
-            "trans": "",
-            "shares": 970
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "PAREL DINU JOHN",
-            "trans": "",
-            "shares": 1316
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "PAREL DINU JOHN",
-            "trans": "",
-            "shares": 3030
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "GENTILE THOMAS C.",
-            "trans": "",
-            "shares": 2376
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "GENTILE THOMAS C.",
-            "trans": "",
-            "shares": 5110
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "IVES ANGELA R",
-            "trans": "",
-            "shares": 1066
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "IVES ANGELA R",
-            "trans": "",
-            "shares": 2360
-          }
-        ]
-      },
-      "news": {
-        "articles": [
-          {
-            "title": "Parker Hannifin Corporation to Present at Citi’s 2026 Global Industrial Tech and Mobility Conference - Quiver Quantitative",
-            "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxPTDJzRFJpcVhDQVQzRVdoODQ3cURtVlByTXNMTkx0ZTIyMU1zMFRRcUlCTzd4R1haRVdyUzRJdE1mQ2NaOE1tVG82Y3I0V3BZTjJUTkZ2NG9Tellmck1meTFXM0tBVHM1c1pNblpRTzRkMHVUQnBnNlNzTkZMTXUtLVR0MW1NNjlfLXRENksyN1RHWVJqWGtySDNqTk5kRU8xMUxtWnRReEQ5bENPdlVJdzIxc3hIMnQwVXJpcXBOUkJqZm5EdjBSOTU3bm1pbGw0c3ItV3hLbGU?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Parker Hannifin Sustainability Report Highlights Emissions Progress And Earnings Resilience - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPVWZ5RFZFOFBQQjlDNTJhc3dMVVJ4ZURDVDFFek9jSWIzTV9oTU5MRzNOOUdjQTgtRlN5MHE5QVB4SngwM21NQzJOSTJHUUJkM0M0eTE4MW0zcVd5SzAtdnJHODNRaF9rSi1oTWlDVkFxUkhRdzY4bTZDU0h4dUt3UXNJU2lJWnRMdkZyOXp4RTlqRkxaYkl0MTNEcUhrQ2wybG5aeV93Yi01cUVxbFlOSVFyZUp3TTFRZlA5SE14b2VaWmE3TXp1ZlVJZDVreTBt?oc=5",
-            "body": ""
-          },
-          {
-            "title": "The Zacks Analyst Blog Highlights Parker-Hannifin, Goldman Sachs, GE Aerospace, C.H. Robinson Worldwide and Carpenter Technology - The Globe and Mail",
-            "url": "https://news.google.com/rss/articles/CBMirgJBVV95cUxPUUNDZlpELUd1MTEzNk5rTDNoWjUxZGhUTWh0dGhNZ2UxYUlhNWQ0UEdIcVRpZXpreThwX2FFUG5QRFRkdlhiLWEtSVJoQkdHa000SHYwTkV5WHozNHFTTmFIdVFjaTFCQjJ6UlpMXzMwMzZxd3ZpaGdreEM2UTA2bGpGU0RXUkpqTkNJdUpNTGdwTEx3SERFYlBTeW1FUDllRmN3d0hkWEFtXzFfMmhwSVdCbFA0YXRqRlhqMXFtMmVJV21ERWc4WURtUThEZGhsUkNjaEtGcGR6WFAzVURMZk9jaE9nOEZhN1RJTHQzU0J0djRvUzFVV0prQXhfdVppNHp1UkJIbXpNZGhOSTVfa3B6ejNTZ1FfcTc2N0JWSjVKVUxVZmpibDJtRzRQQQ?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Biotech behind first PROTAC trial taps dealmaker Randy Teel as CEO - Stock Titan",
-            "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPNGpWV0p4eFdxSElMZ0s4TERSczBaMFJTYjhmTm8wcEhDN29pNG1BeHBxTC1SSjdsUWNFdUJZWklIeGx1am9fcV9FYi1vbEdZX1F4a2dZSkZQRHZ4UUZ1YWNHNXJ2UVRndVEwY3N3SkpEWVRrdHpfWEp0U0o1Y2RfOV9hRHV5eUZMZHZYeWtYYzlCVWh3Y01WalQ0UVRON3VFT293eGxVbXpmaEFLOFZnWGszMm4xR3gtQjRUVHFLSQ?oc=5",
-            "body": ""
-          },
-          {
-            "title": "34,819 Shares in Parker-Hannifin Corporation $PH Acquired by ING Groep NV - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPdlEteWhieHRaa3dQSDVSa2ZqdVJrSnVvbURGREx5WEtPMS1aTzRtQWQxelZvVzZEaGp6VWszLVc2dGNueHRhN1ZXT1AxZ0hRX25zZUtGSmI5X1NQUm5PcFlyc0JWa1U0bkJEUnBhU3pfby1ETzBOcmhVZXJwVjZ3c1VtZVloeThFeFg0MUdwWHloZHdUVXBiSmlhQ1piRHNGVF9XZk52eUZ6dlR4ODFRZzhPRWpxTkplcU5ReG5KOURfTlNKcllZU0VGQkQ?oc=5",
-            "body": ""
-          }
-        ],
-        "fetched_at": "2026-02-13T08:39:00.707260"
-      }
-    },
     {
       "ticker": "ROST",
       "status": "ACTION",
@@ -233,7 +13,7 @@
       "entry": 197.57,
       "stop": 190.63,
       "target": 214.94,
-      "shares": 13,
+      "shares": 4,
       "vcp": {
         "score": 81,
         "atr": 3.4735706874302457,
@@ -407,8 +187,8 @@
       "news": {
         "articles": [
           {
-            "title": "Ross Stores (NASDAQ:ROST) Reaches New 12-Month High - What's Next? - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQSHNGOW9lOFlpeEtYcVZLUnhKZHk0ZTE2UnUxR24tWnktY0FjSVhQajUwZV9vcTktV0h2NXQxcUc1bjBIaDRPZWd4R3NtQnlfeTRFWWZud2ZhQS1rWktidkRKWjJHTm5OU2ZqNXNuQW0ydUREcUtwWndfMDFUUnJKS3JiY2RwSFRDZEg2Ny1EMC1VTC13cExSSFY5RGRnZFZoY1R5YWRERE8yREwtZl9XOVJhTQ?oc=5",
+            "title": "Cibc World Market Inc. Raises Stock Position in Ross Stores, Inc. $ROST - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOQ0gzdzhjSk44UmVqU1RBaDlvQkhXOVpjNjJFWTFDQkJFUFVsVUdMTkc2aE1RQnV6X29INk5qTUlhV1ZnajRSUVoyQ21NVW51cXhKeXFMdmljZlJScV9nUXNNcHBXZV9Uc0dBM2l4S2hCLTRoQXVMSW1tQndXMXpHWFRfRnNETm9KemIwZmdQOHU1dFpLd09ESzltYkEtel9KM21UUDNhYmxvUnZwOENtZkduN09kcW9nNEdRWWtXcmw2Ul9yNjJB?oc=5",
             "body": ""
           },
           {
@@ -427,12 +207,12 @@
             "body": ""
           },
           {
-            "title": "Ross Stores Inc stock hits all-time high at $195.03 By Investing.com - Investing.com Nigeria",
-            "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOckFObUppcTRjUDVhcUVVNjdmTkp1enQzeVJiclo4QjVsMHNMcl9LR3NSSVZ3NFZfRlptVDJGa0J3SG96Y051SlpJZzNCOE5WTEg3OFloajZ2akdsTjJHbUcxaGl6M053Qm5vQjBKWWZLdGRxUWZoRnpnX2ZualpqSThXR3p3bjZ1elZBVWU2YWhtQ2Q5eTJhdnNTUVg3dVcxVDRhbGZhcw?oc=5",
+            "title": "ROST: Citigroup Maintains Buy Rating and Raises Price Target | R - GuruFocus",
+            "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQLWhscjNDU2RzRExrWUVTU0xUSkhQSENSLXJjZVNlRkJKRnRkN0hyd01aa213ZE9MVk5CdzJXNi1XUXhRN3lnRnJkWng1QllnQ0N0TjhXZS1Sa0N3NnpuT2hxZkdCRmN6MmFjTFo0MW1sYlhucGFWdVFQVmlnTUkwRVlOamVHRlZkdkgzOFdvWG1acXNZenEwM0xfZmRubzI2bGhqa3hweVNlUUFfV3hidWlubnE?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:01.796197"
+        "fetched_at": "2026-02-13T14:28:38.610889"
       }
     },
     {
@@ -442,7 +222,7 @@
       "entry": 206.89,
       "stop": 196.33,
       "target": 233.29,
-      "shares": 9,
+      "shares": 3,
       "vcp": {
         "score": 64,
         "atr": 5.279998779296875,
@@ -620,13 +400,13 @@
             "body": ""
           },
           {
-            "title": "Is It Too Late To Consider RTX (RTX) After A 62.8% One Year Rally? - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBISF8zSjg5ay1BU0oxTndQX1NFV2l0aWxlUUhsSDRyMU16VVNlUTZBQWhEdkFwOE1Ld2ZIdk90dy1nZlEydFR4dkRnOHV2Y0tXT2JuYjRfR3M3Zm1NaVpuOFFTZDhBUFl6c1pfbldNOVhNWThnWVhkbw?oc=5",
+            "title": "Freemont Management S.A. Sells 48,300 Shares of RTX Corporation $RTX - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOOTFLNHUwelpLRTE1RjRrUnlUaGRDeV83ZldHbU56VTNqOWtZN0w2a1JtN0ZpNlFGM1lpb0EyaE9CNFBHa0IwdmUwclN5ZHVOd0JJT05LQmJJSDVkQm12U3lMYXJLZUdJLVNtSXBFcEtNVnBMNUZGRmd1TFo1YWVFTnk2bF9KbnlGeDN1YlF2UlA5Y3N0WmMtTkpfeEljWkNSanlldUV5MUc1d0F3U1pyMHd6NllNMURhWkUtQUJsRFdhbVE?oc=5",
             "body": ""
           },
           {
-            "title": "RTX Stock Surged 60%, Here's Why - Trefis",
-            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNbnpucEpjRUFqZ2htc0JfSUQyaGpPMU5XRkd4VkM2RjBlY1JNZ0xKaWNVRXQ2YjVPay00Mm5odmRFbkxqRm04MFhIZU9DY1QzV0dWOHVHbExmTnZKSmR0aHVNSUlKT0NHWFBmcVh6UHNNWTIzYlMtVWx5VzAwTlRaS3dvUzFvREhpV0J3SVFGZmd3OEJMb2k0cDFieG9VdUlD?oc=5",
+            "title": "Is It Too Late To Consider RTX (RTX) After A 62.8% One Year Rally? - Yahoo Finance",
+            "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBISF8zSjg5ay1BU0oxTndQX1NFV2l0aWxlUUhsSDRyMU16VVNlUTZBQWhEdkFwOE1Ld2ZIdk90dy1nZlEydFR4dkRnOHV2Y0tXT2JuYjRfR3M3Zm1NaVpuOFFTZDhBUFl6c1pfbldNOVhNWThnWVhkbw?oc=5",
             "body": ""
           },
           {
@@ -635,12 +415,12 @@
             "body": ""
           },
           {
-            "title": "Savvy Advisors Inc. Raises Stake in RTX Corporation $RTX - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPMWtoY1lMTzNPOW1XTnN1M0Y5YmZoZWlPdUxzdEppNXItWXRSVGZoeERQMnc2bExhWjF5S0lteG5KU1YxU3R1d19tZFpHcWFFSG0xSXVvMUpBdzlCYlM5d1VicDh1T2VOWnlqOFRRd2laRmZuUEVxb1FkeDdfTXhvS2x2cHlmUTBkYzZTcWw0aW9BNkZidENTQmFEM2h6SldXaUFkcHhpZ01QX2d4Z2tqdWdUdDVsdw?oc=5",
+            "title": "RTX Stock Surged 60%, Here's Why - Trefis",
+            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNbnpucEpjRUFqZ2htc0JfSUQyaGpPMU5XRkd4VkM2RjBlY1JNZ0xKaWNVRXQ2YjVPay00Mm5odmRFbkxqRm04MFhIZU9DY1QzV0dWOHVHbExmTnZKSmR0aHVNSUlKT0NHWFBmcVh6UHNNWTIzYlMtVWx5VzAwTlRaS3dvUzFvREhpV0J3SVFGZmd3OEJMb2k0cDFieG9VdUlD?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:03.062486"
+        "fetched_at": "2026-02-13T14:28:39.988837"
       }
     },
     {
@@ -650,7 +430,7 @@
       "entry": 83.41,
       "stop": 80.51,
       "target": 90.65,
-      "shares": 31,
+      "shares": 10,
       "vcp": {
         "score": 85,
         "atr": 1.4478558131626673,
@@ -834,8 +614,8 @@
             "body": ""
           },
           {
-            "title": "What Makes Monster Beverage (MNST) a Strong Momentum Stock: Buy Now? - Nasdaq",
-            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPa2hoS2hpSTBmVFdzbW5ab0tKVHVrd2YzOUxqWFE0ZjVzdGltaThadlJMaFRGQzJjblVsSUlEMW00aWcxd2x2V1BYS3N3V3o1ZXFDQXdyRjJDbzJ4RFdfalVDWDJ2Ul9fMmdyUWQxbmFYU0VEVHNkWmljSVNkTWJaR09rdWNHMFVIOGtQMGZQREItN2VOc1BWMm1R?oc=5",
+            "title": "ING Groep NV Decreases Position in Monster Beverage Corporation $MNST - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNaVRremoyU3JXT19KLXQweGhTZWpwV25xbHJ5c1dIVUItZlBPWDBCaFQwcVJwQkpmX01hbVFQeEVGSFI5MmdhRkdrZkVKYS1pR2VJQXhSMDFLS1djbk5CZnNfSzJ2R25zdlh4LVdoOGNpdVVuTTlGRGM3R3NXcGs2REpZSnpiaFR5NmRibFlxbnAwOEdnNVd0Qk02dkFCTEpjQjh5b1BDWGVVUFgtWU1kQnZWcUZUUDcyUWxtZE5OU3JiZTNxS0J4cw?oc=5",
             "body": ""
           },
           {
@@ -844,12 +624,12 @@
             "body": ""
           },
           {
-            "title": "Rhumbline Advisers Sells 13,352 Shares of Monster Beverage Corporation $MNST - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNd0N6QU8yUUlPWW5MUngzR05xNzY3ZjdocnBDWXQ5enlTZzFzSlVYcmYwWHNfdmxlanBIOFF0ZC1uZ25QMHYwb0FtQ2NrYlZtZVZDcm9xSWVHb1N3Y3BORGRsU3lVb1dTMDUyVmlvckJ4SzlxSlh2LWxpV08yZnpIVkpobDFHRWdfQTlHeFpFOC1YeFhpYXl3T0RObm5EZS1QSFdBekNLdWxiNXlicUZ4NmdLSVROLU5BSER0eWo0Ums2cXdfWHVoaTVXY3RwNjNU?oc=5",
+            "title": "New Highs: What analysts say about MNST stock - Treasury Yields & Community Consensus Picks - baoquankhu1.vn",
+            "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOaEkyMXU2NW41S29mZmVGYXJOWG5yMUtmNjE1VkpxbUVHcFF5d0Q2U0hiVEpoTXpZTENySXVMeXFuQUZHQXJRMHpkTDFoT2tCWmpWeF9qVnVGd1ZoaGx3LW9OcUdUX0FOa08yQWdQcDA0SU1nR3dqeVBGTm1MX0hlREFR?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:04.104844"
+        "fetched_at": "2026-02-13T14:28:41.184447"
       }
     },
     {
@@ -859,7 +639,7 @@
       "entry": 421.44,
       "stop": 392.57,
       "target": 493.61,
-      "shares": 3,
+      "shares": 1,
       "vcp": {
         "score": 61,
         "atr": 14.434282575334821,
@@ -985,13 +765,13 @@
             "body": ""
           },
           {
-            "title": "Interested in Artificial Intelligence (AI) Stocks in 2026? Consider Buying This Top-Performing AI ETF. - The Motley Fool",
-            "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPdjZNUDNkemI1SWJmMF9zcmZlN01KODktd1ZKOURkeDNUZk5GTEJGanR2Szdqb1ptalFKVWdMb3lKQVl0WHktZFlYcFhOd2I1RDlmbmt2blN5NENUa29Qd29lUUhCUnV0enRmTWhHWktqUXpMMHoyemNCZS1ub28yZ21uWnB0SjNiMWR3WlJ6Vkx5VXk2aUVV?oc=5",
+            "title": "A Top Semiconductor ETF Ran 62% Despite Top Holding Slashing Dividend by 75% - AOL.com",
+            "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBuUkpaUm5XVEJhQm9EUktWTXdfeHhmLUpvd0E1N3d4dDBrNUYwZ19DNG05c3RHeXpTUGxNWDFVLWlYZWh0WjJRQ2x2cjVoanBVRW9XM0J2ZzJBY2NQTXg2ekxtd2xJUHM5WTM2ZHRHdnFWaHVYUEZ2cktNdGY?oc=5",
             "body": ""
           },
           {
-            "title": "ASX dips as tech shares slump; Westpac profit rises, Cochlear crashes - SMH.com.au",
-            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOQUlyc1ROWEI5ZVA1d05OZzJIeG5jVEt1T09ReUNqaVRhN1N1R09ybGwxWTdvMFNpSkp0TzlfeDA5cElUaUpLUzRwTFFSZVNGaWx2VUNFU2JmN1RoRlJVU3BNTGl6cXpULTlUc1NKNGVhYkVlOGd1UHFxVE5vVUtMckVxWnUydFJSODZ3SmRKdmZKS2xMQ0pDUk84YS1GRHR3ajBvd3pzSjN6Zw?oc=5",
+            "title": "Interested in Artificial Intelligence (AI) Stocks in 2026? Consider Buying This Top-Performing AI ETF. - The Motley Fool",
+            "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPdjZNUDNkemI1SWJmMF9zcmZlN01KODktd1ZKOURkeDNUZk5GTEJGanR2Szdqb1ptalFKVWdMb3lKQVl0WHktZFlYcFhOd2I1RDlmbmt2blN5NENUa29Qd29lUUhCUnV0enRmTWhHWktqUXpMMHoyemNCZS1ub28yZ21uWnB0SjNiMWR3WlJ6Vkx5VXk2aUVV?oc=5",
             "body": ""
           },
           {
@@ -1005,7 +785,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:05.183489"
+        "fetched_at": "2026-02-13T14:28:42.406138"
       }
     },
     {
@@ -1015,7 +795,7 @@
       "entry": 231.78,
       "stop": 216.21,
       "target": 270.73,
-      "shares": 6,
+      "shares": 2,
       "vcp": {
         "score": 73,
         "atr": 7.788505912913777,
@@ -1188,13 +968,13 @@
       "news": {
         "articles": [
           {
-            "title": "Texas Instruments (TXN) stock slips after early jump as chip sector weakens ahead of CPI - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNQ3FVRXFqSGw1Ml9ENk1TVTRkR0RzdU41UU1ubzFFTms0OHAtWTZSSXZQZXZBV29jd1o0SHkwRmFjVFc4UnI2OHd6c1gyZE43MFNIT01jWUZwVmpxNG5xQ29mQkd3cG9ZOFBQZkxBclJUQmFsenNWYlY0U2ZSQnZNb1hqdlJXbnhmZEVSU0N5dk5YWmRHZi1sWi0wNVJZckVTUnJFd2xYdEVaUVE?oc=5",
+            "title": "Texas Instruments Incorporated $TXN Shares Sold by Atria Investments Inc - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNOW1HaFlhcnlPRzJQazdMWnBXMFhDZ051NDNIczcyd2hLdE1wWjB2Wl9mZkNGblhwcVg4elJIUTc2ME11Y2RSbS1QcmVaaE1pMjBGa0NVaFNVZzV2c2JGVmU3NU90QVFjVWw5NEJmbjBTQ0FaTlY5OHd1NWVLUVdSLXZDZzBmSFlabk1GQ2kzMzJ6TksxQW5fNEZ0VTE2ZF9aWkJ2X2YzRGg5ZGQ3RWx1b2xlNkZTUDNXWTlfTGZqdmdITFBEOWtHci00aTM?oc=5",
             "body": ""
           },
           {
-            "title": "Insider Selling: Texas Instruments (NASDAQ:TXN) VP Sells 10,248 Shares of Stock - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOaXZqZldSd1d1SU9UckN6MHhPU09UWkxhUDlCR0V2aktQcV9WZ0UtYnVOWXIzTUlfZDUzbWlLTzdlMXI0d0JFLXVoSV9oeHh3Z0psVHJKTFJ0STQyQUdHV1RNbGpfbTRuQkJudWl5TDc1LV9NVllxMUtKVGhFVVdiOEFuQjNzNWhMWHZnUU1kcEhzZWN3cDdrdEpVejBVVVlFYnN1b2xaWkN5Y0lINlRjNFVSOS1tRTRrajJGRXQyNDJNNzNyTHEw?oc=5",
+            "title": "Texas Instruments (TXN) stock slips after early jump as chip sector weakens ahead of CPI - TechStock²",
+            "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNQ3FVRXFqSGw1Ml9ENk1TVTRkR0RzdU41UU1ubzFFTms0OHAtWTZSSXZQZXZBV29jd1o0SHkwRmFjVFc4UnI2OHd6c1gyZE43MFNIT01jWUZwVmpxNG5xQ29mQkd3cG9ZOFBQZkxBclJUQmFsenNWYlY0U2ZSQnZNb1hqdlJXbnhmZEVSU0N5dk5YWmRHZi1sWi0wNVJZckVTUnJFd2xYdEVaUVE?oc=5",
             "body": ""
           },
           {
@@ -1208,12 +988,12 @@
             "body": ""
           },
           {
-            "title": "Here's Why Texas Instruments (TXN) is a Strong Growth Stock - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPcHZlRmYtSFRORjJCR1FNbmdnam1kTU9fWXZjOGFnaGRDaUJoVEFuMVB5ZjUzLXQ4N3hncW5YOTNRbDlrc0V4bEljcldEcHIzUDV4Qll3SVdGT0M0SlM2SUxXNzZkTTB1MEdmdjNHT2RpcHMxNVpLRXVUQmFxaHhjVjhRRQ?oc=5",
+            "title": "Here's Why Texas Instruments (TXN) is a Strong Growth Stock - Nasdaq",
+            "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdWdtX2FxdHRLR3hqcnJWQVUxVUZNaGNOMkFmVzdOM0M2T1RjeU91Z3dENmhIU3VSbFgxbGJPX0hYNDZELTk2R2xWVjJKZm9neVNXdFRhdDhHQThoc1FkeE1QczdrQ0pMd0FhNkcyczJiNG9pY2g2MHR2RHVQVEZmYWZnWENJTXFRdjFZ?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:06.267857"
+        "fetched_at": "2026-02-13T14:28:43.631168"
       }
     },
     {
@@ -1223,7 +1003,7 @@
       "entry": 197.29,
       "stop": 185.01,
       "target": 228.02,
-      "shares": 7,
+      "shares": 2,
       "vcp": {
         "score": 61,
         "atr": 6.144284929547991,
@@ -1396,32 +1176,32 @@
       "news": {
         "articles": [
           {
+            "title": "Nucor EVP query sells $1.46 million in NUE stock - Investing.com",
+            "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNNjY0ZTk0bnc0Q0I5ZXk2T3AxbldBaHd5SmpIZUtmbmlhSDhaUEhYRFJ2Qm1xX1ZTZm9hS0pjdGIyWXJyYVhMcmYzb0xkVDRqeG1jQk9Ibkh6d0JyRUhGdEhkWHFCUWp3czRPRmhOaEFfaTRjVGs1bFNTNmJyVDBfaWlUMnlCNkw5VmNtQjJ0VFoyZ2VleUR6MTg1anZoV0hLZTFSUjc0c0NkT1djMk9NRg?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Insider Sale: Executive Vice President of $NUE Sells 7,452 Shares - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOeGFfQThzbHFwa2hNMnZzb09SSFhPQ1NoWlRnazlpNkFFZkUtcF9yT3BleHJZMUlkQ1hfYUhoTEdzSDgyNnVwNm5kMkVtVlFGRDN0bWc5RU1LdUREcEtYMjNoV21aZTZuVldBTWdKalhNcE9MY0xkaGFIR3RaYVB6X3FxTV9qT29aSzZiWTlWQ3B6UWdsNllqRTNwNVEwTW82ZVc3TFZCdw?oc=5",
+            "body": ""
+          },
+          {
             "title": "Is Nucor (NUE) Still Attractive After Strong 1-Year Share Price Performance? - simplywall.st",
             "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNWU9LV0hObEs2VDh1NGIxbjhTR1lGckZrak5nblVnZUVhaGNzQ3BiaEpLSjNUR2RGaE5JN2dIUFc5LXFrQzBXR0dub21ZMzdQVEN3TE0wZGVWLWUtZnFvdjVVZFUyV182NXM0NmtEOVUzdWJVSC1uVXFWMTZaMFItTWduZVVva0ZBNlpaSC1LcjlOanZUWlJOeFJ1Wi14SjliZUdxQ3gtY0tXVDdaR2RnclBDa3RHRFdhZWJpRVJFSQ?oc=5",
+            "body": ""
+          },
+          {
+            "title": "NUE, STLD, RS: U.S. Steel Stocks Slide as Trump Weighs Tariff Rollback - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOZ0dOVlBFVUhBdFpHREEtMVZ2OGJ4VkoxdTlLNGttT0ZNelI1SERlWWk5amlQMmlNc1pjUGdJOE16LXhxUmJGUWtZNzYyd09rUk5WZTBMLWVfeW1Mb0hCZG9nUmU2WlZrdmtMN190aHBuX1JKVTRieTFOSUd2eGphUXFpTnJNR3FGekN2QmRTc2ZIMEQxUHkw?oc=5",
             "body": ""
           },
           {
             "title": "Nucor (NUE) is a Top-Ranked Value Stock: Should You Buy? - Nasdaq",
             "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQZVJvd29GT2Q1Rmx5LUI4SXlMeHlqdDA5anJjZ3E5cURiSDJxQmdid0FpM3NGRHFaUUwxdVZoY1FrZjA4SHZGbmV0c21CeW1HbHFuaUhmLU5ST0VZd1dHOGowNkk5SkRkM1ltSFQ1RHl1R25HVHRtQmxnNTJ6dkVVTk5SU0lsZw?oc=5",
             "body": ""
-          },
-          {
-            "title": "Is It Too Late To Consider Nucor (NUE) After Strong Multi Year Share Price Gains - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPVWtON1FXNEJfTUNzZGpfOGFOaHd2WTZ5QzFlNkZ4YWlMZGtYZ3ZLTUQtMVJVVHRtejJWR19TSEdOSm5CaEQyamZjMEFZXzhUQU11WVlXa2hncUxtY0ZCbmFIalEtQWYxc1pDYXNKa2I0bEFBRVBvZ2RWX0xzcHlvdA?oc=5",
-            "body": ""
-          },
-          {
-            "title": "What Catalysts Are Recasting The Nucor (NUE) Story On Pricing Tariffs And Valuation - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOaEtLM0dWVW1HZTRjemNGQnZObGxNY1lXakVEMF9MWWM5amJJbDhqRHc5ZExUYUZVOUp1Zi1oMUZCR2tzN2o2OVhEMkp0b2h2WGg4alI4c1FuVTdNUXQ3NUtBTHlJVUJYWllKVWVEUWxxTlA0c3RZYXJSOFJJaUFNV2pKaXdabGxM?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Avoiding Lag: Real-Time Signals in (NUE) Movement - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPUjR2Q0ZmSkpRRExlUWExZ3MyaC1pSWVoOTd3TlhicEJLU2lrcm53dG53LVVFb2dJdlNJdEw3VVFKckZiN29vVEI2dkRBLVZiVGFyWXhVSG0yb0dMaDluU1lHemlLWHZiSDJXZk9tOFZtc3U2QTQ4TlhuZGRITVNqMHdKY0REZExHbC10T1dBOUZYWWZ6VnZBeHhrU0NMb0VmNzcyTFV4NFFJa3dFLUpmeVRSTnM2eUtHSEF0TEdrbENsWmxR?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:07.338536"
+        "fetched_at": "2026-02-13T14:28:44.803087"
       }
     },
     {
@@ -1431,7 +1211,7 @@
       "entry": 191.36,
       "stop": 182.14,
       "target": 214.4,
-      "shares": 10,
+      "shares": 3,
       "vcp": {
         "score": 71,
         "atr": 4.608570643833706,
@@ -1607,32 +1387,32 @@
       "news": {
         "articles": [
           {
+            "title": "Philip Morris International Inc. $PM Shares Purchased by Assetmark Inc. - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNX3kxdVIzU05KSEFrX2pqZXBkSTdYT3dobWFEakx3MmhlbXpjYk1TSUltYnhzX2ZmQ2ZHaFFubkwzS0lROVN5dnZGY2YtZWsweklYc0YxZElNVHNLaDBhQVJQZHQ3QVA3NHVBQV9PeVNQZEVaSE5iUVlhWmMyQXRuY0c0SWgyRWRLbnloa0dtVUNLN1VNTklVcFN1ZW5EekhlOHcteWJ2SS14NG1PZGs2VW9BWFo0V1RLbjFDOHE3a2xSdDdHaVpaMQ?oc=5",
+            "body": ""
+          },
+          {
             "title": "Is Philip Morris International (PM) Stock Outpacing Its Consumer Staples Peers This Year? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNdXVJQ2I3aFpkR1FuRjdPZUJXZkhic1p5V3ZFeGVBUkVDbzR1alJRQnNoa3kzVm5jOE8tWk1uSE9mYTE3aUYxaC03dEUyR1ItdUdZR0xhWlJuTjB2Y2VHNXZZMUNMSmlkMHA4MVdSYlJRU0V1dWxjdVhpcXdVMUV6XzNqdXlxcUZFdmc?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Best Tobacco Stocks for 2026 and How to Invest - The Motley Fool",
+            "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPbzN5SnpvYTdzSHBBQ3EwazJHbUdlaTIwdmxzeTRsVW1oMGplNjF3TmdBaDZHQS1tX0xsZTVVc1hvVnBsemhzYjNZUEhMT1JNZlB5UHQ3NnNYa3paRTh1ZTRCSDRyZWNtbTJydWFJSzN4eTlBekZjaVRDNmJRa2JROXJ6U3h6VTNET1kzZmxuY3NLaXJwMFE?oc=5",
+            "body": ""
+          },
+          {
+            "title": "5 Insightful Analyst Questions From Philip Morris’s Q4 Earnings Call - TradingView",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxOR3JxaG4xMHZjUGYtbHdfb1o0LXUwTmEybnZBeFNCMXMwY0xSMVk0Z2RIcEZPdjlOMDdicG93V1M3clhSZlpQWGxEcmZyajlHTVlyT0pHM2tyY3gxVFFNcUZWaHJyV0tRTTAzbnlwZ1htUDNwYnl3c2p0MGVOazV3YjVmT3RKZU1LdmlFMEpCQTdjcXdwOTdkRV92Q1hnYUpHNnBrNUN5WUJtd3ZteTRtOUdvTEM0RmdWZ2V5RVE1TTA0XzJITXppWg?oc=5",
             "body": ""
           },
           {
             "title": "Philip Morris Stock Slips After Q4 Results Despite Steady Growth Outlook - TIKR.com",
             "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPbVoxR2NnZWdWbTR4LTFUNjZER2h3OW0zSF9LQ3ZRQW5vMmRRTmY3UTFzVDIzRml6X2lBa0RiU0VKalc4ek4wNFlKc0wxMWZ3U1FjenRQVzNtMmRDSzBxWF91VGVIQ0swZzRGWHBIWWVrLXR3MVNMOF92NDFtdm4wZnBnOVJWb2JrN0piOXotQ2tnMUpFREZONTBzdGp2YUU?oc=5",
             "body": ""
-          },
-          {
-            "title": "Philip Morris stock hits fresh 52-week high as India IQOS setback and CAGNY loom - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOZXdBN3MtX082RTNLdVBRTTUxT1FCQ3FEbDhMeC1yU3pONUlWc3dXOXBSa3RIYy1BSjR6TWhpWWJaVmtHTHVISllLbVNDYlZWVklkWlZWRGZmOUhGeFh3WGozOHZqX1FOMDFvWF9RMGpQb0UwZkt3U1FxbElRdklWZ2V4UlZkMlVMYUM0VkdXZE1MSnd1NzJQYjhyTTR4ay1TRjRV?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Illinois Municipal Retirement Fund Reduces Stock Position in Philip Morris International Inc. $PM - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNMUZyX2RINGF3dG15LTRSVXVkcHo5WHFLTjQ3YlNtemtXMmxsNDliQngzMTN6UG9pMHpTS1NBTVh5U3AwekhQa05qT056M1U4M3JjSW1ObFhFemRka3ctcm80NG1tWXRjSTNDak9kSDRaXzdTaUlzQTJXQktHeXI1M2RKNXBCMFBkcl9VdXZfTkVNNFlUWTlLQnl6Mk50cHBKMlMzVnl2Y2hHZk9xSExOUTRxd0tyc2E1V09fTW94WTJ6cGdHOXZka0o1UkdSbU1ta05tQVAydTkwWUtaaTdZTnBucTZFc014Q0lMTw?oc=5",
-            "body": ""
-          },
-          {
-            "title": "With a Solid 2026 Outlook, Is It Time to Buy Philip Morris International? - The Motley Fool",
-            "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxORjBGRnhzTEFCMld5NE9QckhlVmVSaW0yT0ZQSkloMlhycWZaUUE5R2JvS2pXSjByZzhMQWhtTUxxaUNQV2xBb2YyQlRaZlBQaWsxbEF3UktCLTVmSS01cEJxaWJNckNsSk40MXFzeGtnVFJCd0RFdXhwQ2R4d2N3ZFlIYWI2TnpoWDV5WWxQLUM3dw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:08.417607"
+        "fetched_at": "2026-02-13T14:28:46.008535"
       }
     },
     {
@@ -1642,7 +1422,7 @@
       "entry": 77.93,
       "stop": 74.62,
       "target": 86.2,
-      "shares": 29,
+      "shares": 10,
       "vcp": {
         "score": 56,
         "atr": 1.6550004141671317,
@@ -1773,32 +1553,32 @@
       "news": {
         "articles": [
           {
-            "title": "Fund Update: New $216.5M $TTE stock position opened by M&G Plc - Quiver Quantitative",
-            "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOZUw2TnFSTHVKX2Mxa0s1dVBkNTJXeEtRT0FGNS1DamlWM0ZkTk5zQjhINHRscWhjcUt6WXpzNVAzY1loY2syUjRQVzc0blVSV1VuZ1RVSGhXUGFyLTA3Q2JFOF8zSWlwa3V3Y2ZORGRVQ2JtZjlNZ2dSR0Y0UUpZVzBnXzZTaWRxbFl2OUlxM2ZGc3dVdGlyZ1NOeXUtS1RqUWF4SW1B?oc=5",
+            "title": "The Big Scary Myth Stalking the Stock Market - The Wall Street Journal",
+            "url": "https://news.google.com/rss/articles/CBMimwNBVV95cUxQQkUxczZlX3cyU3hvT3ZVZ0xFY0ZDSVpwMWYtRjluRWw0cUpxVFN1dmZKanByOC1mVUhmZW5OblYzNHdsZWtqeC1rcko3OWtKOXZTdkstMjkyVm40UFFYa1FQQzJlRHBiYUptNzJmMmdydW9KdXd2VDRMakQxZWppVDB1dXFxMEFpSnVUTkhJdUFMZk9TSHVyVXgtajViWk9HVzJGYl9KZnZialM1NnlrbUFYQ2l4bEZUQ3B5VUw1UkRkRHM4U1dqV2ozNDNTakNZbDN2ZlpnVHhtTjJZRF9nS2hxZmpGRjBMc014N2x1X2ZLaGkzdFB1RzBTWkhCRHFfbWRDb3BsX0hFbWRvTFRSVWJUeXdDNjBTNHp2ak5jcUJVYUVaV2d1RlJENXI2dzRiYjlWUGtXUzZqYmFWeXJIYTZCOV9IdWoxZWlsR1BOQkUtMUlmQzBzWGtiV0JMQ2E2c3RibU4xOENkU2hjQU02ZDhfZVhwZ2NvcDV4YUxPdmhFOUx2U2ljX3NURzFSR21ZTDNQWVZ5TWlOMTg?oc=5",
             "body": ""
           },
           {
-            "title": "Albemarle Losses Narrow and Guidance Was Great. The Stock Rallied. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMiggNBVV95cUxOQVdzMGQ5dVJ2SmxmT1plUVlhbmdpLXBnekRrLVdqQ0t4YnpBbi16RlhKVmNyeGViQUtOV1owT2kwNVVCSFFrRTI1aW5oX01OLWRfM2JBN1ZWLTVvTkZfbFBHTkRLYThiemxyVW1rZTZiVmJhRFNHZDJtLTJqQVJRYmhzOGhyM1lGWWZfYWliS1hETzJPNHNobGhpUng4TDNMNklTMlVxUDJaeVZrbjRaTlEzai14RVBleVpWbjUyRGtJUFgyeFAwb2c0TlMzdHpRR1A2bWlWWmdWb3NsaHFHWGpTR2xaU2Rmc2FjSzVydjZZbC14aEl5Z2tXSHR3Z0FCSW1jMk5NTmlfTThsMjlKNEtzam5ScVJkd3RaaWs3Y0pwdHh5ZlVTaHhZNml5ZGJxaVdfRTM0T0Q4Y29uOUNQUkN5OTV6ZlcxLUtmVUtzUEpTNGl6OFFPUkdHcVpWWFJTWXRPSWNsREJwNV9tYzd0RmRtNjJXdFVKcjd6c3B2YUhFdw?oc=5",
+            "title": "Fund Update: New $94.3M $TTE stock position opened by Vontobel Holding Ltd. - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOeGhFdDR4d2ZkS2E1M245VjI5WHB1dWcwVjJiWmlHN0ZvOWZxeDVOX2hmYUNxeUxYbjJNdDg5ZjRFVllUODJ0T3ZHRzNGYUh1TEZXWUFFN0J2S1I4Nm1oS1RGOGNHZkM2Tm9OX0s5c2tqYUs5c2FTemhHWUd3MjNvdG5qS1hGZEZTSlkzQ1N4VUtBb0dYNjkxOFJ5bXlSeWg3RUNQcEVQb2lWSzgyR2pMdWtNcjE?oc=5",
             "body": ""
           },
           {
-            "title": "Office real estate stocks tumble as AI disruption casualties in the stock market grow by the day - CNBC",
-            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPcFJ2UEFid29wdGl2a2l6dDdvbS1GVGQ3eU9OZExJa0J2dU0zV3AxaTNhT3JQb1BVMFRTbjRidzF1Z05nSTZka0RKbEFGYTUyaHluaHZlZ1Myb3llNVhXV0dualZ3YjEzWWFTYzk3RWwtRXZLT3FjeHYxakVVc3QyaUE0b2h3aDVueGhWUXIzMG9IcElNMnQyV21TR2I3VjFZamJRV2tIWTd6Z1RFdWp1OG5KR21Ib1l1djdmX0Q0VEZ5T2dzbkwwOVhZeGVVUQ?oc=5",
+            "title": "Moderna Reports a Narrower-Than-Expected Loss. The Stock Slips After Earnings. - Barron's",
+            "url": "https://news.google.com/rss/articles/CBMi_wJBVV95cUxQeVVuYVF3NjZ4RVNUOU13b3haRm9keElzMmN6WlB3UUtOcGhpYm9uZUtXa2NaNEkzZUQtcXYyeXFhUW5ibktxTWl2SlA2RVlUVHpobkVkMUlZWVBObUw5dDFTc1JncExDRXM4QjdDNUJZbTRHSUlLMl8xbUtuVHktR3BGMlNNSjBmZnpXVlZ3aHVPU0dyQjh2WEJQcVNaOGtZT3M2cnE0aFRyT3B5SjFWRnBicnljQ0R1M1ZnWVpZb0Mwa1VpUEpLeno4TkxLZzhYQjBfQWJUTHA1ekRJbzFZYXloWnBsMmJ3WEEzeXJQZ2hfYVJTS0xpazZQOElPTTFSZUFybUhYRkd1d00zLXZlTjNSY3JOR1ZCNWNPTnhNd2lJb2xhaEF4MGM3Mk41Nkd1RUdUYXlRcGFacTZVbkNod2Rqa0U0b2h2RTV4eTdsWWNGUHBwcE14UVNNQUpneFpBYU00UlBPOVRBTEFVOFZKcUxEOUZJUE9aeG84V2Vmcw?oc=5",
             "body": ""
           },
           {
-            "title": "Crocs Stock: Uninspiring Sales, But At Least It's Cheap (Upgrade) (NASDAQ:CROX) - Seeking Alpha",
-            "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQRUNtY205Rl9xSE1pTlkxSHM5RXJpeEFLemF2NF9NZkU1Q0tGbl9IWGtGX3lZRG9zSmo0dXBENzEtWkVyaHRIdEdINmZGT0c0SnpTTndPVktfbkI5Mkx0WmlBTEg3SGc5cllJVXgwenRNZGh5TXVYaXRkWDhTQ09LeXlrWV91VjRYdzQ4UkxvS253WFZx?oc=5",
+            "title": "Wendy’s sales keep getting worse, as the stock sinks toward a 13-year low - MarketWatch",
+            "url": "https://news.google.com/rss/articles/CBMiugNBVV95cUxORjJWSzA2am4tWWQxUUw1b2p4NTlZNFVYSk1tYU9xaTZ3WHk3OGd2LTJhOW0tbHVweldhTjF1UFk3VU9kVkZ4YlJJaWxJRDJJWnBQaF95WnE4WDZGSkRWM3ZaUHpjUURvY0VvZzlBMkRsMFRnb1ppWHVkcmV3LWpfMGt3Nm94ZHpaME1qNnVfTnpVWGFGN3VLZUktSmVKOTllM2JhQk9seVVnSGhrVzVOREMtaWJIVndkQjZ1MG40QmRtMWtaejcyVGgxVzEyZ1dWZzI1eExWVnI4MjQ0RW50ZkhqWjRac0ZuSTV6cXFPRFRpMGhKR1RVbDR5VVJHQ3FFRi05cUV6U3oxeS1YUElZVXY5NzI3QU9xUUdOMnh1Q1BJV1ZUQ1ljVFd6RlZ0WE9nNXVPR3NUVUgwYkVsY015ZmJPV3h1bXluMGJJS3RDVVlhS0dnanRZdFk2YVR5b0ZEQkd0YWRwZWFfQzZEQkJmUTZPWTJLTFlPQkloWVFVNDZTaWp3TU9NN09xYWFTcUxoNUxPRXVncVhUZHctWlB0b0lHSV85bFhsT2RsUWxlZHUwNzRnN1VRNjNB?oc=5",
             "body": ""
           },
           {
-            "title": "Sunrun (RUN) laps the stock market: Here's why - MSN",
-            "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOX292MXBKdldJWl93d0hkcm9TSUdoM0xlbHVJb3NoblFUTDh2bFROYU93dkdJd2lULTJQYnppQWZ1bmZ1TWZzODNycjJzRjFLVjM5ZEdwMlNxdEptdUFJdkpHWFRTQzEwNXFOWmZ4LXlkb0dMSTBSczFoLWtGUFJPRU94RktpUGVaMHhNTmp6bjNFcHpNSndOaHhPY24tQQ?oc=5",
+            "title": "Will the Stock Market Crash in 2026? Here's What the Data Suggests Will Happen. - Nasdaq",
+            "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQWElkcUdRMWFHbzBBMTNxQ1RBVVh0ZFdQNld1dXhrMTJhWlhKN3VfRkJEVFJLZ0NGQ3B5QVRyd1BvR0M0cHE5QzRral9yclVHZVhlSFVvclpscUF3Uks5M1lpdXRoZWdIQ3Izc1dVMmxkSFhnd2NaOG5MTlk0MGs3TDhnb2dwTlRkX0hpTzhXb2xyMVI3ZHk3RThlNVJCUQ?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:09.736110"
+        "fetched_at": "2026-02-13T14:28:47.481980"
       }
     },
     {
@@ -1808,7 +1588,7 @@
       "entry": 14.39,
       "stop": 13.79,
       "target": 15.89,
-      "shares": 162,
+      "shares": 57,
       "vcp": {
         "score": 66,
         "atr": 0.2999999863760812,
@@ -1993,8 +1773,18 @@
       "news": {
         "articles": [
           {
-            "title": "Advisors Asset Management Inc. Has $6.79 Million Stock Holdings in Ford Motor Company $F - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxNRGhZSVUzcWl6bk9aOUI1V2pUYzV1WFhjZ2F6ZXQ4SHRjYkwzRmFYX19vdVI2REczRm1DMjZNbUFZLTY5RDdQTTdaX01MejcxTHhtai1fU1I5ZS1RWjQzTU1Pbkhxa3kyQ0xnQW5mX0d0dk45b1Z1UE00SW51WDM3Y2g3QVpFM1ExWEpiS0dmclIyMnF0c0pfWXFKNm9TSWUxa1NrT2pkemRVUTViaF9XVVY4bWI1MU5XY3JraUE0OWZBS1NxTURsd3NWanhhODFQTUJfYTFydFk2eUU5bkE?oc=5",
+            "title": "0P0000VG7C.F down to €187.49 on XETRA 13 Feb 2026: intraday oversold bounce watch - Meyka",
+            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQRlRmYWl3RXd3THV3MURZdG1OX2FLNEZ2N0NPY2xySFlOMU45Q0hQOXRmODgxN19MZ1RiVFE3UFJfY1JHZGg0YnpWUURHS0VxYTZWTVBuSVU0dDZrR3BSR2pVNGw2akk3a2t3NHpiTF9vSFpqcF84ZkNKY1B4M2ZfVnpkZlA0bVNKS2x6OEJjdm9wNXN2TUMyYXN1dGVYUVN1SjBHU3NpZG9tUQ?oc=5",
+            "body": ""
+          },
+          {
+            "title": "(ESG.F) Trading Advice (ESG.F:CA) - Stock Traders Daily",
+            "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPZ1JHdnBqcEdWWkcxT2ZDVlFWN3JsZ2w3MGlRcFJIckJ1Uk5GQUpXUldnc2sydDZxU0RKeTAweHQwVGxmQl8wdGc5UnF0VDNWYnhxaTlqamxUUHliS1lMTUlqQ1ZDOVJCNk9aM3pYclpoWkoyWExIMFAxV0w5U2ZlMmpQMA?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Ford Motor Sees Unusually Large Options Volume (NYSE:F) - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNTG4wcnExR19SS2lpbW55aFdKNnllakpwS2Q0Njd2b25hYXREMVlYeEJmVWVPdnkwMGdJaFFwa0JxV1pBeDlWcUtuX0RhRHhtLTdwWkR4NzNteEgyM3dkYkRaaWlxdlFib0FOVm80cUxpRzBSWmZ5RWZvLTVLYVBMYmpaYTFaNzM5NnF5SUlYQV9tNWZqb0xTTXhCemc4bnA4Ui1QT2poRWszZw?oc=5",
             "body": ""
           },
           {
@@ -2003,22 +1793,12 @@
             "body": ""
           },
           {
-            "title": "How the (MAYB.F) price action is used to our Advantage (MAYB.F:CA) - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPUFBmRE9rVzZQZW5NQ2twQXpZYUhDR1U1dnhXdHNYVUo1Um1YVmxhV0ZjUFhJc3ltLVkwUGJwdmNfTzQzR183Ym5mSkp1bkJOZXVyb1lCT0JLTkljMy1lc25aSURkS2s5LW5yNXdiSWpadU1NOVlMR2gweXhRdFJ6VmxRNFdXR2E2Zk5DNFAtYUpJR0Y3bVlrMTFJbnNwdldRU1JRZzhfOWJIZFhKV1E?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Pre-market Feb 2026 volume spike: S7XE.F XETRA Invesco EURO STOXX Banks alert - Meyka",
-            "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOV2ctWTNSNExOM0Fqc3BQRWdsN1VkRnlPMUllR1NOVVlnU2p2Q3FDUmpoUkFsWWo3OGF3WVo0MVBrUDBUbWRPMFktanFCV0ZjWUFQNDllYmtoY0ItUnVUdnRJV0lCdUh6MGkwZUtkdElFWUpKNkFwRFVCdXdBOUs0VDhVeDliX0J1amlsWnBxLXN2SkdScFJfcXVhY2pPdHJYYWs0YndaYw?oc=5",
-            "body": ""
-          },
-          {
             "title": "Ford’s Earnings Were Weaker Than Expected. The Stock Is Rising. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMi-wJBVV95cUxNSkVvUVVVUHNlOVdKdGVKaFowNUstbWRPSWxLLTJLWjF3dUF0aXpUdjVoczgxblQ5QWZxTHZ3YS04bXRVRHhuaFVkMVoxd3FVTkRjRndlQVFma0Z0R3dadnl2Rkkza0E3OU1BamxTZFg2VTBKMWpvVXI5elVsNTB4NXZTeDM2MTdzUWd4MUVzYjZRVFhPU0Q4bHFmdHFGQWdLNEVaOEVETU1kQ1U4Y3I3REo0MnRqRHYwUEF2UXEwV0tTajhzYlFMMktfTXQ4SDlFSjdmYUZpNE1hc2N2RlFEUWR3Z3FScDNmUmRob1haQUJPaWJ0VUR0RkQyUl9BY1NHdXlSQVhxY2R0NTRvODJVODgwYkxyWW52ajdWMm05c09QT3R3T3E4Y1psSGtJeFlIVUFhTXpsSnlfMmFGRFJqOFBiSy1pUjA4VzdZMHlmLWdFdk80MWlkdGUwMGZCbXVUWk9hZ2dmN2NiLUc0Qm45bHBycU81ZklhN1Zz?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMi-wJBVV95cUxOSnB2aUphdUk5UldPN2liVzFRSjBJVjU2NzR0QmxES2otLURMZWtNenZUVjFtRE9XSHg3VnBwQkVFN1Q5bm1NUS14bnpXQ1dzemVmSVFlNzFpVDhmazJVYWRMYW1rRlkzS3h6QTFKeXVMWjB2UzBIeV9SNUVSWGdCbzh3b2JyaU5WWDJvY1RXRGt3amNhTzRBVHptWGw0RGYzTUhNQkV3NW16cWdEems5amw2VWl3VTRTcjF5ZlpxOXdlMjAxbVAtTDh5Um1ra0k2YzFDN3dDVDdFVkVUdkZSakxKSDdNMDAwTG5vVTBxNDZnQW5EWm1pN3lGZDhTWmF5RmlzSER2cG9GcGlkVlFxYV9qVy1OUlVjSUZrOTFPYll5MS1FTzIwUk5CZ25MZk04QXJyaVdOXzkwWHRVcVhTVDZhak5XcVhjY004c1kxeE1YeTAtY2ZnYk5XWnNpRDlHT3ZIWXBSbVh3bkU5ZzJ4Q2R3UkUxSktyMGM0?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:11.082690"
+        "fetched_at": "2026-02-13T14:28:48.897249"
       }
     },
     {
@@ -2028,7 +1808,7 @@
       "entry": 72.42,
       "stop": 68.18,
       "target": 83.02,
-      "shares": 23,
+      "shares": 8,
       "vcp": {
         "score": 67,
         "atr": 2.1199989318847656,
@@ -2201,32 +1981,32 @@
       "news": {
         "articles": [
           {
-            "title": "Advisors Asset Management Inc. Has $6.99 Million Stock Position in Williams Companies, Inc. (The) $WMB - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxOX1kwcy00al90UmNseEZjRXdYSm1EUWtFQmZ2VGwwSTg2VDJpRlpSZ0F1VGI4b1ktLWFOODRMakJnbTFWam1GWFVKSHBNYWpTRklpdG9aN2dPWmZFSHozZnFnbHJfRFVrUnQzMDBJa3BHQlNscUpSYTNRc3hkQmpSbmdXLTZ5WDNPdjE3MzltLVRYeVZ5QWx5MzVJelpCWFliYUdILW5qMWtaWHhqbVhoNk5OYjloeFdadlZRNHhwdl8wTWFBdDBZbFNkamZBOG9ZT3hza0N6NUNKMVlWdEZ6Rkx4dWtLQkxBREhr?oc=5",
+            "title": "Williams Companies (NYSE:WMB) Raised to \"Sector Outperform\" at Scotiabank - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPNGxCNlFGdVpEcG1SaElhSnZMZVNqMFlzY2RyVk1ZeVZrNmdMczhObnA4ZHFhM3ZhelI3bU5RZFpPY3FTbVVhZ0VKR2VWaUVENlU5THZaR3Fpd0hJSmppTEJHTmpMMXZPaUNXTGJfaFV6ME9lMEdfTTZ2eXJEREw2eUNtUG5sS1h3R01VWlI0cGNKQ2hHOW5YVlpwalM0alM5SWQwU29JWno3cmM5eUdmRTFyNUJ1elZqWEhGTkMzTQ?oc=5",
             "body": ""
           },
           {
-            "title": "Citigroup Raises Price Target for Williams Companies (WMB) to $8 - GuruFocus",
-            "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQWExIZW1UazJFUTlVVDh3WlplT0N3T1FWMDcyamZHMEJDQmFzVGJJVGNyS1VhOXY1Y0ZCSi0xclQ4RHdFVEpFb2sxVVJFd3RkQWNYdkhhZXZLWTRaejQ1VldBdUFUYVZGLVVrTDJMc2Y1WHZINUZzdV9YazQ1STBVYWtORmpFYTBiMGVQZlZPT3JlOTh5bUlMbHd6SGoyeVNvUWNyRVNXZ3RlNlhhNmRoVnNqWUNGUzQ?oc=5",
+            "title": "New Analyst Forecast: $WMB Given $78 Price Target - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxQa0xIQVBUTng3MlVrVWlKWjRId1VsRTV0cm1rNHNCb2hXQUdDNWV1bTdQbEhhRDF6SFZnUUtkN2haa2ZlamUtUy1aaktsQkhiTU9iR1NOY0VtWm5uR1dBcGs5aGpQdW1zYlk4Qkx0eUtxUGlONU5xT0RIS3RGSVdxQTZjV0JMekk5d25oUUE2OXRvQQ?oc=5",
             "body": ""
           },
           {
-            "title": "Is It Too Late To Consider Williams Companies (WMB) After A Near 3x Five Year Gain? - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNb3hTM0pQTU1YSVZPR3hXQ18zQ1dNZ3o4SXdhcllNTVBTSzFEdUlFUFdQQTh5SEVDTEVKNHp1SzdGeU1vR2JhZ3JsZ0E0cDZ3TFphZ0JadEFpVElqc1NuR1pZakcwNXJXLWJGV2FLTFgwWDdYZ2JiVnhpRkdjZmJfTVdPT29HMklq?oc=5",
+            "title": "Williams Companies (WMB) Receives Analyst Boost with Raised Pric - GuruFocus",
+            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOWjV2a0pUbkpHSnBZR2JPNG5SX3BTOFNRWWpQSHhOS0thYzNQNTZkNHlvMkpsYjViTjdGcWVzeU54QXdBRUtmZklSNUV3SngwYzFoR1hrd3NCZVp0QTMzMlVwMV93TjRMVnRNczJSWGRhSjVkSzBvdHpMUDJ2WHBOY3pUU3VmYjA5YzRIbmJXNjExSjFZcUNMaktMdHp1YndhajF3bkNYYm5LR0RGR2hrQV9la0NERzNpSTNycXdGdWlfZw?oc=5",
             "body": ""
           },
           {
-            "title": "Williams Co (WMB) Gets a Buy from RBC Capital - The Globe and Mail",
-            "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxOX2FtWGRIM1Ntb2N2NHhMRkVPZ0JQVmlFWThhbDliVUtmT3pPemJsLTktNl9MZ0c5YkNJWkh5Y3Q3SGNHMWlSV0NnMklmakJiX1FZMWdoNW9OTjNXX2tZZ0JhaW50d2hwYUdZYUFNWlNGNkdkcm9iZ1pmVjVzLU5neVIyZTZxRjl4RGYwVi1BRG1DZUswWGJKTG1nd1hiXzFId2xQMGFnR2h0UEhfRFVKS0dKNUsxZG1oSVh0V1VrZzcycWRU?oc=5",
+            "title": "Williams Companies Q4 Earnings Miss Estimates, Revenues Beat - Zacks Investment Research",
+            "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOUU9ZMkQ3TUR6VEcwbWFwcThxZG9DT2VCY3pQWDBWaDJUd1gydHRmcjNwVU5uQmlYRlJOLW5PbmJZdFctdkROM3BIQi1yc2w4YUFfVTdLeW41UVFhUEk3ckVhdllZclcydVpQNW1MdXhORUxLajdvOHdsZ05mb1RTVnFnZ04zOUNLalhCajl2OGMxVE9xaHc0LS04Z0RRTUZQZlE?oc=5",
             "body": ""
           },
           {
-            "title": "Williams sees higher 2026 profit, driven by new pipeline and offshore projects (NYSE:WMB) - Seeking Alpha",
-            "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNc1hqaEZqSVU2QmxHeWlsaHdIYVJXdXBRWDV0Mk00T054U0V3dFltc0Z4Rm4yS2tpbFFoemZhYWZUajlRcHpvLS1oVTBCU2ZNcWVyeFlGNWM2UjdLRkJkVUNBQUd3OEc5QVF5a281T0dtZHAyblFRNm55VW9maEZHeU5aTTJUV0hTaXhNVmw0LXpLWXhUX04wT2lzWGotVUJyVnRlbkVDc0JVb2Uzd1NGSU5aWGYxUQ?oc=5",
+            "title": "Analysts Offer Insights on Energy Companies: Williams Co (WMB) and Helmerich & Payne (HP) - The Globe and Mail",
+            "url": "https://news.google.com/rss/articles/CBMi-gFBVV95cUxNUEhfcG5LMXdJOTM4a2ZXOGQ5dko4OXJfR2F1N0VNU3pfOVVRYUZzc2d4LUNtSnFGQzFtTTdyYldzSHBObWN3Z28zLUZ5dXlLTWRsNVZQOTMtdUJ5OFJFVUZ3TmMzMmNScWtqNGs5Y3FaSWZtS3BpLUJveGlLNUEtajgzYkZBUm1lMGZnRnpzaXFfZHpuR0ltcmttVWI5UkRIbXJaZlpsRXZJMl9VTUROTXk1RXdkSWdIb2VUeHROdGx0eU9rZUhuZGVSbWpzNGlBQW5mSk5hbWF0VTJIaUoxWXZ2ckNPdzVwUWxwNmFuQmRlQXUyd0VHakFn?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:12.243291"
+        "fetched_at": "2026-02-13T14:28:50.084014"
       }
     }
   ],
@@ -2238,7 +2018,7 @@
       "entry": 370.33,
       "stop": 349.86,
       "target": 421.49,
-      "shares": 4,
+      "shares": 1,
       "vcp": {
         "score": 82,
         "atr": 10.232142857142858,
@@ -2414,13 +2194,13 @@
       "news": {
         "articles": [
           {
-            "title": "L3Harris Technologies (LHX) Releases Q4 2025 Earnings: Revenue Growth but EPS Falls Amid Strong Cash Generation - Quiver Quantitative",
-            "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPM0p0WTB2eFhoR2IxbXJWcGliRTY4S3I5VExCQzFhUmxqenhUd3FZSElHa1BuTHFPd29keTJJRV84YzZDYnVRMHpxcHNVY0xVWXo2RlZESFljQUVxVjY3ZHVQTFVhSmh0UVhabjQ5WC1LYjdEQlVhdHRqT0xZT1UyVnBZREtTYmtxbDdhSFdaQmQ2MmtScTZ3VFI1bVBKZGY2dWFvX1pFSFZwdUFhYzVPYS1nOGszYi1xbkl6dzU3OC1HN1paLVVGR3MtTlZFTm1TUWZ2TjhFcUhrRFFwSC1adUo3X2U?oc=5",
+            "title": "Freemont Management S.A. Sells 35,300 Shares of L3Harris Technologies Inc $LHX - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPN042ZHhuNkM4RTh6UFdUbjNmQXZxYmF4MGswbXgyOHFlZnZMaVFBR2VzUWRFajF4azV0M0lkdmFvdjJfOVhuWUt6S0dMdEg0UEtFTk1OdG1NXy12akJ5VHVuNWNxeTFhb1h3WjQ0a19PV0JPWW1kNkkteXl4bF9nMjI1blUzalg3YlhxRUVsZ2RLazdqMHRlWGl4VDc2RTh2V1dsQjZmNFd6dDNEcHg4ajcwQnBpQlRFNTlwWDRONC1yZWVibS1nNk52bDdQRHhu?oc=5",
             "body": ""
           },
           {
-            "title": "Rhumbline Advisers Reduces Stock Position in L3Harris Technologies Inc $LHX - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNVk9tYzVNU0NUX3R3RnVNenRrbk9aSkdVQkVtYl8tQ1d2cVpQSVFPVVFuYklPdlVXd05KOWVxVGIwN0lZQy1JdzdCa3VJTWxIZS1WcHhldkdlbUZnWF9IaE1OOVVGMnJKN3o3QjQ3OThJOVd2VWRISl82UXI0TVZCVWZjd3Y5V2N6TDFCbnhBdGtTN0ktVVFvZW5XbVp5b3pFTFBPTURmeFRTTmRZcnFMU3dlVFlFVktITGxuMU9TVl9fdkN4dUR1NVg5Rkc5Q3No?oc=5",
+            "title": "L3Harris Technologies (LHX) Releases Q4 2025 Earnings: Revenue Growth but EPS Falls Amid Strong Cash Generation - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPM0p0WTB2eFhoR2IxbXJWcGliRTY4S3I5VExCQzFhUmxqenhUd3FZSElHa1BuTHFPd29keTJJRV84YzZDYnVRMHpxcHNVY0xVWXo2RlZESFljQUVxVjY3ZHVQTFVhSmh0UVhabjQ5WC1LYjdEQlVhdHRqT0xZT1UyVnBZREtTYmtxbDdhSFdaQmQ2MmtScTZ3VFI1bVBKZGY2dWFvX1pFSFZwdUFhYzVPYS1nOGszYi1xbkl6dzU3OC1HN1paLVVGR3MtTlZFTm1TUWZ2TjhFcUhrRFFwSC1adUo3X2U?oc=5",
             "body": ""
           },
           {
@@ -2434,12 +2214,12 @@
             "body": ""
           },
           {
-            "title": "User - The Chronicle-Journal",
-            "url": "https://news.google.com/rss/articles/CBMinAJBVV95cUxQQ1ltcjZsZGlwRVQ1S3lPcUlua25pSWFqZ0pJMHNrcHU5NWxnLXQweUExdnhIM0RJNUo2OEo4WXRqVEVkS0FWNE9vRlgzUkR3elJiZFBHNDFlWURtYWpDLU9peWx1NVZZUEpYTFR1UEI3OG5lQWtKU0xkbDNIQjY2SGNKVEtBZHFJNlg2QmxiWGs2TVJCSzRrTDJ4My1iZlAtSzJQOV9DTVk0b1kwakZHVXl6U0k3MTN0T2ZRWnNNb21SR2VuSGdsYzFQaFNRSkxqbWdzU0Q4bHFyTmRRMEpMSWZYYjFnT3AtZ2hraDYxMXBnOGN3anlBLS1kX2otQi1wNmI3QVZ5SkRYcVBLQ0dzVmt3eXZlTWJuZ3hNSw?oc=5",
+            "title": "Price-Driven Insight from (LHX) for Rule-Based Strategy - Stock Traders Daily",
+            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxNRkx3NkJaS3VfV1g1TG1CdFdPVkcxOXdydzVnLVlyQVZaUkJ0aW5nTGJqS1F5aElLU2Y5amtCUk42RUN1U0c1TEVnR19UNW5PejVZSG1rNnQxVXFxdWxaUFk4eVl3MjRxbXc4cEFuVHktWm5DRWJUYVhLV0YwYXBnTUtnVV9IZEFBZmUzY3JHTGRCQ0hRSjQxSjNDa0lmWkVHVnhJVEVrQldNU3Fib0puOE1uMXJwZDZWZlU0YW5VVDNYcDRFQnJJVkUyUmFLdw?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:13.324454"
+        "fetched_at": "2026-02-13T14:28:51.459351"
       }
     },
     {
@@ -2449,7 +2229,7 @@
       "entry": 88.9,
       "stop": 78.47,
       "target": 114.97,
-      "shares": 9,
+      "shares": 3,
       "vcp": {
         "score": 60,
         "atr": 5.215143476213727,
@@ -2623,17 +2403,12 @@
       "news": {
         "articles": [
           {
-            "title": "Short Squeeze: Is OLMA stock a value trap - Portfolio Update Summary & Technical Buy Zone Confirmation - baoquankhu1.vn",
-            "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxOQng3bjBRcHl2ZHBMNjRBNlozQkFSWEo1aXNLcFUxcWV2V1VTTGQ1WWUxQ0VLZ2tyb2J2eVlURHh0cWl1OUJSRU5kTExkN0szMVgwbGNpdzBia0hrUGQzb3l0SmdwNHNiSzFZczhaLXE4a3FsVFIzUjA3WWtwYVpoci11UDBNSEQ4a0E?oc=5",
-            "body": ""
-          },
-          {
             "title": "Is Signing Day Sports Inc.’s growth already priced in - July 2025 Levels & Daily Chart Pattern Signal Reports - mfd.ru",
             "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxObTRlMXJ5LWpWdFNpRGhpMzduVDlRSDR0bGFYcjAzQmJ4TTZNd28xc3Y3djVjYXE2ZzRTYjJHZWxFS2tOWHpKaU9tYkVneDRQMFZ6dGZKdl9qbUNkZVVUNDRoUGNYd3Z3SnZxT1JOMlFjMmV5T1I1UUtwSl9JcFpqWGI3R2pEdlllV3c?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:14.139773"
+        "fetched_at": "2026-02-13T14:28:52.044838"
       }
     },
     {
@@ -2643,7 +2418,7 @@
       "entry": 42.35,
       "stop": 33.51,
       "target": 64.47,
-      "shares": 11,
+      "shares": 3,
       "vcp": {
         "score": 60,
         "atr": 4.42378534589495,
@@ -2817,13 +2592,18 @@
       "news": {
         "articles": [
           {
+            "title": "Caprock Group LLC Makes New $3.16 Million Investment in Applied Digital Corporation $APLD - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOSHBCMV9FQ2JfZi15WmVvSXpjX0FhLUN2TllUNXVaWEdQRnQ0MXh6NEd1LWUtUDFzX2VNdTk4UHZrRU5XUWd6OWpSZU9kWm5lRUpjeC1YSUtCZ21tYkpZVmx2QXRCV295QUsxZDJwR3VvZ3A5TUlKOGhaN3plZmV4UnVtOEtxajRGeVRwMThPLUdMa181MXhhWERHT0FscXpTUm5yUWM5c0FMOXdjOUU5UmhqcVgySUJFZXlrRW1hSDNoM0M3M1JxYklvZE5wQWY4TGU2X3BDc3VJeEk1U3N5OA?oc=5",
+            "body": ""
+          },
+          {
             "title": "APLD Trades Near 52-Week High: Should You Buy, Sell or Hold the Stock? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE4tWTlQVXZrZlBkMGg1Q1F6Vk5qY0lkUGdPR3dNd0JDb2h0M251eEliYjNsbTNXMjhJVUEyR3lqN2RDNnI1MHRDSXEtWGpxaXdmSDVxSGhRaUZYSEhHWGhhR21iSkozWXplYnM1NFk3T3l2bmRRZ2VpeG53?oc=5",
             "body": ""
           },
           {
-            "title": "Applied Digital (NASDAQ:APLD) Stock Price Down 2.3% - Here's Why - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNOHBYdWhtTkJyd091OHM3WUZPaVBtQl9QQkJkeTUzSERoa0FVc3lMQzZOb24xZmRsUUNMd21wYU13NnJyV0oyWEE1eVl5eEVCWVo2NHhsZGx5Yi1XR2VuWnc2Q0ZreXowczFUVVdvQm9MN2ZjalRzUDloWk1IMTloWU9HMmRUZU9Hb2lsazhlX1BtNzJJMkNiaVF6TzFkNnBYeW0xSmxiZkJwQkRRYTAw?oc=5",
+            "title": "Amazon, Microsoft, and Alphabet Stocks Plummet on AI Investments. These 3 Stocks Are Set to Win. - The Motley Fool",
+            "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQc3AzOElQcFZHQkhDanNnSnlacWZtWTZpZUd0eWpOa3ExeW1ObjRsZlpWSF8tVUpfSHprVUZpWk1Idnd1Vm1sazBzVVNGbkJ5NlNFMUd1dGx0Q0dkYnJhOXNZb1l5cFRvTEZwUk90amlab3FhazRha0l2QUUxTnIzMkZUWlVwRkczWXlvaTdxUTJ3Nno5?oc=5",
             "body": ""
           },
           {
@@ -2835,14 +2615,9 @@
             "title": "APLD Stock Goes From Record Highs to Sharp Pullback: Applied Digital Faces Execution Test - FXLeaders",
             "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNZ1hrT05oU1BrY3pXYWdJVGJmWGxzcnBBUER3c21qaG5tMUI1dFYxTzhGN3dGMEJZRFI0SUNJUXVlX3hxMTVrVDlxbms3eXhuYWVoZmxBOFhJLUpFT05LR3VrdXdFaFJHaFVQRnhFaHUzTWhONFNNVzZrYVp5dk0xUXFKeTFoVFVyazRpUWp5NVJTcHRWODB3RzhHd2s3bTI1Y01ITWNGZ0dDT0tsZG1uaVJwOTdXYzR4a1BMZTZkOE1NMWlHeHpBX3JDUQ?oc=5",
             "body": ""
-          },
-          {
-            "title": "Applied Digital’s AI Data Center Pivot Balances US$16b Leases And Risk - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxOSm11Y2N3d19IM0xYZWdQRUFuZEpRWi04VUE2TXVlREJhY3lwS252eFJONmdMVkRCNDJEaU1KazEtOWRNOXduOWNBWW9JMklIMHpfUFFvQVkyVTE1ZFdyVFhuVG4zcDU1V05NWTZvOV95SnQyLVFqMGFOWU5zNVg0QUF0MzJraGdOblZ5azUyODJ2MEJlZmc4YTBtWUdfMnlCODhyQXFqOHBlYlk5Z2J3bkpfZmI3MlgwTDJ0THBGNm9FNWlFeHhaQ2lvb0ZiZw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:15.101099"
+        "fetched_at": "2026-02-13T14:28:53.126594"
       }
     },
     {
@@ -2852,7 +2627,7 @@
       "entry": 55.31,
       "stop": 48.75,
       "target": 71.72,
-      "shares": 14,
+      "shares": 5,
       "vcp": {
         "score": 60,
         "atr": 3.281928743634905,
@@ -3092,32 +2867,32 @@
       "news": {
         "articles": [
           {
-            "title": "Moderna Plunges After FDA Refuses To Review Its Flu Shot - Investor's Business Daily",
-            "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQZmJyMTZ5emVEZ0pYT2FzU0ZYSFlMTjhTZ3lVd3VVS3NQV0FPaWpwWEktNVVLeUJwWkFVdDVpLUtaeEh0ZXdlVzdmU1VJbm83Q2hxUXRxVWFveWNWYkVjcE0zbE1mSk9zWUp4Qy15M21jS1hqWGJrWjdnNnNTN2NEUExxajNDYklnRXkxdmxn?oc=5",
+            "title": "Is Moderna (MRNA) Now Fairly Priced After Its Recent Share Price Rebound? - simplywall.st",
+            "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxPS0czcnd1Tm1aNGpoVTZCWkY0bFpmUWdyOVE1bjBVQkxrcUlSdTJmblo0OEtlM1NJYUtXM1pZQzE1M3pkZzJ6VU5iSzJBMm9oQXo3VmhXdGttU2YwVGJSWV9iaGV1UGVDMnM1OTBuUXVLU3lULXVBNXZabGlsN0ZIM2xDeG1VUGtIOVRZY1dJVU50LXlCY1dDNnN1Q2N6RUcxcEU5TXJRcDFJa2xjR1dyMi1zQzdlcEJ4T0NnUGY1WlNDZDl5VWg4SWdhczNMdkN5QjlXblpnT3M?oc=5",
             "body": ""
           },
           {
-            "title": "Moderna Stock Sinks. The Puzzling Reason Its Flu Vaccine Was Rejected. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMilANBVV95cUxQb3dQazdJMHo4dkRqTXZyNndOTERaaG15RXZRY01GQlBkbzVsYWRsaENJZ0xUcHpiT0hmVUZnZ1JzcmVWeG8zeldmeGQ2bnJGQkVUQ0FDQmdDdEFTVmlHdmtTY0ZFeU0zbnBYWVpNT0RVb0VyYm9PMDQwaXJHekdQSWR1NmlDSFRrNFdHTENyNi1OeXVTekIySWFWWWhXUkprbVJBZHc3Tkp0U2c0Skl2QkpCQWhPQ001Y2xneFRmZmVQanZfb0FTSVBzZzEtamZ1MUQzR1dMWVdBcU85QmNrQmpuazczd1F1Y3Q0LXZjMjVVbUpfeFJqZnIyV2t3XzRrUnlLY2V5U3ZQSW9jZ1haSzQwZlk1bGVqRjNoRFF2RnBPUjM0X1JqMHJWNjBKWG9rd3hMenJ3SllkVklTLS16Y25INHRWaGs5Vjdzc3QydEFiSnBkbzQyYndEdTg3eXFwQy1xQTE0cmRRSWt3ZjZwal9Zb3BRZ3JFRHl1UXJnZFF3LXdiNDZTd0ZzRzNCN0lqcVJycQ?oc=5",
+            "title": "Moderna reaffirms 2026 growth after Q4 beat (MRNA:NASDAQ) - Seeking Alpha",
+            "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOQmxHOTAwdEdSX2VxRmZNLWEzc0Q0c1dnNE9WVXduZXFDMEMySUZyVjFKYnBRUUpROHZCdEgybVpTV3h5QUU4dDBVTWNScC14aW1icFFMRThlQjZLMTlIUlpvcWNoTW1nUHdQTG9VeHJxWjE5ZGx5N19VRmllNmRDYQ?oc=5",
             "body": ""
           },
           {
-            "title": "MRNA April 2nd Options Begin Trading - Nasdaq",
-            "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE9iV0N3ZEZYTXJqUHRKZGszMXBJbjF1dlY5YktvVmFRTjgtTUFYbFlrTk5YS2FLM3lWRm5wTTBQWjhieFJLMmxaN21yZWItcHV5eTYzeFUtaDFweHNLRjdhSy01TG1NWHBLZUdXRHU1TmowSGZmRExv?oc=5",
+            "title": "MRNA Earnings: Moderna Stock Slips as COVID Vaccine Sales Tumble - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNUG5xY19ZTkdwblJlYmwyeXJzYjhDY2hTSXlBQ3FNcFg4QWJ4YVZKN092YkdjRVNzaFpZbU1SaDE4RVZhaEFPUHUwODVTaFExdjMyMUcxS2JJaWNEaWRZZXRBMHlLLU9pRW40OHlfc0ZDTnhvOWd5RGhvSUl5SU9YenNkRHNTX0s3bUVEcXdZWElfcjZneVVteg?oc=5",
             "body": ""
           },
           {
-            "title": "Moderna Stock Sports Technical Support Ahead Of Earnings - Forbes",
-            "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxON0lnVXdNMWlnYnBjRTUzUlJfV2ZiMTBpNzNULXVyZ1JPay1BSDh5WUwtbi1ISWJDOUYzSXVyMkZibUZyeksxUl9NR2ltbThSRDJRV2pkQVgwV3lrUzlUTzM1aUhOclc0NHBHSjJldnBuOTAxWmplS1k4OFFWdU9YbU13bEhOOTZUNS1nNUtVQVV1eEpZS3R2MkdZa1EtX2hLWkVCV3hZMHR6OGZiSWM5UE5HZ1dfZw?oc=5",
+            "title": "FDA refuses Moderna flu filing as Europe, Canada review - Stock Titan",
+            "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNbjJWU0NOQ1h5RHZiU21tNjhrWkFydURsbTAzT3FRRTdrZEQ2bVlzeU5ic2NjOHp4SWxVVFJNZV9UN05IeWl5bEg1RFA4cXROQVZEcWh3T1FidlJ4N3h2S0ZlNFF6d0ZlTEN1bWFiREE4aVNNRHFPN0JDV0RHUUV6ODV4NFloQlZ1LUh0RmR0T0kzdkJGWkRNeVJ3VnBVcnpubmU3d1JGWl9HSHEyQWVpUF9fdVFSbFU?oc=5",
             "body": ""
           },
           {
-            "title": "MRNA Stock: Price, Forecast, Financials & AI Analysis - Intellectia AI",
-            "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1LVDVadlVSQ3J3QTZnN1JNamN3OTJkdTZrbmRHMXFpeTQwYThsc3Z2OHVrU1B4Q2ttQ3dtYlh3WWxUa2pWSjJiaA?oc=5",
+            "title": "Nasdaq, S&P 500 Futures Edge Lower Ahead Of CPI Data: Why NVDA, AAPL, TSLA, RIVN, MRNA, AMAT, IREN Are On Traders' Radar Today - Stocktwits",
+            "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxOdFhGQk9FZm44dHo1SWExWldIazE0M2Y2ckliOHUyTGdZWTRRYnpXOW1ZRnZvZkNMVFhaeXBXTUpidVltZ3c1a1VQWktQOWd3Q0xBdUpaNXM3X0pqN2NnekhnalJUdF95emlGblJ0OGNSd3BMRmZKV3g3WkhDN0p4eTJNWUFNeGFuX2M4VXBiRm5KcVh3bVhERENTSEgwZmNQUnZGbW42WERkZVRkd1lOQlRTYXFkWGdaTmpQaUFYRVNpeUxlamUxZ2ppVVF0VkNodlE?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:16.204536"
+        "fetched_at": "2026-02-13T14:28:54.497197"
       }
     },
     {
@@ -3127,7 +2902,7 @@
       "entry": 87.8,
       "stop": 82.31,
       "target": 101.51,
-      "shares": 17,
+      "shares": 6,
       "vcp": {
         "score": 56,
         "atr": 2.742142813546317,
@@ -3298,32 +3073,32 @@
       "news": {
         "articles": [
           {
+            "title": "Iconic car maker raises dividend by 20% after record profit - thestreet.com",
+            "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPSFNQMGUyamplSTVYSzVzYWpFdGtRVjVIQmMzYlROV2FzTWV6MV9iYjdiN2p0OHlhUUxwMjlzQnVjLWpoaV93VlZ6ZmJTRGk5OUFpS0VTSWh0MHdReUFpNVhTcXVUR2tKamV0ZFVNQlp4cnlnajNxbW9lN29UaHBYVi10cXVrMGhscXd2bm1fSVdMeldwVHhtVnRmX2dPek1OWUNSVlVVeUtUTXNhVFUxdEhzUWlpQ3RmbWZOMEVFeWZrd2s?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Regulatory whiplash for automakers as EPA rescinds emissions standards (GM:NYSE) - Seeking Alpha",
+            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNRmRhTFRQanRpNkRrT25tMDViQ3ZWcnFveDdSVFlCclhjQVpTM1NGMFpsVVJYeG0tMGE2a1dOR1Z1bmI3RXd1bnpHazBOWmROWWlybkVmQ2V5TG5nbE90SlRUQUZfRnhaNUk2RVF4REVNRFhyNmtRZ2l4eXNtUjd3N1JkTi1Ta3FiNVRIN0p2YzlSTWV1amFkMUlNdUtpa3FCQjNWTDdfSnBpdm0z?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Why This Top Stock Is So Much More Than Its Dividend - AOL.com",
+            "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBjeUdIenZvNk9zblExYzRLZ1BHamh1V2lsOWFpdWhKeFFuN3RUTVQ0UU1oc1JVU18xQmpZdUl0bE13U211NXMyRUdhUEtWbkVObFNPMG9IR1BwU3FBX3dxa3JwdkZVeHhNeU5TRGItZ1ZMSGRwbHc?oc=5",
+            "body": ""
+          },
+          {
             "title": "General Motors stock price target raised to $90 from $65 at Benchmark - Investing.com Nigeria",
             "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNdklWVzFxYy1XeXNjX1N3VFVnbTRVbzY1bGd5NnN4MkNGWEQtRW9FbjJtRFQ5eURGOUcxV2VDRndWUUdjdW9WTnlZSktlLW14eVBDTXdhZ29rb0Jpb2lKY1BnVGZhbGhlWWdYRE5wWktQb2U1Y2lWMHBhb0VqUlJKZkZVQjc0YWFKLWs5a0RxbFNPWTdZbW5odnd6anc2VHJnT29vdzc5Vjc5a25oSlBZcVV0T1dYa25TMHNlNXNLNkUzMDNS?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Why I'm Putting The Pedal To The Metal On General Motors Stock (NYSE:GM) - Seeking Alpha",
-            "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNUHA4RjhhdEdxTHc1RFhxWkQ2UFZDRmxxOVFsU3dhRjc2RUU0bTh1QksyQVJLNVpJVE9EeW04YTlGMU1XYnp2YnBFcWpzMWFTTzNjYWo1MS11d3N4akFmbjJPbEpHTGhxRGhTN2FfMWVsa3l5ME5TRW1nT0E3c01TUlRZXzFEeVh4SUJ6NUU4cFZvb2tycDc4UkpzZ1BLWUN1eHQ0eU85Y1JDU08tWC1J?oc=5",
-            "body": ""
-          },
-          {
-            "title": "General Motors Resets EV Plans As Investors Weigh Valuation Upside - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNNXR5VXJjWUtWNlJRTkZ2amN0RnhrUjBkTGdmNlhRTXg5a09DaG1VSWZDMExLeWlrSExISmJBdnU0bmpjSmtQTDc2TW9ncWEtRUdpZFBqUEpaanJiR2k0eENRRnhZOVVDMVVsLVVVWTZOWDZJaDdZTVJUWTdWTi04Z1BDNlZQSGowRDdMbkhLeDcxemVFYWFLN2FqeXRodEk2NU1XSlJaLS1aREU1ZG1oeVdqN0JmRmxReV9vOXJnM292bkI3MV9MWm1pUQ?oc=5",
             "body": ""
           },
           {
             "title": "Fund Update: New $5.3M $GM stock position opened by Illinois Municipal Retirement Fund - Quiver Quantitative",
             "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQQ1VKOFU4eG0ta0RKeHFJYUF3MVcwZkQtSEJYTXg5Y3VsYVN0OVRvYkVQUzItajVFNzFmVkNGTnNMck1HdUJQSXkwSEhXbkdYOWl6dHdJX0o1N1Nxd1RPV19VNHVPWktSdVZjbTFjWXB0b2V5SWRqRTBJc2pkdlFkRlRnRktiTHRxQTU5dk04em5UeDA4b0ZGMjk3M2lYY2lGR0RHUE54VVF5TWQxaWdVejBoSjFEb3B6bURZOTVaZmM1UGM?oc=5",
             "body": ""
-          },
-          {
-            "title": "What General Motors Really Wants Investors to Know About Q4 - AOL.com",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQTjJFZHdoaFgtX09KdEE5bjd5RTlqa2ZJbVZzT0RBbXk2dGhYZ0tTTjRSY2h2VHV3Z3I0am9jbjI1bnRDb0hiWHN0TG13ejVIWVVGRFlmX2RpVDVRbGNtX3Faak90bWx2ZkNnVnZhdGk0a01tMXo1Z0xETVFXQ3Q2SEtveUk5RjdI?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:17.393292"
+        "fetched_at": "2026-02-13T14:28:55.881605"
       }
     },
     {
@@ -3333,7 +3108,7 @@
       "entry": 131.8,
       "stop": 125.17,
       "target": 148.38,
-      "shares": 14,
+      "shares": 5,
       "vcp": {
         "score": 56,
         "atr": 3.315295666810212,
@@ -3507,233 +3282,13 @@
   ],
   "qualified_full": [
     {
-      "ticker": "PH",
-      "status": "ACTION",
-      "price": 982.21,
-      "entry": 1014.51,
-      "stop": 969.81,
-      "target": 1126.27,
-      "shares": 2,
-      "vcp": {
-        "score": 70,
-        "atr": 22.351405928981162,
-        "signals": [
-          "MA Aligned"
-        ],
-        "is_dryup": false
-      },
-      "rs": 77,
-      "pf": 6.13,
-      "sector": "Industrials",
-      "analyst_target": 1017.8261,
-      "analyst_upside": 3.6,
-      "analyst_count": 23,
-      "recommendation": "buy",
-      "short_ratio": 2.09,
-      "short_pct": 0.0107,
-      "insider_pct": 0.00156,
-      "institution_pct": 0.89194,
-      "pe_forward": 28.89482,
-      "revenue_growth": 0.091,
-      "insider_alert": false,
-      "insider_detail": {
-        "buy_count": 0,
-        "sell_count": 0,
-        "net_shares": 0,
-        "recent": [
-          {
-            "date": "",
-            "name": [
-              "HAVERTY FURNITURE COMPANIES INC  (HVT, HVT-A)  (CIK 0000216085)",
-              "HAVERTY RAWSON JR  (CIK 0001214531)"
-            ],
-            "filed": "2007-07-24"
-          },
-          {
-            "date": "",
-            "name": [
-              "PETCOFF JAMES G  (CIK 0001115666)",
-              "Conifer Holdings, Inc.  (CNFR, CNFRZ)  (CIK 0001502292)"
-            ],
-            "filed": "2021-12-17"
-          },
-          {
-            "date": "",
-            "name": [
-              "PETCOFF JAMES G  (CIK 0001115666)",
-              "Conifer Holdings, Inc.  (CNFR, CNFRZ)  (CIK 0001502292)"
-            ],
-            "filed": "2021-12-14"
-          },
-          {
-            "date": "",
-            "name": [
-              "CANADA PENSION PLAN INVESTMENT BOARD  (CIK 0001283718)",
-              "CPP Investment Board Private Holdings (4) Inc.  (CIK 0001978825)",
-              "VIASAT INC  (VSAT)  (CIK 0000797721)"
-            ],
-            "filed": "2024-08-14"
-          },
-          {
-            "date": "",
-            "name": [
-              "CANADA PENSION PLAN INVESTMENT BOARD  (CIK 0001283718)",
-              "CPP Investment Board Private Holdings (4) Inc.  (CIK 0001978825)",
-              "VIASAT INC  (CIK 0000797721)"
-            ],
-            "filed": "2025-02-11"
-          },
-          {
-            "date": "",
-            "name": [
-              "PIZZANI PAUL G  (CIK 0001021358)",
-              "PRIMUS TELECOMMUNICATIONS GROUP INC  (VATE)  (CIK 0001006837)"
-            ],
-            "filed": "2003-12-01"
-          },
-          {
-            "date": "",
-            "name": [
-              "ICAHN CARL C  (CIK 0000921669)",
-              "ICAHN PARTNERS LP  (CIK 0001313666)",
-              "ICAHN PARTNERS MASTER FUND LP  (CIK 0001322827)",
-              "Xerox Holdings Corp  (XRX)  (CIK 0001770450)"
-            ],
-            "filed": "2020-08-07"
-          },
-          {
-            "date": "",
-            "name": [
-              "HAVERTY RAWSON JR  (CIK 0001214531)",
-              "HAVERTY FURNITURE COMPANIES INC  (HVT, HVT-A)  (CIK 0000216085)"
-            ],
-            "filed": "2019-05-08"
-          },
-          {
-            "date": "",
-            "name": [
-              "AGIOS PHARMACEUTICALS INC  (AGIO)  (CIK 0001439222)",
-              "Flagship Ventures 2007 General Partner LLC  (CIK 0001508053)",
-              "KANIA EDWIN M JR  (CIK 0001255927)",
-              "AFEYAN NOUBAR  (CIK 0001222012)",
-              "Flagship Ventures Fund 2007, L.P.  (CIK 0001508052)"
-            ],
-            "filed": "2014-06-25"
-          },
-          {
-            "date": "",
-            "name": [
-              "AFEYAN NOUBAR  (CIK 0001222012)",
-              "KANIA EDWIN M JR  (CIK 0001255927)",
-              "TETRAPHASE PHARMACEUTICALS INC  (CIK 0001373707)",
-              "Flagship Ventures Fund 2004 L P  (CIK 0001299790)",
-              "Flagship Ventures General Partner LLC  (CIK 0001400249)",
-              "Flagship Ventures Fund 2007, L.P.  (CIK 0001508052)",
-              "Flagship Ventures 2007 General Partner LLC  (CIK 0001508053)"
-            ],
-            "filed": "2013-03-27"
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "BRACHT BEREND",
-            "trans": "",
-            "shares": 1457
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "BRACHT BEREND",
-            "trans": "",
-            "shares": 3370
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "JACOBSON MATTHEW A.",
-            "trans": "",
-            "shares": 564
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "JACOBSON MATTHEW A.",
-            "trans": "",
-            "shares": 970
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "PAREL DINU JOHN",
-            "trans": "",
-            "shares": 1316
-          },
-          {
-            "date": "2026-02-02 00:00:00",
-            "name": "PAREL DINU JOHN",
-            "trans": "",
-            "shares": 3030
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "GENTILE THOMAS C.",
-            "trans": "",
-            "shares": 2376
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "GENTILE THOMAS C.",
-            "trans": "",
-            "shares": 5110
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "IVES ANGELA R",
-            "trans": "",
-            "shares": 1066
-          },
-          {
-            "date": "2026-01-30 00:00:00",
-            "name": "IVES ANGELA R",
-            "trans": "",
-            "shares": 2360
-          }
-        ]
-      },
-      "news": {
-        "articles": [
-          {
-            "title": "Parker Hannifin Corporation to Present at Citi’s 2026 Global Industrial Tech and Mobility Conference - Quiver Quantitative",
-            "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxPTDJzRFJpcVhDQVQzRVdoODQ3cURtVlByTXNMTkx0ZTIyMU1zMFRRcUlCTzd4R1haRVdyUzRJdE1mQ2NaOE1tVG82Y3I0V3BZTjJUTkZ2NG9Tellmck1meTFXM0tBVHM1c1pNblpRTzRkMHVUQnBnNlNzTkZMTXUtLVR0MW1NNjlfLXRENksyN1RHWVJqWGtySDNqTk5kRU8xMUxtWnRReEQ5bENPdlVJdzIxc3hIMnQwVXJpcXBOUkJqZm5EdjBSOTU3bm1pbGw0c3ItV3hLbGU?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Parker Hannifin Sustainability Report Highlights Emissions Progress And Earnings Resilience - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPVWZ5RFZFOFBQQjlDNTJhc3dMVVJ4ZURDVDFFek9jSWIzTV9oTU5MRzNOOUdjQTgtRlN5MHE5QVB4SngwM21NQzJOSTJHUUJkM0M0eTE4MW0zcVd5SzAtdnJHODNRaF9rSi1oTWlDVkFxUkhRdzY4bTZDU0h4dUt3UXNJU2lJWnRMdkZyOXp4RTlqRkxaYkl0MTNEcUhrQ2wybG5aeV93Yi01cUVxbFlOSVFyZUp3TTFRZlA5SE14b2VaWmE3TXp1ZlVJZDVreTBt?oc=5",
-            "body": ""
-          },
-          {
-            "title": "The Zacks Analyst Blog Highlights Parker-Hannifin, Goldman Sachs, GE Aerospace, C.H. Robinson Worldwide and Carpenter Technology - The Globe and Mail",
-            "url": "https://news.google.com/rss/articles/CBMirgJBVV95cUxPUUNDZlpELUd1MTEzNk5rTDNoWjUxZGhUTWh0dGhNZ2UxYUlhNWQ0UEdIcVRpZXpreThwX2FFUG5QRFRkdlhiLWEtSVJoQkdHa000SHYwTkV5WHozNHFTTmFIdVFjaTFCQjJ6UlpMXzMwMzZxd3ZpaGdreEM2UTA2bGpGU0RXUkpqTkNJdUpNTGdwTEx3SERFYlBTeW1FUDllRmN3d0hkWEFtXzFfMmhwSVdCbFA0YXRqRlhqMXFtMmVJV21ERWc4WURtUThEZGhsUkNjaEtGcGR6WFAzVURMZk9jaE9nOEZhN1RJTHQzU0J0djRvUzFVV0prQXhfdVppNHp1UkJIbXpNZGhOSTVfa3B6ejNTZ1FfcTc2N0JWSjVKVUxVZmpibDJtRzRQQQ?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Biotech behind first PROTAC trial taps dealmaker Randy Teel as CEO - Stock Titan",
-            "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPNGpWV0p4eFdxSElMZ0s4TERSczBaMFJTYjhmTm8wcEhDN29pNG1BeHBxTC1SSjdsUWNFdUJZWklIeGx1am9fcV9FYi1vbEdZX1F4a2dZSkZQRHZ4UUZ1YWNHNXJ2UVRndVEwY3N3SkpEWVRrdHpfWEp0U0o1Y2RfOV9hRHV5eUZMZHZYeWtYYzlCVWh3Y01WalQ0UVRON3VFT293eGxVbXpmaEFLOFZnWGszMm4xR3gtQjRUVHFLSQ?oc=5",
-            "body": ""
-          },
-          {
-            "title": "34,819 Shares in Parker-Hannifin Corporation $PH Acquired by ING Groep NV - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPdlEteWhieHRaa3dQSDVSa2ZqdVJrSnVvbURGREx5WEtPMS1aTzRtQWQxelZvVzZEaGp6VWszLVc2dGNueHRhN1ZXT1AxZ0hRX25zZUtGSmI5X1NQUm5PcFlyc0JWa1U0bkJEUnBhU3pfby1ETzBOcmhVZXJwVjZ3c1VtZVloeThFeFg0MUdwWHloZHdUVXBiSmlhQ1piRHNGVF9XZk52eUZ6dlR4ODFRZzhPRWpxTkplcU5ReG5KOURfTlNKcllZU0VGQkQ?oc=5",
-            "body": ""
-          }
-        ],
-        "fetched_at": "2026-02-13T08:39:00.707260"
-      }
-    },
-    {
       "ticker": "ROST",
       "status": "ACTION",
       "price": 194.85,
       "entry": 197.57,
       "stop": 190.63,
       "target": 214.94,
-      "shares": 13,
+      "shares": 4,
       "vcp": {
         "score": 81,
         "atr": 3.4735706874302457,
@@ -3907,8 +3462,8 @@
       "news": {
         "articles": [
           {
-            "title": "Ross Stores (NASDAQ:ROST) Reaches New 12-Month High - What's Next? - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQSHNGOW9lOFlpeEtYcVZLUnhKZHk0ZTE2UnUxR24tWnktY0FjSVhQajUwZV9vcTktV0h2NXQxcUc1bjBIaDRPZWd4R3NtQnlfeTRFWWZud2ZhQS1rWktidkRKWjJHTm5OU2ZqNXNuQW0ydUREcUtwWndfMDFUUnJKS3JiY2RwSFRDZEg2Ny1EMC1VTC13cExSSFY5RGRnZFZoY1R5YWRERE8yREwtZl9XOVJhTQ?oc=5",
+            "title": "Cibc World Market Inc. Raises Stock Position in Ross Stores, Inc. $ROST - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOQ0gzdzhjSk44UmVqU1RBaDlvQkhXOVpjNjJFWTFDQkJFUFVsVUdMTkc2aE1RQnV6X29INk5qTUlhV1ZnajRSUVoyQ21NVW51cXhKeXFMdmljZlJScV9nUXNNcHBXZV9Uc0dBM2l4S2hCLTRoQXVMSW1tQndXMXpHWFRfRnNETm9KemIwZmdQOHU1dFpLd09ESzltYkEtel9KM21UUDNhYmxvUnZwOENtZkduN09kcW9nNEdRWWtXcmw2Ul9yNjJB?oc=5",
             "body": ""
           },
           {
@@ -3927,12 +3482,12 @@
             "body": ""
           },
           {
-            "title": "Ross Stores Inc stock hits all-time high at $195.03 By Investing.com - Investing.com Nigeria",
-            "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOckFObUppcTRjUDVhcUVVNjdmTkp1enQzeVJiclo4QjVsMHNMcl9LR3NSSVZ3NFZfRlptVDJGa0J3SG96Y051SlpJZzNCOE5WTEg3OFloajZ2akdsTjJHbUcxaGl6M053Qm5vQjBKWWZLdGRxUWZoRnpnX2ZualpqSThXR3p3bjZ1elZBVWU2YWhtQ2Q5eTJhdnNTUVg3dVcxVDRhbGZhcw?oc=5",
+            "title": "ROST: Citigroup Maintains Buy Rating and Raises Price Target | R - GuruFocus",
+            "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQLWhscjNDU2RzRExrWUVTU0xUSkhQSENSLXJjZVNlRkJKRnRkN0hyd01aa213ZE9MVk5CdzJXNi1XUXhRN3lnRnJkWng1QllnQ0N0TjhXZS1Sa0N3NnpuT2hxZkdCRmN6MmFjTFo0MW1sYlhucGFWdVFQVmlnTUkwRVlOamVHRlZkdkgzOFdvWG1acXNZenEwM0xfZmRubzI2bGhqa3hweVNlUUFfV3hidWlubnE?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:01.796197"
+        "fetched_at": "2026-02-13T14:28:38.610889"
       }
     },
     {
@@ -3942,7 +3497,7 @@
       "entry": 206.89,
       "stop": 196.33,
       "target": 233.29,
-      "shares": 9,
+      "shares": 3,
       "vcp": {
         "score": 64,
         "atr": 5.279998779296875,
@@ -4120,13 +3675,13 @@
             "body": ""
           },
           {
-            "title": "Is It Too Late To Consider RTX (RTX) After A 62.8% One Year Rally? - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBISF8zSjg5ay1BU0oxTndQX1NFV2l0aWxlUUhsSDRyMU16VVNlUTZBQWhEdkFwOE1Ld2ZIdk90dy1nZlEydFR4dkRnOHV2Y0tXT2JuYjRfR3M3Zm1NaVpuOFFTZDhBUFl6c1pfbldNOVhNWThnWVhkbw?oc=5",
+            "title": "Freemont Management S.A. Sells 48,300 Shares of RTX Corporation $RTX - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOOTFLNHUwelpLRTE1RjRrUnlUaGRDeV83ZldHbU56VTNqOWtZN0w2a1JtN0ZpNlFGM1lpb0EyaE9CNFBHa0IwdmUwclN5ZHVOd0JJT05LQmJJSDVkQm12U3lMYXJLZUdJLVNtSXBFcEtNVnBMNUZGRmd1TFo1YWVFTnk2bF9KbnlGeDN1YlF2UlA5Y3N0WmMtTkpfeEljWkNSanlldUV5MUc1d0F3U1pyMHd6NllNMURhWkUtQUJsRFdhbVE?oc=5",
             "body": ""
           },
           {
-            "title": "RTX Stock Surged 60%, Here's Why - Trefis",
-            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNbnpucEpjRUFqZ2htc0JfSUQyaGpPMU5XRkd4VkM2RjBlY1JNZ0xKaWNVRXQ2YjVPay00Mm5odmRFbkxqRm04MFhIZU9DY1QzV0dWOHVHbExmTnZKSmR0aHVNSUlKT0NHWFBmcVh6UHNNWTIzYlMtVWx5VzAwTlRaS3dvUzFvREhpV0J3SVFGZmd3OEJMb2k0cDFieG9VdUlD?oc=5",
+            "title": "Is It Too Late To Consider RTX (RTX) After A 62.8% One Year Rally? - Yahoo Finance",
+            "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTFBISF8zSjg5ay1BU0oxTndQX1NFV2l0aWxlUUhsSDRyMU16VVNlUTZBQWhEdkFwOE1Ld2ZIdk90dy1nZlEydFR4dkRnOHV2Y0tXT2JuYjRfR3M3Zm1NaVpuOFFTZDhBUFl6c1pfbldNOVhNWThnWVhkbw?oc=5",
             "body": ""
           },
           {
@@ -4135,12 +3690,12 @@
             "body": ""
           },
           {
-            "title": "Savvy Advisors Inc. Raises Stake in RTX Corporation $RTX - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPMWtoY1lMTzNPOW1XTnN1M0Y5YmZoZWlPdUxzdEppNXItWXRSVGZoeERQMnc2bExhWjF5S0lteG5KU1YxU3R1d19tZFpHcWFFSG0xSXVvMUpBdzlCYlM5d1VicDh1T2VOWnlqOFRRd2laRmZuUEVxb1FkeDdfTXhvS2x2cHlmUTBkYzZTcWw0aW9BNkZidENTQmFEM2h6SldXaUFkcHhpZ01QX2d4Z2tqdWdUdDVsdw?oc=5",
+            "title": "RTX Stock Surged 60%, Here's Why - Trefis",
+            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNbnpucEpjRUFqZ2htc0JfSUQyaGpPMU5XRkd4VkM2RjBlY1JNZ0xKaWNVRXQ2YjVPay00Mm5odmRFbkxqRm04MFhIZU9DY1QzV0dWOHVHbExmTnZKSmR0aHVNSUlKT0NHWFBmcVh6UHNNWTIzYlMtVWx5VzAwTlRaS3dvUzFvREhpV0J3SVFGZmd3OEJMb2k0cDFieG9VdUlD?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:03.062486"
+        "fetched_at": "2026-02-13T14:28:39.988837"
       }
     },
     {
@@ -4150,7 +3705,7 @@
       "entry": 83.41,
       "stop": 80.51,
       "target": 90.65,
-      "shares": 31,
+      "shares": 10,
       "vcp": {
         "score": 85,
         "atr": 1.4478558131626673,
@@ -4334,8 +3889,8 @@
             "body": ""
           },
           {
-            "title": "What Makes Monster Beverage (MNST) a Strong Momentum Stock: Buy Now? - Nasdaq",
-            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPa2hoS2hpSTBmVFdzbW5ab0tKVHVrd2YzOUxqWFE0ZjVzdGltaThadlJMaFRGQzJjblVsSUlEMW00aWcxd2x2V1BYS3N3V3o1ZXFDQXdyRjJDbzJ4RFdfalVDWDJ2Ul9fMmdyUWQxbmFYU0VEVHNkWmljSVNkTWJaR09rdWNHMFVIOGtQMGZQREItN2VOc1BWMm1R?oc=5",
+            "title": "ING Groep NV Decreases Position in Monster Beverage Corporation $MNST - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNaVRremoyU3JXT19KLXQweGhTZWpwV25xbHJ5c1dIVUItZlBPWDBCaFQwcVJwQkpmX01hbVFQeEVGSFI5MmdhRkdrZkVKYS1pR2VJQXhSMDFLS1djbk5CZnNfSzJ2R25zdlh4LVdoOGNpdVVuTTlGRGM3R3NXcGs2REpZSnpiaFR5NmRibFlxbnAwOEdnNVd0Qk02dkFCTEpjQjh5b1BDWGVVUFgtWU1kQnZWcUZUUDcyUWxtZE5OU3JiZTNxS0J4cw?oc=5",
             "body": ""
           },
           {
@@ -4344,190 +3899,12 @@
             "body": ""
           },
           {
-            "title": "Rhumbline Advisers Sells 13,352 Shares of Monster Beverage Corporation $MNST - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNd0N6QU8yUUlPWW5MUngzR05xNzY3ZjdocnBDWXQ5enlTZzFzSlVYcmYwWHNfdmxlanBIOFF0ZC1uZ25QMHYwb0FtQ2NrYlZtZVZDcm9xSWVHb1N3Y3BORGRsU3lVb1dTMDUyVmlvckJ4SzlxSlh2LWxpV08yZnpIVkpobDFHRWdfQTlHeFpFOC1YeFhpYXl3T0RObm5EZS1QSFdBekNLdWxiNXlicUZ4NmdLSVROLU5BSER0eWo0Ums2cXdfWHVoaTVXY3RwNjNU?oc=5",
+            "title": "New Highs: What analysts say about MNST stock - Treasury Yields & Community Consensus Picks - baoquankhu1.vn",
+            "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOaEkyMXU2NW41S29mZmVGYXJOWG5yMUtmNjE1VkpxbUVHcFF5d0Q2U0hiVEpoTXpZTENySXVMeXFuQUZHQXJRMHpkTDFoT2tCWmpWeF9qVnVGd1ZoaGx3LW9OcUdUX0FOa08yQWdQcDA0SU1nR3dqeVBGTm1MX0hlREFR?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:04.104844"
-      }
-    },
-    {
-      "ticker": "LMT",
-      "status": "ACTION",
-      "price": 637.43,
-      "entry": 647.88,
-      "stop": 604.18,
-      "target": 757.15,
-      "shares": 2,
-      "vcp": {
-        "score": 73,
-        "atr": 21.852852957589285,
-        "signals": [
-          "MA Aligned"
-        ],
-        "is_dryup": false
-      },
-      "rs": 83,
-      "pf": 1.88,
-      "sector": "Industrials",
-      "analyst_target": 657.579,
-      "analyst_upside": 3.2,
-      "analyst_count": 19,
-      "recommendation": "hold",
-      "short_ratio": 1.19,
-      "short_pct": 0.013099999,
-      "insider_pct": 0.00082,
-      "institution_pct": 0.75203,
-      "pe_forward": 20.060638,
-      "revenue_growth": 0.091,
-      "insider_alert": false,
-      "insider_detail": {
-        "buy_count": 0,
-        "sell_count": 0,
-        "net_shares": 0,
-        "recent": [
-          {
-            "date": "",
-            "name": [
-              "Carvalho Orlando D  (CIK 0001573157)",
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)"
-            ],
-            "filed": "2018-01-31"
-          },
-          {
-            "date": "",
-            "name": [
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)",
-              "Possenriede Kenneth R  (CIK 0001524478)"
-            ],
-            "filed": "2016-02-02"
-          },
-          {
-            "date": "",
-            "name": [
-              "Tanner Bruce L  (CIK 0001411075)",
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)"
-            ],
-            "filed": "2018-01-31"
-          },
-          {
-            "date": "",
-            "name": [
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)",
-              "Colan Brian P  (CIK 0001617526)"
-            ],
-            "filed": "2016-02-02"
-          },
-          {
-            "date": "",
-            "name": [
-              "Bennett Dale P  (CIK 0001565856)",
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)"
-            ],
-            "filed": "2018-01-31"
-          },
-          {
-            "date": "",
-            "name": [
-              "Lavan Maryanne  (CIK 0001495449)",
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)"
-            ],
-            "filed": "2018-01-31"
-          },
-          {
-            "date": "",
-            "name": [
-              "Colan Brian P  (CIK 0001617526)",
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)"
-            ],
-            "filed": "2018-01-31"
-          },
-          {
-            "date": "",
-            "name": [
-              "Ambrose Richard F  (CIK 0001573608)",
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)"
-            ],
-            "filed": "2018-01-31"
-          },
-          {
-            "date": "",
-            "name": [
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)",
-              "HEWSON MARILLYN A  (CIK 0001217496)"
-            ],
-            "filed": "2017-01-30"
-          },
-          {
-            "date": "",
-            "name": [
-              "LOCKHEED MARTIN CORP  (LMT)  (CIK 0000936468)",
-              "Mollard John W  (CIK 0001671564)"
-            ],
-            "filed": "2017-01-30"
-          },
-          {
-            "date": "2025-12-05 00:00:00",
-            "name": "TAICLET JAMES D JR",
-            "trans": "",
-            "shares": 819
-          },
-          {
-            "date": "2025-12-05 00:00:00",
-            "name": "HILL STEPHANIE C",
-            "trans": "",
-            "shares": 121
-          },
-          {
-            "date": "2025-12-05 00:00:00",
-            "name": "ST JOHN FRANK A",
-            "trans": "",
-            "shares": 170
-          },
-          {
-            "date": "2025-12-05 00:00:00",
-            "name": "ULMER GREGORY M",
-            "trans": "",
-            "shares": 104
-          },
-          {
-            "date": "2025-12-05 00:00:00",
-            "name": "CAHILL TIMOTHY S",
-            "trans": "",
-            "shares": 338
-          },
-          {
-            "date": "2025-12-05 00:00:00",
-            "name": "CAHILL TIMOTHY S",
-            "trans": "",
-            "shares": 104
-          },
-          {
-            "date": "2025-10-24 00:00:00",
-            "name": "RICCIARDONE MARIA A.",
-            "trans": "",
-            "shares": 446
-          },
-          {
-            "date": "2025-10-23 00:00:00",
-            "name": "ST JOHN FRANK A",
-            "trans": "",
-            "shares": 7792
-          },
-          {
-            "date": "2025-02-26 00:00:00",
-            "name": "HILL STEPHANIE C",
-            "trans": "",
-            "shares": 4791
-          },
-          {
-            "date": "2025-02-26 00:00:00",
-            "name": "LIGHTFOOT ROBERT M JR",
-            "trans": "",
-            "shares": 3213
-          }
-        ]
+        "fetched_at": "2026-02-13T14:28:41.184447"
       }
     },
     {
@@ -4537,7 +3914,7 @@
       "entry": 421.44,
       "stop": 392.57,
       "target": 493.61,
-      "shares": 3,
+      "shares": 1,
       "vcp": {
         "score": 61,
         "atr": 14.434282575334821,
@@ -4663,13 +4040,13 @@
             "body": ""
           },
           {
-            "title": "Interested in Artificial Intelligence (AI) Stocks in 2026? Consider Buying This Top-Performing AI ETF. - The Motley Fool",
-            "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPdjZNUDNkemI1SWJmMF9zcmZlN01KODktd1ZKOURkeDNUZk5GTEJGanR2Szdqb1ptalFKVWdMb3lKQVl0WHktZFlYcFhOd2I1RDlmbmt2blN5NENUa29Qd29lUUhCUnV0enRmTWhHWktqUXpMMHoyemNCZS1ub28yZ21uWnB0SjNiMWR3WlJ6Vkx5VXk2aUVV?oc=5",
+            "title": "A Top Semiconductor ETF Ran 62% Despite Top Holding Slashing Dividend by 75% - AOL.com",
+            "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBuUkpaUm5XVEJhQm9EUktWTXdfeHhmLUpvd0E1N3d4dDBrNUYwZ19DNG05c3RHeXpTUGxNWDFVLWlYZWh0WjJRQ2x2cjVoanBVRW9XM0J2ZzJBY2NQTXg2ekxtd2xJUHM5WTM2ZHRHdnFWaHVYUEZ2cktNdGY?oc=5",
             "body": ""
           },
           {
-            "title": "ASX dips as tech shares slump; Westpac profit rises, Cochlear crashes - SMH.com.au",
-            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOQUlyc1ROWEI5ZVA1d05OZzJIeG5jVEt1T09ReUNqaVRhN1N1R09ybGwxWTdvMFNpSkp0TzlfeDA5cElUaUpLUzRwTFFSZVNGaWx2VUNFU2JmN1RoRlJVU3BNTGl6cXpULTlUc1NKNGVhYkVlOGd1UHFxVE5vVUtMckVxWnUydFJSODZ3SmRKdmZKS2xMQ0pDUk84YS1GRHR3ajBvd3pzSjN6Zw?oc=5",
+            "title": "Interested in Artificial Intelligence (AI) Stocks in 2026? Consider Buying This Top-Performing AI ETF. - The Motley Fool",
+            "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPdjZNUDNkemI1SWJmMF9zcmZlN01KODktd1ZKOURkeDNUZk5GTEJGanR2Szdqb1ptalFKVWdMb3lKQVl0WHktZFlYcFhOd2I1RDlmbmt2blN5NENUa29Qd29lUUhCUnV0enRmTWhHWktqUXpMMHoyemNCZS1ub28yZ21uWnB0SjNiMWR3WlJ6Vkx5VXk2aUVV?oc=5",
             "body": ""
           },
           {
@@ -4683,7 +4060,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:05.183489"
+        "fetched_at": "2026-02-13T14:28:42.406138"
       }
     },
     {
@@ -4693,7 +4070,7 @@
       "entry": 231.78,
       "stop": 216.21,
       "target": 270.73,
-      "shares": 6,
+      "shares": 2,
       "vcp": {
         "score": 73,
         "atr": 7.788505912913777,
@@ -4866,13 +4243,13 @@
       "news": {
         "articles": [
           {
-            "title": "Texas Instruments (TXN) stock slips after early jump as chip sector weakens ahead of CPI - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNQ3FVRXFqSGw1Ml9ENk1TVTRkR0RzdU41UU1ubzFFTms0OHAtWTZSSXZQZXZBV29jd1o0SHkwRmFjVFc4UnI2OHd6c1gyZE43MFNIT01jWUZwVmpxNG5xQ29mQkd3cG9ZOFBQZkxBclJUQmFsenNWYlY0U2ZSQnZNb1hqdlJXbnhmZEVSU0N5dk5YWmRHZi1sWi0wNVJZckVTUnJFd2xYdEVaUVE?oc=5",
+            "title": "Texas Instruments Incorporated $TXN Shares Sold by Atria Investments Inc - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNOW1HaFlhcnlPRzJQazdMWnBXMFhDZ051NDNIczcyd2hLdE1wWjB2Wl9mZkNGblhwcVg4elJIUTc2ME11Y2RSbS1QcmVaaE1pMjBGa0NVaFNVZzV2c2JGVmU3NU90QVFjVWw5NEJmbjBTQ0FaTlY5OHd1NWVLUVdSLXZDZzBmSFlabk1GQ2kzMzJ6TksxQW5fNEZ0VTE2ZF9aWkJ2X2YzRGg5ZGQ3RWx1b2xlNkZTUDNXWTlfTGZqdmdITFBEOWtHci00aTM?oc=5",
             "body": ""
           },
           {
-            "title": "Insider Selling: Texas Instruments (NASDAQ:TXN) VP Sells 10,248 Shares of Stock - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOaXZqZldSd1d1SU9UckN6MHhPU09UWkxhUDlCR0V2aktQcV9WZ0UtYnVOWXIzTUlfZDUzbWlLTzdlMXI0d0JFLXVoSV9oeHh3Z0psVHJKTFJ0STQyQUdHV1RNbGpfbTRuQkJudWl5TDc1LV9NVllxMUtKVGhFVVdiOEFuQjNzNWhMWHZnUU1kcEhzZWN3cDdrdEpVejBVVVlFYnN1b2xaWkN5Y0lINlRjNFVSOS1tRTRrajJGRXQyNDJNNzNyTHEw?oc=5",
+            "title": "Texas Instruments (TXN) stock slips after early jump as chip sector weakens ahead of CPI - TechStock²",
+            "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNQ3FVRXFqSGw1Ml9ENk1TVTRkR0RzdU41UU1ubzFFTms0OHAtWTZSSXZQZXZBV29jd1o0SHkwRmFjVFc4UnI2OHd6c1gyZE43MFNIT01jWUZwVmpxNG5xQ29mQkd3cG9ZOFBQZkxBclJUQmFsenNWYlY0U2ZSQnZNb1hqdlJXbnhmZEVSU0N5dk5YWmRHZi1sWi0wNVJZckVTUnJFd2xYdEVaUVE?oc=5",
             "body": ""
           },
           {
@@ -4886,12 +4263,12 @@
             "body": ""
           },
           {
-            "title": "Here's Why Texas Instruments (TXN) is a Strong Growth Stock - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPcHZlRmYtSFRORjJCR1FNbmdnam1kTU9fWXZjOGFnaGRDaUJoVEFuMVB5ZjUzLXQ4N3hncW5YOTNRbDlrc0V4bEljcldEcHIzUDV4Qll3SVdGT0M0SlM2SUxXNzZkTTB1MEdmdjNHT2RpcHMxNVpLRXVUQmFxaHhjVjhRRQ?oc=5",
+            "title": "Here's Why Texas Instruments (TXN) is a Strong Growth Stock - Nasdaq",
+            "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNdWdtX2FxdHRLR3hqcnJWQVUxVUZNaGNOMkFmVzdOM0M2T1RjeU91Z3dENmhIU3VSbFgxbGJPX0hYNDZELTk2R2xWVjJKZm9neVNXdFRhdDhHQThoc1FkeE1QczdrQ0pMd0FhNkcyczJiNG9pY2g2MHR2RHVQVEZmYWZnWENJTXFRdjFZ?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:06.267857"
+        "fetched_at": "2026-02-13T14:28:43.631168"
       }
     },
     {
@@ -4901,7 +4278,7 @@
       "entry": 197.29,
       "stop": 185.01,
       "target": 228.02,
-      "shares": 7,
+      "shares": 2,
       "vcp": {
         "score": 61,
         "atr": 6.144284929547991,
@@ -5074,32 +4451,32 @@
       "news": {
         "articles": [
           {
+            "title": "Nucor EVP query sells $1.46 million in NUE stock - Investing.com",
+            "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNNjY0ZTk0bnc0Q0I5ZXk2T3AxbldBaHd5SmpIZUtmbmlhSDhaUEhYRFJ2Qm1xX1ZTZm9hS0pjdGIyWXJyYVhMcmYzb0xkVDRqeG1jQk9Ibkh6d0JyRUhGdEhkWHFCUWp3czRPRmhOaEFfaTRjVGs1bFNTNmJyVDBfaWlUMnlCNkw5VmNtQjJ0VFoyZ2VleUR6MTg1anZoV0hLZTFSUjc0c0NkT1djMk9NRg?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Insider Sale: Executive Vice President of $NUE Sells 7,452 Shares - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOeGFfQThzbHFwa2hNMnZzb09SSFhPQ1NoWlRnazlpNkFFZkUtcF9yT3BleHJZMUlkQ1hfYUhoTEdzSDgyNnVwNm5kMkVtVlFGRDN0bWc5RU1LdUREcEtYMjNoV21aZTZuVldBTWdKalhNcE9MY0xkaGFIR3RaYVB6X3FxTV9qT29aSzZiWTlWQ3B6UWdsNllqRTNwNVEwTW82ZVc3TFZCdw?oc=5",
+            "body": ""
+          },
+          {
             "title": "Is Nucor (NUE) Still Attractive After Strong 1-Year Share Price Performance? - simplywall.st",
             "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNWU9LV0hObEs2VDh1NGIxbjhTR1lGckZrak5nblVnZUVhaGNzQ3BiaEpLSjNUR2RGaE5JN2dIUFc5LXFrQzBXR0dub21ZMzdQVEN3TE0wZGVWLWUtZnFvdjVVZFUyV182NXM0NmtEOVUzdWJVSC1uVXFWMTZaMFItTWduZVVva0ZBNlpaSC1LcjlOanZUWlJOeFJ1Wi14SjliZUdxQ3gtY0tXVDdaR2RnclBDa3RHRFdhZWJpRVJFSQ?oc=5",
+            "body": ""
+          },
+          {
+            "title": "NUE, STLD, RS: U.S. Steel Stocks Slide as Trump Weighs Tariff Rollback - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOZ0dOVlBFVUhBdFpHREEtMVZ2OGJ4VkoxdTlLNGttT0ZNelI1SERlWWk5amlQMmlNc1pjUGdJOE16LXhxUmJGUWtZNzYyd09rUk5WZTBMLWVfeW1Mb0hCZG9nUmU2WlZrdmtMN190aHBuX1JKVTRieTFOSUd2eGphUXFpTnJNR3FGekN2QmRTc2ZIMEQxUHkw?oc=5",
             "body": ""
           },
           {
             "title": "Nucor (NUE) is a Top-Ranked Value Stock: Should You Buy? - Nasdaq",
             "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQZVJvd29GT2Q1Rmx5LUI4SXlMeHlqdDA5anJjZ3E5cURiSDJxQmdid0FpM3NGRHFaUUwxdVZoY1FrZjA4SHZGbmV0c21CeW1HbHFuaUhmLU5ST0VZd1dHOGowNkk5SkRkM1ltSFQ1RHl1R25HVHRtQmxnNTJ6dkVVTk5SU0lsZw?oc=5",
             "body": ""
-          },
-          {
-            "title": "Is It Too Late To Consider Nucor (NUE) After Strong Multi Year Share Price Gains - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPVWtON1FXNEJfTUNzZGpfOGFOaHd2WTZ5QzFlNkZ4YWlMZGtYZ3ZLTUQtMVJVVHRtejJWR19TSEdOSm5CaEQyamZjMEFZXzhUQU11WVlXa2hncUxtY0ZCbmFIalEtQWYxc1pDYXNKa2I0bEFBRVBvZ2RWX0xzcHlvdA?oc=5",
-            "body": ""
-          },
-          {
-            "title": "What Catalysts Are Recasting The Nucor (NUE) Story On Pricing Tariffs And Valuation - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOaEtLM0dWVW1HZTRjemNGQnZObGxNY1lXakVEMF9MWWM5amJJbDhqRHc5ZExUYUZVOUp1Zi1oMUZCR2tzN2o2OVhEMkp0b2h2WGg4alI4c1FuVTdNUXQ3NUtBTHlJVUJYWllKVWVEUWxxTlA0c3RZYXJSOFJJaUFNV2pKaXdabGxM?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Avoiding Lag: Real-Time Signals in (NUE) Movement - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPUjR2Q0ZmSkpRRExlUWExZ3MyaC1pSWVoOTd3TlhicEJLU2lrcm53dG53LVVFb2dJdlNJdEw3VVFKckZiN29vVEI2dkRBLVZiVGFyWXhVSG0yb0dMaDluU1lHemlLWHZiSDJXZk9tOFZtc3U2QTQ4TlhuZGRITVNqMHdKY0REZExHbC10T1dBOUZYWWZ6VnZBeHhrU0NMb0VmNzcyTFV4NFFJa3dFLUpmeVRSTnM2eUtHSEF0TEdrbENsWmxR?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:07.338536"
+        "fetched_at": "2026-02-13T14:28:44.803087"
       }
     },
     {
@@ -5109,7 +4486,7 @@
       "entry": 191.36,
       "stop": 182.14,
       "target": 214.4,
-      "shares": 10,
+      "shares": 3,
       "vcp": {
         "score": 71,
         "atr": 4.608570643833706,
@@ -5285,32 +4662,32 @@
       "news": {
         "articles": [
           {
+            "title": "Philip Morris International Inc. $PM Shares Purchased by Assetmark Inc. - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNX3kxdVIzU05KSEFrX2pqZXBkSTdYT3dobWFEakx3MmhlbXpjYk1TSUltYnhzX2ZmQ2ZHaFFubkwzS0lROVN5dnZGY2YtZWsweklYc0YxZElNVHNLaDBhQVJQZHQ3QVA3NHVBQV9PeVNQZEVaSE5iUVlhWmMyQXRuY0c0SWgyRWRLbnloa0dtVUNLN1VNTklVcFN1ZW5EekhlOHcteWJ2SS14NG1PZGs2VW9BWFo0V1RLbjFDOHE3a2xSdDdHaVpaMQ?oc=5",
+            "body": ""
+          },
+          {
             "title": "Is Philip Morris International (PM) Stock Outpacing Its Consumer Staples Peers This Year? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxNdXVJQ2I3aFpkR1FuRjdPZUJXZkhic1p5V3ZFeGVBUkVDbzR1alJRQnNoa3kzVm5jOE8tWk1uSE9mYTE3aUYxaC03dEUyR1ItdUdZR0xhWlJuTjB2Y2VHNXZZMUNMSmlkMHA4MVdSYlJRU0V1dWxjdVhpcXdVMUV6XzNqdXlxcUZFdmc?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Best Tobacco Stocks for 2026 and How to Invest - The Motley Fool",
+            "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPbzN5SnpvYTdzSHBBQ3EwazJHbUdlaTIwdmxzeTRsVW1oMGplNjF3TmdBaDZHQS1tX0xsZTVVc1hvVnBsemhzYjNZUEhMT1JNZlB5UHQ3NnNYa3paRTh1ZTRCSDRyZWNtbTJydWFJSzN4eTlBekZjaVRDNmJRa2JROXJ6U3h6VTNET1kzZmxuY3NLaXJwMFE?oc=5",
+            "body": ""
+          },
+          {
+            "title": "5 Insightful Analyst Questions From Philip Morris’s Q4 Earnings Call - TradingView",
+            "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxOR3JxaG4xMHZjUGYtbHdfb1o0LXUwTmEybnZBeFNCMXMwY0xSMVk0Z2RIcEZPdjlOMDdicG93V1M3clhSZlpQWGxEcmZyajlHTVlyT0pHM2tyY3gxVFFNcUZWaHJyV0tRTTAzbnlwZ1htUDNwYnl3c2p0MGVOazV3YjVmT3RKZU1LdmlFMEpCQTdjcXdwOTdkRV92Q1hnYUpHNnBrNUN5WUJtd3ZteTRtOUdvTEM0RmdWZ2V5RVE1TTA0XzJITXppWg?oc=5",
             "body": ""
           },
           {
             "title": "Philip Morris Stock Slips After Q4 Results Despite Steady Growth Outlook - TIKR.com",
             "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPbVoxR2NnZWdWbTR4LTFUNjZER2h3OW0zSF9LQ3ZRQW5vMmRRTmY3UTFzVDIzRml6X2lBa0RiU0VKalc4ek4wNFlKc0wxMWZ3U1FjenRQVzNtMmRDSzBxWF91VGVIQ0swZzRGWHBIWWVrLXR3MVNMOF92NDFtdm4wZnBnOVJWb2JrN0piOXotQ2tnMUpFREZONTBzdGp2YUU?oc=5",
             "body": ""
-          },
-          {
-            "title": "Philip Morris stock hits fresh 52-week high as India IQOS setback and CAGNY loom - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOZXdBN3MtX082RTNLdVBRTTUxT1FCQ3FEbDhMeC1yU3pONUlWc3dXOXBSa3RIYy1BSjR6TWhpWWJaVmtHTHVISllLbVNDYlZWVklkWlZWRGZmOUhGeFh3WGozOHZqX1FOMDFvWF9RMGpQb0UwZkt3U1FxbElRdklWZ2V4UlZkMlVMYUM0VkdXZE1MSnd1NzJQYjhyTTR4ay1TRjRV?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Illinois Municipal Retirement Fund Reduces Stock Position in Philip Morris International Inc. $PM - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxNMUZyX2RINGF3dG15LTRSVXVkcHo5WHFLTjQ3YlNtemtXMmxsNDliQngzMTN6UG9pMHpTS1NBTVh5U3AwekhQa05qT056M1U4M3JjSW1ObFhFemRka3ctcm80NG1tWXRjSTNDak9kSDRaXzdTaUlzQTJXQktHeXI1M2RKNXBCMFBkcl9VdXZfTkVNNFlUWTlLQnl6Mk50cHBKMlMzVnl2Y2hHZk9xSExOUTRxd0tyc2E1V09fTW94WTJ6cGdHOXZka0o1UkdSbU1ta05tQVAydTkwWUtaaTdZTnBucTZFc014Q0lMTw?oc=5",
-            "body": ""
-          },
-          {
-            "title": "With a Solid 2026 Outlook, Is It Time to Buy Philip Morris International? - The Motley Fool",
-            "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxORjBGRnhzTEFCMld5NE9QckhlVmVSaW0yT0ZQSkloMlhycWZaUUE5R2JvS2pXSjByZzhMQWhtTUxxaUNQV2xBb2YyQlRaZlBQaWsxbEF3UktCLTVmSS01cEJxaWJNckNsSk40MXFzeGtnVFJCd0RFdXhwQ2R4d2N3ZFlIYWI2TnpoWDV5WWxQLUM3dw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:08.417607"
+        "fetched_at": "2026-02-13T14:28:46.008535"
       }
     },
     {
@@ -5320,7 +4697,7 @@
       "entry": 77.93,
       "stop": 74.62,
       "target": 86.2,
-      "shares": 29,
+      "shares": 10,
       "vcp": {
         "score": 56,
         "atr": 1.6550004141671317,
@@ -5451,32 +4828,32 @@
       "news": {
         "articles": [
           {
-            "title": "Fund Update: New $216.5M $TTE stock position opened by M&G Plc - Quiver Quantitative",
-            "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOZUw2TnFSTHVKX2Mxa0s1dVBkNTJXeEtRT0FGNS1DamlWM0ZkTk5zQjhINHRscWhjcUt6WXpzNVAzY1loY2syUjRQVzc0blVSV1VuZ1RVSGhXUGFyLTA3Q2JFOF8zSWlwa3V3Y2ZORGRVQ2JtZjlNZ2dSR0Y0UUpZVzBnXzZTaWRxbFl2OUlxM2ZGc3dVdGlyZ1NOeXUtS1RqUWF4SW1B?oc=5",
+            "title": "The Big Scary Myth Stalking the Stock Market - The Wall Street Journal",
+            "url": "https://news.google.com/rss/articles/CBMimwNBVV95cUxQQkUxczZlX3cyU3hvT3ZVZ0xFY0ZDSVpwMWYtRjluRWw0cUpxVFN1dmZKanByOC1mVUhmZW5OblYzNHdsZWtqeC1rcko3OWtKOXZTdkstMjkyVm40UFFYa1FQQzJlRHBiYUptNzJmMmdydW9KdXd2VDRMakQxZWppVDB1dXFxMEFpSnVUTkhJdUFMZk9TSHVyVXgtajViWk9HVzJGYl9KZnZialM1NnlrbUFYQ2l4bEZUQ3B5VUw1UkRkRHM4U1dqV2ozNDNTakNZbDN2ZlpnVHhtTjJZRF9nS2hxZmpGRjBMc014N2x1X2ZLaGkzdFB1RzBTWkhCRHFfbWRDb3BsX0hFbWRvTFRSVWJUeXdDNjBTNHp2ak5jcUJVYUVaV2d1RlJENXI2dzRiYjlWUGtXUzZqYmFWeXJIYTZCOV9IdWoxZWlsR1BOQkUtMUlmQzBzWGtiV0JMQ2E2c3RibU4xOENkU2hjQU02ZDhfZVhwZ2NvcDV4YUxPdmhFOUx2U2ljX3NURzFSR21ZTDNQWVZ5TWlOMTg?oc=5",
             "body": ""
           },
           {
-            "title": "Albemarle Losses Narrow and Guidance Was Great. The Stock Rallied. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMiggNBVV95cUxOQVdzMGQ5dVJ2SmxmT1plUVlhbmdpLXBnekRrLVdqQ0t4YnpBbi16RlhKVmNyeGViQUtOV1owT2kwNVVCSFFrRTI1aW5oX01OLWRfM2JBN1ZWLTVvTkZfbFBHTkRLYThiemxyVW1rZTZiVmJhRFNHZDJtLTJqQVJRYmhzOGhyM1lGWWZfYWliS1hETzJPNHNobGhpUng4TDNMNklTMlVxUDJaeVZrbjRaTlEzai14RVBleVpWbjUyRGtJUFgyeFAwb2c0TlMzdHpRR1A2bWlWWmdWb3NsaHFHWGpTR2xaU2Rmc2FjSzVydjZZbC14aEl5Z2tXSHR3Z0FCSW1jMk5NTmlfTThsMjlKNEtzam5ScVJkd3RaaWs3Y0pwdHh5ZlVTaHhZNml5ZGJxaVdfRTM0T0Q4Y29uOUNQUkN5OTV6ZlcxLUtmVUtzUEpTNGl6OFFPUkdHcVpWWFJTWXRPSWNsREJwNV9tYzd0RmRtNjJXdFVKcjd6c3B2YUhFdw?oc=5",
+            "title": "Fund Update: New $94.3M $TTE stock position opened by Vontobel Holding Ltd. - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOeGhFdDR4d2ZkS2E1M245VjI5WHB1dWcwVjJiWmlHN0ZvOWZxeDVOX2hmYUNxeUxYbjJNdDg5ZjRFVllUODJ0T3ZHRzNGYUh1TEZXWUFFN0J2S1I4Nm1oS1RGOGNHZkM2Tm9OX0s5c2tqYUs5c2FTemhHWUd3MjNvdG5qS1hGZEZTSlkzQ1N4VUtBb0dYNjkxOFJ5bXlSeWg3RUNQcEVQb2lWSzgyR2pMdWtNcjE?oc=5",
             "body": ""
           },
           {
-            "title": "Office real estate stocks tumble as AI disruption casualties in the stock market grow by the day - CNBC",
-            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPcFJ2UEFid29wdGl2a2l6dDdvbS1GVGQ3eU9OZExJa0J2dU0zV3AxaTNhT3JQb1BVMFRTbjRidzF1Z05nSTZka0RKbEFGYTUyaHluaHZlZ1Myb3llNVhXV0dualZ3YjEzWWFTYzk3RWwtRXZLT3FjeHYxakVVc3QyaUE0b2h3aDVueGhWUXIzMG9IcElNMnQyV21TR2I3VjFZamJRV2tIWTd6Z1RFdWp1OG5KR21Ib1l1djdmX0Q0VEZ5T2dzbkwwOVhZeGVVUQ?oc=5",
+            "title": "Moderna Reports a Narrower-Than-Expected Loss. The Stock Slips After Earnings. - Barron's",
+            "url": "https://news.google.com/rss/articles/CBMi_wJBVV95cUxQeVVuYVF3NjZ4RVNUOU13b3haRm9keElzMmN6WlB3UUtOcGhpYm9uZUtXa2NaNEkzZUQtcXYyeXFhUW5ibktxTWl2SlA2RVlUVHpobkVkMUlZWVBObUw5dDFTc1JncExDRXM4QjdDNUJZbTRHSUlLMl8xbUtuVHktR3BGMlNNSjBmZnpXVlZ3aHVPU0dyQjh2WEJQcVNaOGtZT3M2cnE0aFRyT3B5SjFWRnBicnljQ0R1M1ZnWVpZb0Mwa1VpUEpLeno4TkxLZzhYQjBfQWJUTHA1ekRJbzFZYXloWnBsMmJ3WEEzeXJQZ2hfYVJTS0xpazZQOElPTTFSZUFybUhYRkd1d00zLXZlTjNSY3JOR1ZCNWNPTnhNd2lJb2xhaEF4MGM3Mk41Nkd1RUdUYXlRcGFacTZVbkNod2Rqa0U0b2h2RTV4eTdsWWNGUHBwcE14UVNNQUpneFpBYU00UlBPOVRBTEFVOFZKcUxEOUZJUE9aeG84V2Vmcw?oc=5",
             "body": ""
           },
           {
-            "title": "Crocs Stock: Uninspiring Sales, But At Least It's Cheap (Upgrade) (NASDAQ:CROX) - Seeking Alpha",
-            "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQRUNtY205Rl9xSE1pTlkxSHM5RXJpeEFLemF2NF9NZkU1Q0tGbl9IWGtGX3lZRG9zSmo0dXBENzEtWkVyaHRIdEdINmZGT0c0SnpTTndPVktfbkI5Mkx0WmlBTEg3SGc5cllJVXgwenRNZGh5TXVYaXRkWDhTQ09LeXlrWV91VjRYdzQ4UkxvS253WFZx?oc=5",
+            "title": "Wendy’s sales keep getting worse, as the stock sinks toward a 13-year low - MarketWatch",
+            "url": "https://news.google.com/rss/articles/CBMiugNBVV95cUxORjJWSzA2am4tWWQxUUw1b2p4NTlZNFVYSk1tYU9xaTZ3WHk3OGd2LTJhOW0tbHVweldhTjF1UFk3VU9kVkZ4YlJJaWxJRDJJWnBQaF95WnE4WDZGSkRWM3ZaUHpjUURvY0VvZzlBMkRsMFRnb1ppWHVkcmV3LWpfMGt3Nm94ZHpaME1qNnVfTnpVWGFGN3VLZUktSmVKOTllM2JhQk9seVVnSGhrVzVOREMtaWJIVndkQjZ1MG40QmRtMWtaejcyVGgxVzEyZ1dWZzI1eExWVnI4MjQ0RW50ZkhqWjRac0ZuSTV6cXFPRFRpMGhKR1RVbDR5VVJHQ3FFRi05cUV6U3oxeS1YUElZVXY5NzI3QU9xUUdOMnh1Q1BJV1ZUQ1ljVFd6RlZ0WE9nNXVPR3NUVUgwYkVsY015ZmJPV3h1bXluMGJJS3RDVVlhS0dnanRZdFk2YVR5b0ZEQkd0YWRwZWFfQzZEQkJmUTZPWTJLTFlPQkloWVFVNDZTaWp3TU9NN09xYWFTcUxoNUxPRXVncVhUZHctWlB0b0lHSV85bFhsT2RsUWxlZHUwNzRnN1VRNjNB?oc=5",
             "body": ""
           },
           {
-            "title": "Sunrun (RUN) laps the stock market: Here's why - MSN",
-            "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOX292MXBKdldJWl93d0hkcm9TSUdoM0xlbHVJb3NoblFUTDh2bFROYU93dkdJd2lULTJQYnppQWZ1bmZ1TWZzODNycjJzRjFLVjM5ZEdwMlNxdEptdUFJdkpHWFRTQzEwNXFOWmZ4LXlkb0dMSTBSczFoLWtGUFJPRU94RktpUGVaMHhNTmp6bjNFcHpNSndOaHhPY24tQQ?oc=5",
+            "title": "Will the Stock Market Crash in 2026? Here's What the Data Suggests Will Happen. - Nasdaq",
+            "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQWElkcUdRMWFHbzBBMTNxQ1RBVVh0ZFdQNld1dXhrMTJhWlhKN3VfRkJEVFJLZ0NGQ3B5QVRyd1BvR0M0cHE5QzRral9yclVHZVhlSFVvclpscUF3Uks5M1lpdXRoZWdIQ3Izc1dVMmxkSFhnd2NaOG5MTlk0MGs3TDhnb2dwTlRkX0hpTzhXb2xyMVI3ZHk3RThlNVJCUQ?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:09.736110"
+        "fetched_at": "2026-02-13T14:28:47.481980"
       }
     },
     {
@@ -5486,7 +4863,7 @@
       "entry": 14.39,
       "stop": 13.79,
       "target": 15.89,
-      "shares": 162,
+      "shares": 57,
       "vcp": {
         "score": 66,
         "atr": 0.2999999863760812,
@@ -5671,8 +5048,18 @@
       "news": {
         "articles": [
           {
-            "title": "Advisors Asset Management Inc. Has $6.79 Million Stock Holdings in Ford Motor Company $F - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxNRGhZSVUzcWl6bk9aOUI1V2pUYzV1WFhjZ2F6ZXQ4SHRjYkwzRmFYX19vdVI2REczRm1DMjZNbUFZLTY5RDdQTTdaX01MejcxTHhtai1fU1I5ZS1RWjQzTU1Pbkhxa3kyQ0xnQW5mX0d0dk45b1Z1UE00SW51WDM3Y2g3QVpFM1ExWEpiS0dmclIyMnF0c0pfWXFKNm9TSWUxa1NrT2pkemRVUTViaF9XVVY4bWI1MU5XY3JraUE0OWZBS1NxTURsd3NWanhhODFQTUJfYTFydFk2eUU5bkE?oc=5",
+            "title": "0P0000VG7C.F down to €187.49 on XETRA 13 Feb 2026: intraday oversold bounce watch - Meyka",
+            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQRlRmYWl3RXd3THV3MURZdG1OX2FLNEZ2N0NPY2xySFlOMU45Q0hQOXRmODgxN19MZ1RiVFE3UFJfY1JHZGg0YnpWUURHS0VxYTZWTVBuSVU0dDZrR3BSR2pVNGw2akk3a2t3NHpiTF9vSFpqcF84ZkNKY1B4M2ZfVnpkZlA0bVNKS2x6OEJjdm9wNXN2TUMyYXN1dGVYUVN1SjBHU3NpZG9tUQ?oc=5",
+            "body": ""
+          },
+          {
+            "title": "(ESG.F) Trading Advice (ESG.F:CA) - Stock Traders Daily",
+            "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPZ1JHdnBqcEdWWkcxT2ZDVlFWN3JsZ2w3MGlRcFJIckJ1Uk5GQUpXUldnc2sydDZxU0RKeTAweHQwVGxmQl8wdGc5UnF0VDNWYnhxaTlqamxUUHliS1lMTUlqQ1ZDOVJCNk9aM3pYclpoWkoyWExIMFAxV0w5U2ZlMmpQMA?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Ford Motor Sees Unusually Large Options Volume (NYSE:F) - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNTG4wcnExR19SS2lpbW55aFdKNnllakpwS2Q0Njd2b25hYXREMVlYeEJmVWVPdnkwMGdJaFFwa0JxV1pBeDlWcUtuX0RhRHhtLTdwWkR4NzNteEgyM3dkYkRaaWlxdlFib0FOVm80cUxpRzBSWmZ5RWZvLTVLYVBMYmpaYTFaNzM5NnF5SUlYQV9tNWZqb0xTTXhCemc4bnA4Ui1QT2poRWszZw?oc=5",
             "body": ""
           },
           {
@@ -5681,22 +5068,12 @@
             "body": ""
           },
           {
-            "title": "How the (MAYB.F) price action is used to our Advantage (MAYB.F:CA) - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPUFBmRE9rVzZQZW5NQ2twQXpZYUhDR1U1dnhXdHNYVUo1Um1YVmxhV0ZjUFhJc3ltLVkwUGJwdmNfTzQzR183Ym5mSkp1bkJOZXVyb1lCT0JLTkljMy1lc25aSURkS2s5LW5yNXdiSWpadU1NOVlMR2gweXhRdFJ6VmxRNFdXR2E2Zk5DNFAtYUpJR0Y3bVlrMTFJbnNwdldRU1JRZzhfOWJIZFhKV1E?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Pre-market Feb 2026 volume spike: S7XE.F XETRA Invesco EURO STOXX Banks alert - Meyka",
-            "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOV2ctWTNSNExOM0Fqc3BQRWdsN1VkRnlPMUllR1NOVVlnU2p2Q3FDUmpoUkFsWWo3OGF3WVo0MVBrUDBUbWRPMFktanFCV0ZjWUFQNDllYmtoY0ItUnVUdnRJV0lCdUh6MGkwZUtkdElFWUpKNkFwRFVCdXdBOUs0VDhVeDliX0J1amlsWnBxLXN2SkdScFJfcXVhY2pPdHJYYWs0YndaYw?oc=5",
-            "body": ""
-          },
-          {
             "title": "Ford’s Earnings Were Weaker Than Expected. The Stock Is Rising. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMi-wJBVV95cUxNSkVvUVVVUHNlOVdKdGVKaFowNUstbWRPSWxLLTJLWjF3dUF0aXpUdjVoczgxblQ5QWZxTHZ3YS04bXRVRHhuaFVkMVoxd3FVTkRjRndlQVFma0Z0R3dadnl2Rkkza0E3OU1BamxTZFg2VTBKMWpvVXI5elVsNTB4NXZTeDM2MTdzUWd4MUVzYjZRVFhPU0Q4bHFmdHFGQWdLNEVaOEVETU1kQ1U4Y3I3REo0MnRqRHYwUEF2UXEwV0tTajhzYlFMMktfTXQ4SDlFSjdmYUZpNE1hc2N2RlFEUWR3Z3FScDNmUmRob1haQUJPaWJ0VUR0RkQyUl9BY1NHdXlSQVhxY2R0NTRvODJVODgwYkxyWW52ajdWMm05c09QT3R3T3E4Y1psSGtJeFlIVUFhTXpsSnlfMmFGRFJqOFBiSy1pUjA4VzdZMHlmLWdFdk80MWlkdGUwMGZCbXVUWk9hZ2dmN2NiLUc0Qm45bHBycU81ZklhN1Zz?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMi-wJBVV95cUxOSnB2aUphdUk5UldPN2liVzFRSjBJVjU2NzR0QmxES2otLURMZWtNenZUVjFtRE9XSHg3VnBwQkVFN1Q5bm1NUS14bnpXQ1dzemVmSVFlNzFpVDhmazJVYWRMYW1rRlkzS3h6QTFKeXVMWjB2UzBIeV9SNUVSWGdCbzh3b2JyaU5WWDJvY1RXRGt3amNhTzRBVHptWGw0RGYzTUhNQkV3NW16cWdEems5amw2VWl3VTRTcjF5ZlpxOXdlMjAxbVAtTDh5Um1ra0k2YzFDN3dDVDdFVkVUdkZSakxKSDdNMDAwTG5vVTBxNDZnQW5EWm1pN3lGZDhTWmF5RmlzSER2cG9GcGlkVlFxYV9qVy1OUlVjSUZrOTFPYll5MS1FTzIwUk5CZ25MZk04QXJyaVdOXzkwWHRVcVhTVDZhak5XcVhjY004c1kxeE1YeTAtY2ZnYk5XWnNpRDlHT3ZIWXBSbVh3bkU5ZzJ4Q2R3UkUxSktyMGM0?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:11.082690"
+        "fetched_at": "2026-02-13T14:28:48.897249"
       }
     },
     {
@@ -5706,7 +5083,7 @@
       "entry": 72.42,
       "stop": 68.18,
       "target": 83.02,
-      "shares": 23,
+      "shares": 8,
       "vcp": {
         "score": 67,
         "atr": 2.1199989318847656,
@@ -5879,32 +5256,32 @@
       "news": {
         "articles": [
           {
-            "title": "Advisors Asset Management Inc. Has $6.99 Million Stock Position in Williams Companies, Inc. (The) $WMB - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxOX1kwcy00al90UmNseEZjRXdYSm1EUWtFQmZ2VGwwSTg2VDJpRlpSZ0F1VGI4b1ktLWFOODRMakJnbTFWam1GWFVKSHBNYWpTRklpdG9aN2dPWmZFSHozZnFnbHJfRFVrUnQzMDBJa3BHQlNscUpSYTNRc3hkQmpSbmdXLTZ5WDNPdjE3MzltLVRYeVZ5QWx5MzVJelpCWFliYUdILW5qMWtaWHhqbVhoNk5OYjloeFdadlZRNHhwdl8wTWFBdDBZbFNkamZBOG9ZT3hza0N6NUNKMVlWdEZ6Rkx4dWtLQkxBREhr?oc=5",
+            "title": "Williams Companies (NYSE:WMB) Raised to \"Sector Outperform\" at Scotiabank - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPNGxCNlFGdVpEcG1SaElhSnZMZVNqMFlzY2RyVk1ZeVZrNmdMczhObnA4ZHFhM3ZhelI3bU5RZFpPY3FTbVVhZ0VKR2VWaUVENlU5THZaR3Fpd0hJSmppTEJHTmpMMXZPaUNXTGJfaFV6ME9lMEdfTTZ2eXJEREw2eUNtUG5sS1h3R01VWlI0cGNKQ2hHOW5YVlpwalM0alM5SWQwU29JWno3cmM5eUdmRTFyNUJ1elZqWEhGTkMzTQ?oc=5",
             "body": ""
           },
           {
-            "title": "Citigroup Raises Price Target for Williams Companies (WMB) to $8 - GuruFocus",
-            "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQWExIZW1UazJFUTlVVDh3WlplT0N3T1FWMDcyamZHMEJDQmFzVGJJVGNyS1VhOXY1Y0ZCSi0xclQ4RHdFVEpFb2sxVVJFd3RkQWNYdkhhZXZLWTRaejQ1VldBdUFUYVZGLVVrTDJMc2Y1WHZINUZzdV9YazQ1STBVYWtORmpFYTBiMGVQZlZPT3JlOTh5bUlMbHd6SGoyeVNvUWNyRVNXZ3RlNlhhNmRoVnNqWUNGUzQ?oc=5",
+            "title": "New Analyst Forecast: $WMB Given $78 Price Target - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxQa0xIQVBUTng3MlVrVWlKWjRId1VsRTV0cm1rNHNCb2hXQUdDNWV1bTdQbEhhRDF6SFZnUUtkN2haa2ZlamUtUy1aaktsQkhiTU9iR1NOY0VtWm5uR1dBcGs5aGpQdW1zYlk4Qkx0eUtxUGlONU5xT0RIS3RGSVdxQTZjV0JMekk5d25oUUE2OXRvQQ?oc=5",
             "body": ""
           },
           {
-            "title": "Is It Too Late To Consider Williams Companies (WMB) After A Near 3x Five Year Gain? - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNb3hTM0pQTU1YSVZPR3hXQ18zQ1dNZ3o4SXdhcllNTVBTSzFEdUlFUFdQQTh5SEVDTEVKNHp1SzdGeU1vR2JhZ3JsZ0E0cDZ3TFphZ0JadEFpVElqc1NuR1pZakcwNXJXLWJGV2FLTFgwWDdYZ2JiVnhpRkdjZmJfTVdPT29HMklq?oc=5",
+            "title": "Williams Companies (WMB) Receives Analyst Boost with Raised Pric - GuruFocus",
+            "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOWjV2a0pUbkpHSnBZR2JPNG5SX3BTOFNRWWpQSHhOS0thYzNQNTZkNHlvMkpsYjViTjdGcWVzeU54QXdBRUtmZklSNUV3SngwYzFoR1hrd3NCZVp0QTMzMlVwMV93TjRMVnRNczJSWGRhSjVkSzBvdHpMUDJ2WHBOY3pUU3VmYjA5YzRIbmJXNjExSjFZcUNMaktMdHp1YndhajF3bkNYYm5LR0RGR2hrQV9la0NERzNpSTNycXdGdWlfZw?oc=5",
             "body": ""
           },
           {
-            "title": "Williams Co (WMB) Gets a Buy from RBC Capital - The Globe and Mail",
-            "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxOX2FtWGRIM1Ntb2N2NHhMRkVPZ0JQVmlFWThhbDliVUtmT3pPemJsLTktNl9MZ0c5YkNJWkh5Y3Q3SGNHMWlSV0NnMklmakJiX1FZMWdoNW9OTjNXX2tZZ0JhaW50d2hwYUdZYUFNWlNGNkdkcm9iZ1pmVjVzLU5neVIyZTZxRjl4RGYwVi1BRG1DZUswWGJKTG1nd1hiXzFId2xQMGFnR2h0UEhfRFVKS0dKNUsxZG1oSVh0V1VrZzcycWRU?oc=5",
+            "title": "Williams Companies Q4 Earnings Miss Estimates, Revenues Beat - Zacks Investment Research",
+            "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOUU9ZMkQ3TUR6VEcwbWFwcThxZG9DT2VCY3pQWDBWaDJUd1gydHRmcjNwVU5uQmlYRlJOLW5PbmJZdFctdkROM3BIQi1yc2w4YUFfVTdLeW41UVFhUEk3ckVhdllZclcydVpQNW1MdXhORUxLajdvOHdsZ05mb1RTVnFnZ04zOUNLalhCajl2OGMxVE9xaHc0LS04Z0RRTUZQZlE?oc=5",
             "body": ""
           },
           {
-            "title": "Williams sees higher 2026 profit, driven by new pipeline and offshore projects (NYSE:WMB) - Seeking Alpha",
-            "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNc1hqaEZqSVU2QmxHeWlsaHdIYVJXdXBRWDV0Mk00T054U0V3dFltc0Z4Rm4yS2tpbFFoemZhYWZUajlRcHpvLS1oVTBCU2ZNcWVyeFlGNWM2UjdLRkJkVUNBQUd3OEc5QVF5a281T0dtZHAyblFRNm55VW9maEZHeU5aTTJUV0hTaXhNVmw0LXpLWXhUX04wT2lzWGotVUJyVnRlbkVDc0JVb2Uzd1NGSU5aWGYxUQ?oc=5",
+            "title": "Analysts Offer Insights on Energy Companies: Williams Co (WMB) and Helmerich & Payne (HP) - The Globe and Mail",
+            "url": "https://news.google.com/rss/articles/CBMi-gFBVV95cUxNUEhfcG5LMXdJOTM4a2ZXOGQ5dko4OXJfR2F1N0VNU3pfOVVRYUZzc2d4LUNtSnFGQzFtTTdyYldzSHBObWN3Z28zLUZ5dXlLTWRsNVZQOTMtdUJ5OFJFVUZ3TmMzMmNScWtqNGs5Y3FaSWZtS3BpLUJveGlLNUEtajgzYkZBUm1lMGZnRnpzaXFfZHpuR0ltcmttVWI5UkRIbXJaZlpsRXZJMl9VTUROTXk1RXdkSWdIb2VUeHROdGx0eU9rZUhuZGVSbWpzNGlBQW5mSk5hbWF0VTJIaUoxWXZ2ckNPdzVwUWxwNmFuQmRlQXUyd0VHakFn?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:12.243291"
+        "fetched_at": "2026-02-13T14:28:50.084014"
       }
     },
     {
@@ -5914,7 +5291,7 @@
       "entry": 370.33,
       "stop": 349.86,
       "target": 421.49,
-      "shares": 4,
+      "shares": 1,
       "vcp": {
         "score": 82,
         "atr": 10.232142857142858,
@@ -6090,13 +5467,13 @@
       "news": {
         "articles": [
           {
-            "title": "L3Harris Technologies (LHX) Releases Q4 2025 Earnings: Revenue Growth but EPS Falls Amid Strong Cash Generation - Quiver Quantitative",
-            "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPM0p0WTB2eFhoR2IxbXJWcGliRTY4S3I5VExCQzFhUmxqenhUd3FZSElHa1BuTHFPd29keTJJRV84YzZDYnVRMHpxcHNVY0xVWXo2RlZESFljQUVxVjY3ZHVQTFVhSmh0UVhabjQ5WC1LYjdEQlVhdHRqT0xZT1UyVnBZREtTYmtxbDdhSFdaQmQ2MmtScTZ3VFI1bVBKZGY2dWFvX1pFSFZwdUFhYzVPYS1nOGszYi1xbkl6dzU3OC1HN1paLVVGR3MtTlZFTm1TUWZ2TjhFcUhrRFFwSC1adUo3X2U?oc=5",
+            "title": "Freemont Management S.A. Sells 35,300 Shares of L3Harris Technologies Inc $LHX - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPN042ZHhuNkM4RTh6UFdUbjNmQXZxYmF4MGswbXgyOHFlZnZMaVFBR2VzUWRFajF4azV0M0lkdmFvdjJfOVhuWUt6S0dMdEg0UEtFTk1OdG1NXy12akJ5VHVuNWNxeTFhb1h3WjQ0a19PV0JPWW1kNkkteXl4bF9nMjI1blUzalg3YlhxRUVsZ2RLazdqMHRlWGl4VDc2RTh2V1dsQjZmNFd6dDNEcHg4ajcwQnBpQlRFNTlwWDRONC1yZWVibS1nNk52bDdQRHhu?oc=5",
             "body": ""
           },
           {
-            "title": "Rhumbline Advisers Reduces Stock Position in L3Harris Technologies Inc $LHX - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNVk9tYzVNU0NUX3R3RnVNenRrbk9aSkdVQkVtYl8tQ1d2cVpQSVFPVVFuYklPdlVXd05KOWVxVGIwN0lZQy1JdzdCa3VJTWxIZS1WcHhldkdlbUZnWF9IaE1OOVVGMnJKN3o3QjQ3OThJOVd2VWRISl82UXI0TVZCVWZjd3Y5V2N6TDFCbnhBdGtTN0ktVVFvZW5XbVp5b3pFTFBPTURmeFRTTmRZcnFMU3dlVFlFVktITGxuMU9TVl9fdkN4dUR1NVg5Rkc5Q3No?oc=5",
+            "title": "L3Harris Technologies (LHX) Releases Q4 2025 Earnings: Revenue Growth but EPS Falls Amid Strong Cash Generation - Quiver Quantitative",
+            "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPM0p0WTB2eFhoR2IxbXJWcGliRTY4S3I5VExCQzFhUmxqenhUd3FZSElHa1BuTHFPd29keTJJRV84YzZDYnVRMHpxcHNVY0xVWXo2RlZESFljQUVxVjY3ZHVQTFVhSmh0UVhabjQ5WC1LYjdEQlVhdHRqT0xZT1UyVnBZREtTYmtxbDdhSFdaQmQ2MmtScTZ3VFI1bVBKZGY2dWFvX1pFSFZwdUFhYzVPYS1nOGszYi1xbkl6dzU3OC1HN1paLVVGR3MtTlZFTm1TUWZ2TjhFcUhrRFFwSC1adUo3X2U?oc=5",
             "body": ""
           },
           {
@@ -6110,12 +5487,12 @@
             "body": ""
           },
           {
-            "title": "User - The Chronicle-Journal",
-            "url": "https://news.google.com/rss/articles/CBMinAJBVV95cUxQQ1ltcjZsZGlwRVQ1S3lPcUlua25pSWFqZ0pJMHNrcHU5NWxnLXQweUExdnhIM0RJNUo2OEo4WXRqVEVkS0FWNE9vRlgzUkR3elJiZFBHNDFlWURtYWpDLU9peWx1NVZZUEpYTFR1UEI3OG5lQWtKU0xkbDNIQjY2SGNKVEtBZHFJNlg2QmxiWGs2TVJCSzRrTDJ4My1iZlAtSzJQOV9DTVk0b1kwakZHVXl6U0k3MTN0T2ZRWnNNb21SR2VuSGdsYzFQaFNRSkxqbWdzU0Q4bHFyTmRRMEpMSWZYYjFnT3AtZ2hraDYxMXBnOGN3anlBLS1kX2otQi1wNmI3QVZ5SkRYcVBLQ0dzVmt3eXZlTWJuZ3hNSw?oc=5",
+            "title": "Price-Driven Insight from (LHX) for Rule-Based Strategy - Stock Traders Daily",
+            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxNRkx3NkJaS3VfV1g1TG1CdFdPVkcxOXdydzVnLVlyQVZaUkJ0aW5nTGJqS1F5aElLU2Y5amtCUk42RUN1U0c1TEVnR19UNW5PejVZSG1rNnQxVXFxdWxaUFk4eVl3MjRxbXc4cEFuVHktWm5DRWJUYVhLV0YwYXBnTUtnVV9IZEFBZmUzY3JHTGRCQ0hRSjQxSjNDa0lmWkVHVnhJVEVrQldNU3Fib0puOE1uMXJwZDZWZlU0YW5VVDNYcDRFQnJJVkUyUmFLdw?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:13.324454"
+        "fetched_at": "2026-02-13T14:28:51.459351"
       }
     },
     {
@@ -6125,7 +5502,7 @@
       "entry": 88.9,
       "stop": 78.47,
       "target": 114.97,
-      "shares": 9,
+      "shares": 3,
       "vcp": {
         "score": 60,
         "atr": 5.215143476213727,
@@ -6299,17 +5676,12 @@
       "news": {
         "articles": [
           {
-            "title": "Short Squeeze: Is OLMA stock a value trap - Portfolio Update Summary & Technical Buy Zone Confirmation - baoquankhu1.vn",
-            "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxOQng3bjBRcHl2ZHBMNjRBNlozQkFSWEo1aXNLcFUxcWV2V1VTTGQ1WWUxQ0VLZ2tyb2J2eVlURHh0cWl1OUJSRU5kTExkN0szMVgwbGNpdzBia0hrUGQzb3l0SmdwNHNiSzFZczhaLXE4a3FsVFIzUjA3WWtwYVpoci11UDBNSEQ4a0E?oc=5",
-            "body": ""
-          },
-          {
             "title": "Is Signing Day Sports Inc.’s growth already priced in - July 2025 Levels & Daily Chart Pattern Signal Reports - mfd.ru",
             "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxObTRlMXJ5LWpWdFNpRGhpMzduVDlRSDR0bGFYcjAzQmJ4TTZNd28xc3Y3djVjYXE2ZzRTYjJHZWxFS2tOWHpKaU9tYkVneDRQMFZ6dGZKdl9qbUNkZVVUNDRoUGNYd3Z3SnZxT1JOMlFjMmV5T1I1UUtwSl9JcFpqWGI3R2pEdlllV3c?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:14.139773"
+        "fetched_at": "2026-02-13T14:28:52.044838"
       }
     },
     {
@@ -6319,7 +5691,7 @@
       "entry": 42.35,
       "stop": 33.51,
       "target": 64.47,
-      "shares": 11,
+      "shares": 3,
       "vcp": {
         "score": 60,
         "atr": 4.42378534589495,
@@ -6493,13 +5865,18 @@
       "news": {
         "articles": [
           {
+            "title": "Caprock Group LLC Makes New $3.16 Million Investment in Applied Digital Corporation $APLD - MarketBeat",
+            "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOSHBCMV9FQ2JfZi15WmVvSXpjX0FhLUN2TllUNXVaWEdQRnQ0MXh6NEd1LWUtUDFzX2VNdTk4UHZrRU5XUWd6OWpSZU9kWm5lRUpjeC1YSUtCZ21tYkpZVmx2QXRCV295QUsxZDJwR3VvZ3A5TUlKOGhaN3plZmV4UnVtOEtxajRGeVRwMThPLUdMa181MXhhWERHT0FscXpTUm5yUWM5c0FMOXdjOUU5UmhqcVgySUJFZXlrRW1hSDNoM0M3M1JxYklvZE5wQWY4TGU2X3BDc3VJeEk1U3N5OA?oc=5",
+            "body": ""
+          },
+          {
             "title": "APLD Trades Near 52-Week High: Should You Buy, Sell or Hold the Stock? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE4tWTlQVXZrZlBkMGg1Q1F6Vk5qY0lkUGdPR3dNd0JDb2h0M251eEliYjNsbTNXMjhJVUEyR3lqN2RDNnI1MHRDSXEtWGpxaXdmSDVxSGhRaUZYSEhHWGhhR21iSkozWXplYnM1NFk3T3l2bmRRZ2VpeG53?oc=5",
             "body": ""
           },
           {
-            "title": "Applied Digital (NASDAQ:APLD) Stock Price Down 2.3% - Here's Why - MarketBeat",
-            "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNOHBYdWhtTkJyd091OHM3WUZPaVBtQl9QQkJkeTUzSERoa0FVc3lMQzZOb24xZmRsUUNMd21wYU13NnJyV0oyWEE1eVl5eEVCWVo2NHhsZGx5Yi1XR2VuWnc2Q0ZreXowczFUVVdvQm9MN2ZjalRzUDloWk1IMTloWU9HMmRUZU9Hb2lsazhlX1BtNzJJMkNiaVF6TzFkNnBYeW0xSmxiZkJwQkRRYTAw?oc=5",
+            "title": "Amazon, Microsoft, and Alphabet Stocks Plummet on AI Investments. These 3 Stocks Are Set to Win. - The Motley Fool",
+            "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQc3AzOElQcFZHQkhDanNnSnlacWZtWTZpZUd0eWpOa3ExeW1ObjRsZlpWSF8tVUpfSHprVUZpWk1Idnd1Vm1sazBzVVNGbkJ5NlNFMUd1dGx0Q0dkYnJhOXNZb1l5cFRvTEZwUk90amlab3FhazRha0l2QUUxTnIzMkZUWlVwRkczWXlvaTdxUTJ3Nno5?oc=5",
             "body": ""
           },
           {
@@ -6511,14 +5888,9 @@
             "title": "APLD Stock Goes From Record Highs to Sharp Pullback: Applied Digital Faces Execution Test - FXLeaders",
             "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNZ1hrT05oU1BrY3pXYWdJVGJmWGxzcnBBUER3c21qaG5tMUI1dFYxTzhGN3dGMEJZRFI0SUNJUXVlX3hxMTVrVDlxbms3eXhuYWVoZmxBOFhJLUpFT05LR3VrdXdFaFJHaFVQRnhFaHUzTWhONFNNVzZrYVp5dk0xUXFKeTFoVFVyazRpUWp5NVJTcHRWODB3RzhHd2s3bTI1Y01ITWNGZ0dDT0tsZG1uaVJwOTdXYzR4a1BMZTZkOE1NMWlHeHpBX3JDUQ?oc=5",
             "body": ""
-          },
-          {
-            "title": "Applied Digital’s AI Data Center Pivot Balances US$16b Leases And Risk - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxOSm11Y2N3d19IM0xYZWdQRUFuZEpRWi04VUE2TXVlREJhY3lwS252eFJONmdMVkRCNDJEaU1KazEtOWRNOXduOWNBWW9JMklIMHpfUFFvQVkyVTE1ZFdyVFhuVG4zcDU1V05NWTZvOV95SnQyLVFqMGFOWU5zNVg0QUF0MzJraGdOblZ5azUyODJ2MEJlZmc4YTBtWUdfMnlCODhyQXFqOHBlYlk5Z2J3bkpfZmI3MlgwTDJ0THBGNm9FNWlFeHhaQ2lvb0ZiZw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:15.101099"
+        "fetched_at": "2026-02-13T14:28:53.126594"
       }
     },
     {
@@ -6528,7 +5900,7 @@
       "entry": 55.31,
       "stop": 48.75,
       "target": 71.72,
-      "shares": 14,
+      "shares": 5,
       "vcp": {
         "score": 60,
         "atr": 3.281928743634905,
@@ -6768,32 +6140,32 @@
       "news": {
         "articles": [
           {
-            "title": "Moderna Plunges After FDA Refuses To Review Its Flu Shot - Investor's Business Daily",
-            "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQZmJyMTZ5emVEZ0pYT2FzU0ZYSFlMTjhTZ3lVd3VVS3NQV0FPaWpwWEktNVVLeUJwWkFVdDVpLUtaeEh0ZXdlVzdmU1VJbm83Q2hxUXRxVWFveWNWYkVjcE0zbE1mSk9zWUp4Qy15M21jS1hqWGJrWjdnNnNTN2NEUExxajNDYklnRXkxdmxn?oc=5",
+            "title": "Is Moderna (MRNA) Now Fairly Priced After Its Recent Share Price Rebound? - simplywall.st",
+            "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxPS0czcnd1Tm1aNGpoVTZCWkY0bFpmUWdyOVE1bjBVQkxrcUlSdTJmblo0OEtlM1NJYUtXM1pZQzE1M3pkZzJ6VU5iSzJBMm9oQXo3VmhXdGttU2YwVGJSWV9iaGV1UGVDMnM1OTBuUXVLU3lULXVBNXZabGlsN0ZIM2xDeG1VUGtIOVRZY1dJVU50LXlCY1dDNnN1Q2N6RUcxcEU5TXJRcDFJa2xjR1dyMi1zQzdlcEJ4T0NnUGY1WlNDZDl5VWg4SWdhczNMdkN5QjlXblpnT3M?oc=5",
             "body": ""
           },
           {
-            "title": "Moderna Stock Sinks. The Puzzling Reason Its Flu Vaccine Was Rejected. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMilANBVV95cUxQb3dQazdJMHo4dkRqTXZyNndOTERaaG15RXZRY01GQlBkbzVsYWRsaENJZ0xUcHpiT0hmVUZnZ1JzcmVWeG8zeldmeGQ2bnJGQkVUQ0FDQmdDdEFTVmlHdmtTY0ZFeU0zbnBYWVpNT0RVb0VyYm9PMDQwaXJHekdQSWR1NmlDSFRrNFdHTENyNi1OeXVTekIySWFWWWhXUkprbVJBZHc3Tkp0U2c0Skl2QkpCQWhPQ001Y2xneFRmZmVQanZfb0FTSVBzZzEtamZ1MUQzR1dMWVdBcU85QmNrQmpuazczd1F1Y3Q0LXZjMjVVbUpfeFJqZnIyV2t3XzRrUnlLY2V5U3ZQSW9jZ1haSzQwZlk1bGVqRjNoRFF2RnBPUjM0X1JqMHJWNjBKWG9rd3hMenJ3SllkVklTLS16Y25INHRWaGs5Vjdzc3QydEFiSnBkbzQyYndEdTg3eXFwQy1xQTE0cmRRSWt3ZjZwal9Zb3BRZ3JFRHl1UXJnZFF3LXdiNDZTd0ZzRzNCN0lqcVJycQ?oc=5",
+            "title": "Moderna reaffirms 2026 growth after Q4 beat (MRNA:NASDAQ) - Seeking Alpha",
+            "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOQmxHOTAwdEdSX2VxRmZNLWEzc0Q0c1dnNE9WVXduZXFDMEMySUZyVjFKYnBRUUpROHZCdEgybVpTV3h5QUU4dDBVTWNScC14aW1icFFMRThlQjZLMTlIUlpvcWNoTW1nUHdQTG9VeHJxWjE5ZGx5N19VRmllNmRDYQ?oc=5",
             "body": ""
           },
           {
-            "title": "MRNA April 2nd Options Begin Trading - Nasdaq",
-            "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE9iV0N3ZEZYTXJqUHRKZGszMXBJbjF1dlY5YktvVmFRTjgtTUFYbFlrTk5YS2FLM3lWRm5wTTBQWjhieFJLMmxaN21yZWItcHV5eTYzeFUtaDFweHNLRjdhSy01TG1NWHBLZUdXRHU1TmowSGZmRExv?oc=5",
+            "title": "MRNA Earnings: Moderna Stock Slips as COVID Vaccine Sales Tumble - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNUG5xY19ZTkdwblJlYmwyeXJzYjhDY2hTSXlBQ3FNcFg4QWJ4YVZKN092YkdjRVNzaFpZbU1SaDE4RVZhaEFPUHUwODVTaFExdjMyMUcxS2JJaWNEaWRZZXRBMHlLLU9pRW40OHlfc0ZDTnhvOWd5RGhvSUl5SU9YenNkRHNTX0s3bUVEcXdZWElfcjZneVVteg?oc=5",
             "body": ""
           },
           {
-            "title": "Moderna Stock Sports Technical Support Ahead Of Earnings - Forbes",
-            "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxON0lnVXdNMWlnYnBjRTUzUlJfV2ZiMTBpNzNULXVyZ1JPay1BSDh5WUwtbi1ISWJDOUYzSXVyMkZibUZyeksxUl9NR2ltbThSRDJRV2pkQVgwV3lrUzlUTzM1aUhOclc0NHBHSjJldnBuOTAxWmplS1k4OFFWdU9YbU13bEhOOTZUNS1nNUtVQVV1eEpZS3R2MkdZa1EtX2hLWkVCV3hZMHR6OGZiSWM5UE5HZ1dfZw?oc=5",
+            "title": "FDA refuses Moderna flu filing as Europe, Canada review - Stock Titan",
+            "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNbjJWU0NOQ1h5RHZiU21tNjhrWkFydURsbTAzT3FRRTdrZEQ2bVlzeU5ic2NjOHp4SWxVVFJNZV9UN05IeWl5bEg1RFA4cXROQVZEcWh3T1FidlJ4N3h2S0ZlNFF6d0ZlTEN1bWFiREE4aVNNRHFPN0JDV0RHUUV6ODV4NFloQlZ1LUh0RmR0T0kzdkJGWkRNeVJ3VnBVcnpubmU3d1JGWl9HSHEyQWVpUF9fdVFSbFU?oc=5",
             "body": ""
           },
           {
-            "title": "MRNA Stock: Price, Forecast, Financials & AI Analysis - Intellectia AI",
-            "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1LVDVadlVSQ3J3QTZnN1JNamN3OTJkdTZrbmRHMXFpeTQwYThsc3Z2OHVrU1B4Q2ttQ3dtYlh3WWxUa2pWSjJiaA?oc=5",
+            "title": "Nasdaq, S&P 500 Futures Edge Lower Ahead Of CPI Data: Why NVDA, AAPL, TSLA, RIVN, MRNA, AMAT, IREN Are On Traders' Radar Today - Stocktwits",
+            "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxOdFhGQk9FZm44dHo1SWExWldIazE0M2Y2ckliOHUyTGdZWTRRYnpXOW1ZRnZvZkNMVFhaeXBXTUpidVltZ3c1a1VQWktQOWd3Q0xBdUpaNXM3X0pqN2NnekhnalJUdF95emlGblJ0OGNSd3BMRmZKV3g3WkhDN0p4eTJNWUFNeGFuX2M4VXBiRm5KcVh3bVhERENTSEgwZmNQUnZGbW42WERkZVRkd1lOQlRTYXFkWGdaTmpQaUFYRVNpeUxlamUxZ2ppVVF0VkNodlE?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:16.204536"
+        "fetched_at": "2026-02-13T14:28:54.497197"
       }
     },
     {
@@ -6803,7 +6175,7 @@
       "entry": 87.8,
       "stop": 82.31,
       "target": 101.51,
-      "shares": 17,
+      "shares": 6,
       "vcp": {
         "score": 56,
         "atr": 2.742142813546317,
@@ -6974,32 +6346,32 @@
       "news": {
         "articles": [
           {
+            "title": "Iconic car maker raises dividend by 20% after record profit - thestreet.com",
+            "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPSFNQMGUyamplSTVYSzVzYWpFdGtRVjVIQmMzYlROV2FzTWV6MV9iYjdiN2p0OHlhUUxwMjlzQnVjLWpoaV93VlZ6ZmJTRGk5OUFpS0VTSWh0MHdReUFpNVhTcXVUR2tKamV0ZFVNQlp4cnlnajNxbW9lN29UaHBYVi10cXVrMGhscXd2bm1fSVdMeldwVHhtVnRmX2dPek1OWUNSVlVVeUtUTXNhVFUxdEhzUWlpQ3RmbWZOMEVFeWZrd2s?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Regulatory whiplash for automakers as EPA rescinds emissions standards (GM:NYSE) - Seeking Alpha",
+            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNRmRhTFRQanRpNkRrT25tMDViQ3ZWcnFveDdSVFlCclhjQVpTM1NGMFpsVVJYeG0tMGE2a1dOR1Z1bmI3RXd1bnpHazBOWmROWWlybkVmQ2V5TG5nbE90SlRUQUZfRnhaNUk2RVF4REVNRFhyNmtRZ2l4eXNtUjd3N1JkTi1Ta3FiNVRIN0p2YzlSTWV1amFkMUlNdUtpa3FCQjNWTDdfSnBpdm0z?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Why This Top Stock Is So Much More Than Its Dividend - AOL.com",
+            "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBjeUdIenZvNk9zblExYzRLZ1BHamh1V2lsOWFpdWhKeFFuN3RUTVQ0UU1oc1JVU18xQmpZdUl0bE13U211NXMyRUdhUEtWbkVObFNPMG9IR1BwU3FBX3dxa3JwdkZVeHhNeU5TRGItZ1ZMSGRwbHc?oc=5",
+            "body": ""
+          },
+          {
             "title": "General Motors stock price target raised to $90 from $65 at Benchmark - Investing.com Nigeria",
             "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNdklWVzFxYy1XeXNjX1N3VFVnbTRVbzY1bGd5NnN4MkNGWEQtRW9FbjJtRFQ5eURGOUcxV2VDRndWUUdjdW9WTnlZSktlLW14eVBDTXdhZ29rb0Jpb2lKY1BnVGZhbGhlWWdYRE5wWktQb2U1Y2lWMHBhb0VqUlJKZkZVQjc0YWFKLWs5a0RxbFNPWTdZbW5odnd6anc2VHJnT29vdzc5Vjc5a25oSlBZcVV0T1dYa25TMHNlNXNLNkUzMDNS?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Why I'm Putting The Pedal To The Metal On General Motors Stock (NYSE:GM) - Seeking Alpha",
-            "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNUHA4RjhhdEdxTHc1RFhxWkQ2UFZDRmxxOVFsU3dhRjc2RUU0bTh1QksyQVJLNVpJVE9EeW04YTlGMU1XYnp2YnBFcWpzMWFTTzNjYWo1MS11d3N4akFmbjJPbEpHTGhxRGhTN2FfMWVsa3l5ME5TRW1nT0E3c01TUlRZXzFEeVh4SUJ6NUU4cFZvb2tycDc4UkpzZ1BLWUN1eHQ0eU85Y1JDU08tWC1J?oc=5",
-            "body": ""
-          },
-          {
-            "title": "General Motors Resets EV Plans As Investors Weigh Valuation Upside - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNNXR5VXJjWUtWNlJRTkZ2amN0RnhrUjBkTGdmNlhRTXg5a09DaG1VSWZDMExLeWlrSExISmJBdnU0bmpjSmtQTDc2TW9ncWEtRUdpZFBqUEpaanJiR2k0eENRRnhZOVVDMVVsLVVVWTZOWDZJaDdZTVJUWTdWTi04Z1BDNlZQSGowRDdMbkhLeDcxemVFYWFLN2FqeXRodEk2NU1XSlJaLS1aREU1ZG1oeVdqN0JmRmxReV9vOXJnM292bkI3MV9MWm1pUQ?oc=5",
             "body": ""
           },
           {
             "title": "Fund Update: New $5.3M $GM stock position opened by Illinois Municipal Retirement Fund - Quiver Quantitative",
             "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQQ1VKOFU4eG0ta0RKeHFJYUF3MVcwZkQtSEJYTXg5Y3VsYVN0OVRvYkVQUzItajVFNzFmVkNGTnNMck1HdUJQSXkwSEhXbkdYOWl6dHdJX0o1N1Nxd1RPV19VNHVPWktSdVZjbTFjWXB0b2V5SWRqRTBJc2pkdlFkRlRnRktiTHRxQTU5dk04em5UeDA4b0ZGMjk3M2lYY2lGR0RHUE54VVF5TWQxaWdVejBoSjFEb3B6bURZOTVaZmM1UGM?oc=5",
             "body": ""
-          },
-          {
-            "title": "What General Motors Really Wants Investors to Know About Q4 - AOL.com",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQTjJFZHdoaFgtX09KdEE5bjd5RTlqa2ZJbVZzT0RBbXk2dGhYZ0tTTjRSY2h2VHV3Z3I0am9jbjI1bnRDb0hiWHN0TG13ejVIWVVGRFlmX2RpVDVRbGNtX3Faak90bWx2ZkNnVnZhdGk0a01tMXo1Z0xETVFXQ3Q2SEtveUk5RjdI?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-13T08:39:17.393292"
+        "fetched_at": "2026-02-13T14:28:55.881605"
       }
     },
     {
@@ -7009,7 +6381,7 @@
       "entry": 131.8,
       "stop": 125.17,
       "target": 148.38,
-      "shares": 14,
+      "shares": 5,
       "vcp": {
         "score": 56,
         "atr": 3.315295666810212,
