@@ -350,56 +350,158 @@ class NewsEngine:
         return "\n".join(lines) if lines else "ニュースなし"
 
 # ==============================================================================
-# 🧠 VCP ANALYZER
+# 🎯 VCPAnalyzer（構造維持・ロジック改良版）
 # ==============================================================================
 
 class VCPAnalyzer:
+    """
+    Mark Minervini VCP スコアリング（改良版・横並び解消）
+
+    Tightness  (40pt)
+    Volume     (30pt)
+    MA Align   (30pt)
+    """
+
     @staticmethod
     def calculate(df: pd.DataFrame) -> dict:
-        try:
-            close  = df["Close"]; high = df["High"]
-            low    = df["Low"];   volume = df["Volume"]
 
+        try:
+            if df is None or len(df) < 80:
+                return _empty_vcp()
+
+            close = df["Close"]
+            high = df["High"]
+            low = df["Low"]
+            volume = df["Volume"]
+
+            # ── ATR(14) ─────────────────────────────────────────
             tr = pd.concat([
-                (high - low),
+                high - low,
                 (high - close.shift()).abs(),
-                (low  - close.shift()).abs(),
+                (low - close.shift()).abs(),
             ], axis=1).max(axis=1)
+
             atr = float(tr.rolling(14).mean().iloc[-1])
             if pd.isna(atr) or atr <= 0:
-                return {"score": 0, "atr": 0, "signals": [], "is_dryup": False}
+                return _empty_vcp()
 
-            h10 = high.iloc[-10:].max(); l10 = low.iloc[-10:].min()
-            range_pct    = float((h10 - l10) / h10)
-            tight_score  = 40 if range_pct <= 0.05 else int(40 * (1 - (range_pct - 0.05) / 0.10))
-            tight_score  = max(0, min(40, tight_score))
+            # =====================================================
+            # 1️⃣ Tightness（40pt 改良版）
+            # =====================================================
+            periods = [20, 30, 40]
+            ranges = []
 
-            vol_ma    = volume.rolling(50).mean().iloc[-1]
-            vol_ratio = float(volume.iloc[-1] / vol_ma) if vol_ma > 0 else 1.0
-            is_dryup  = bool(vol_ratio < 0.7)
-            vol_score = 30 if is_dryup else (15 if vol_ratio < 1.1 else 0)
+            for p in periods:
+                h = float(high.iloc[-p:].max())
+                l = float(low.iloc[-p:].min())
+                ranges.append((h - l) / h)
 
-            ma50  = close.rolling(50).mean().iloc[-1]
-            ma200 = close.rolling(200).mean().iloc[-1]
+            avg_range = float(np.mean(ranges))
+
+            # 正しい収縮判定（短期 < 中期 < 長期）
+            is_contracting = ranges[0] < ranges[1] < ranges[2]
+
+            if avg_range < 0.12:
+                tight_score = 40
+            elif avg_range < 0.18:
+                tight_score = 30
+            elif avg_range < 0.24:
+                tight_score = 20
+            elif avg_range < 0.30:
+                tight_score = 10
+            else:
+                tight_score = 0
+
+            if is_contracting:
+                tight_score += 5
+
+            tight_score = min(40, tight_score)
+            range_pct = round(ranges[0], 4)
+
+            # =====================================================
+            # 2️⃣ Volume（30pt 改良版）
+            # =====================================================
+            v20 = float(volume.iloc[-20:].mean())
+            v40 = float(volume.iloc[-40:-20].mean())
+            v60 = float(volume.iloc[-60:-40].mean())
+
+            if pd.isna(v20) or pd.isna(v40) or pd.isna(v60):
+                return _empty_vcp()
+
+            ratio = v20 / v60 if v60 > 0 else 1.0
+
+            if ratio < 0.50:
+                vol_score = 30
+            elif ratio < 0.65:
+                vol_score = 25
+            elif ratio < 0.80:
+                vol_score = 15
+            else:
+                vol_score = 0
+
+            is_dryup = ratio < 0.80
+            vol_ratio = round(ratio, 2)
+
+            # =====================================================
+            # 3️⃣ MA Alignment（変更なし）
+            # =====================================================
+            ma50 = float(close.rolling(50).mean().iloc[-1])
+            ma200 = float(close.rolling(200).mean().iloc[-1])
+            price = float(close.iloc[-1])
+
             trend_score = (
-                (10 if close.iloc[-1] > ma50  else 0) +
-                (10 if ma50 > ma200            else 0) +
-                (10 if close.iloc[-1] > ma200  else 0)
+                (10 if price > ma50 else 0) +
+                (10 if ma50 > ma200 else 0) +
+                (10 if price > ma200 else 0)
             )
+
+            # =====================================================
+            # 🔥 Pivot接近ボーナス（最大+5）
+            # =====================================================
+            pivot = float(high.iloc[-40:].max())
+            distance = (pivot - price) / pivot
+
+            pivot_bonus = 0
+            if 0 <= distance <= 0.05:
+                pivot_bonus = 5
+            elif 0.05 < distance <= 0.08:
+                pivot_bonus = 3
+
             signals = []
-            if range_pct < 0.06:  signals.append("Extreme Contraction")
-            if is_dryup:          signals.append("Volume Dry-Up")
-            if trend_score == 30: signals.append("MA Aligned")
+            if tight_score >= 35:
+                signals.append("Multi-Stage Contraction")
+            if is_dryup:
+                signals.append("Volume Dry-Up")
+            if trend_score == 30:
+                signals.append("MA Aligned")
+            if pivot_bonus > 0:
+                signals.append("Near Pivot")
 
             return {
-                "score":    int(max(0, tight_score + vol_score + trend_score)),
-                "atr":      atr,
-                "signals":  signals,
+                "score": int(max(0, tight_score + vol_score + trend_score + pivot_bonus)),
+                "atr": atr,
+                "signals": signals,
                 "is_dryup": is_dryup,
+                "range_pct": range_pct,
+                "vol_ratio": vol_ratio,
             }
-        except:
-            return {"score": 0, "atr": 0, "signals": [], "is_dryup": False}
 
+        except Exception:
+            return _empty_vcp()
+
+
+def _empty_vcp() -> dict:
+    return {
+        "score": 0,
+        "atr": 0.0,
+        "signals": [],
+        "is_dryup": False,
+        "range_pct": 0.0,
+        "vol_ratio": 1.0
+    }
+
+
+  
 # ==============================================================================
 # 📈 RS ANALYZER
 # ==============================================================================
