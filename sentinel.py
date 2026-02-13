@@ -42,7 +42,7 @@ def _ef(k, d):
     return float(v) if v else float(d)
 
 CONFIG = {
-    "CAPITAL_JPY":       _ei("CAPITAL_JPY", 1_000_000),
+    "CAPITAL_JPY":       _ei("CAPITAL_JPY", 350_000),
     "MAX_POSITIONS":     _ei("MAX_POSITIONS", 20),
     "ACCOUNT_RISK_PCT":  _ef("ACCOUNT_RISK_PCT", 0.015),
     "MAX_SAME_SECTOR":   _ei("MAX_SAME_SECTOR", 2),
