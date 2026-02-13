@@ -92,7 +92,7 @@ EXPANSION_LIST = [
     'VKTX', 'ALT', 'CRSP', 'NTLA', 'BEAM', 'LUNR', 'HII', 'AXON', 'TDG', 'CCJ', 'URA', 'UUUU', 'DNN',
     'NXE', 'UEC', 'SCCO', 'AA', 'NUE', 'STLD', 'TTE', 'CART', 'CAVA', 'BIRK', 'KVUE', 'LULU', 'ONON',
     'DECK', 'CROX', 'WING', 'CMG', 'DPZ', 'YUM', 'CELH', 'MNST', 'GME', 'AMC', 'U', 'OPEN', 'Z',
-    'SMH', 'XLF', 'XLV', 'XLE', 'XLI', 'XLK', 'XLC', 'XLY', 'XLP', 'XLB', 'XLU', 'XLRE''VRT', 'ALAB', 'OKLO', 'NBIS', 'SMCI', 'IONQ', 'ASTS'
+    'SMH', 'XLF', 'XLV', 'XLE', 'XLI', 'XLK', 'XLC', 'XLY', 'XLP', 'XLB', 'XLU', 'XLRE', 'VRT', 'ALAB', 'OKLO', 'NBIS', 'SMCI', 'IONQ', 'ASTS'
 ]
 
 TICKERS = sorted(list(set(ORIGINAL_LIST + EXPANSION_LIST)))
