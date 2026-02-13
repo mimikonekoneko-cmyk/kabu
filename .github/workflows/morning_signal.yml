@@ -2,7 +2,7 @@ name: Morning Signal Alert (Commit Version)
 
 on:
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '0 0,2,4,22 * * 0-4'  # 朝7時・11時・13時・21時
   workflow_dispatch:
 
 permissions:
