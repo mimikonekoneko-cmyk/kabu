@@ -1,50 +1,56 @@
-name: Morning Signal Alert (Commit Version)
+name: SENTINEL Daily Scan
 
 on:
   schedule:
-    - cron: '0 0,2,4,22 * * 0-4'  # 朝7時・11時・13時・21時
+    - cron: '0 22 * * 0-4'   # 07:00 JST
+    - cron: '0  2 * * 1-5'   # 11:00 JST
+    - cron: '0  4 * * 1-5'   # 13:00 JST
+    - cron: '0 12 * * 1-5'   # 21:00 JST (引け後)
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  run_sentinel:
+  scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install dependencies
-      run: |
-        pip install yfinance pandas numpy requests
-    
-    - name: Run SENTINEL v28
-      env:
-        LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-        LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-      run: |
-        python sentinel.py
-    
-    # ===== JSONファイルをGitにコミット =====
-    - name: Commit results to repo
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        
-        # resultsフォルダのみ追加（存在してもエラーにならない）
-        git add results/
-        
-        # 変更がある場合のみコミット
-        if ! git diff --cached --quiet; then
-          git commit -m "Update results $(date +'%Y-%m-%d')"
-          git push
-        else
-          echo "No changes to commit"
-        fi
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - uses: actions/cache@v4
+        with:
+          path: cache_v45/
+          key: sentinel-cache-${{ github.run_id }}
+          restore-keys: sentinel-cache-
+
+      - name: Run SENTINEL scan
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID:              ${{ secrets.LINE_USER_ID }}
+          CAPITAL_JPY:               ${{ secrets.CAPITAL_JPY }}
+        run: python sentinel.py
+
+      - name: Commit results
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/
+          if ! git diff --staged --quiet; then
+            git commit -m "📊 Scan $(date +'%Y-%m-%d %H:%M') JST"
+            git push
+          fi
+
