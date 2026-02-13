@@ -33,8 +33,13 @@ warnings.filterwarnings("ignore")
 # ⚙️ CONFIGURATION
 # ==============================================================================
 
-def _ei(k, d): return int(os.getenv(k, d))
-def _ef(k, d): return float(os.getenv(k, d))
+def _ei(k, d): 
+    v = os.getenv(k, "").strip()
+    return int(v) if v else int(d)
+
+def _ef(k, d):
+    v = os.getenv(k, "").strip()
+    return float(v) if v else float(d)
 
 CONFIG = {
     "CAPITAL_JPY":       _ei("CAPITAL_JPY", 1_000_000),
