@@ -35,7 +35,7 @@ def _cfg_float(key, default):
 
 CONFIG = {
     # 運用資金・リスク設定（secrets.toml または環境変数で上書き可能）
-    "CAPITAL_JPY":        _cfg_int("CAPITAL_JPY", 1_000_000),
+    "CAPITAL_JPY":        _cfg_int("CAPITAL_JPY", 350_000),
     "MAX_POSITIONS":      _cfg_int("MAX_POSITIONS", 20),
     "ACCOUNT_RISK_PCT":   _cfg_float("ACCOUNT_RISK_PCT", 0.015),
     "MAX_SAME_SECTOR":    _cfg_int("MAX_SAME_SECTOR", 2),
