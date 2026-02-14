@@ -724,10 +724,10 @@ if st.session_state.quant_results_stored and st.session_state.quant_results_stor
 <div class="diag-row"><span class="diag-key">{txt["target2"]}</span><span class="diag-val">${p_curr + risk*2.5:.2f}</span></div>
 <div class="diag-row"><span class="diag-key">{txt["risk_unit"]}</span><span class="diag-val">${risk:.2f}</span></div>
 </div>'''
-            st.markdown(panel_html1.strip(), unsafe_allow_html=True)
-        with d2:
-            bd = vcp_res['breakdown']
-            panel_html2 = f'''
+        st.markdown(panel_html1.strip(), unsafe_allow_html=True)
+    with d2:
+        bd = vcp_res['breakdown']
+        panel_html2 = f'''
 <div class="diagnostic-panel">
 <b>{txt["vcp_breakdown"]}</b>
 <div class="diag-row"><span class="diag-key">{txt["tightness"]}</span><span class="diag-val">{bd.get("tight", 0)}/45</span></div>
@@ -735,7 +735,7 @@ if st.session_state.quant_results_stored and st.session_state.quant_results_stor
 <div class="diag-row"><span class="diag-key">{txt["ma_trend"]}</span><span class="diag-val">{bd.get("ma", 0)}/30</span></div>
 <div class="diag-row"><span class="diag-key">{txt["pivot_bonus"]}</span><span class="diag-val">+{bd.get("pivot", 0)}pt</span></div>
 </div>'''
-            st.markdown(panel_html2.strip(), unsafe_allow_html=True)
+        st.markdown(panel_html2.strip(), unsafe_allow_html=True)
 
         # チャート
         df_raw = DataEngine.get_data(t_input, "2y")
