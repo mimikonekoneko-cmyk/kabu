@@ -713,7 +713,7 @@ if st.session_state.quant_results_stored and st.session_state.quant_results_stor
         {"label": txt["rs_momentum"], "value": f"{rs_val*100:+.1f}%"}
     ])
 
-        d1, d2 = st.columns(2)
+    d1, d2 = st.columns(2)
         with d1:
             risk = vcp_res['atr'] * EXIT_CFG["STOP_LOSS_ATR_MULT"]
             panel_html1 = f'''
