@@ -714,9 +714,9 @@ if st.session_state.quant_results_stored and st.session_state.quant_results_stor
     ])
 
     d1, d2 = st.columns(2)
-        with d1:
-            risk = vcp_res['atr'] * EXIT_CFG["STOP_LOSS_ATR_MULT"]
-            panel_html1 = f'''
+    with d1:
+        risk = vcp_res['atr'] * EXIT_CFG["STOP_LOSS_ATR_MULT"]
+        panel_html1 = f'''
 <div class="diagnostic-panel">
 <b>{txt["strategic_levels"]}</b>
 <div class="diag-row"><span class="diag-key">{txt["stop_loss"]}</span><span class="diag-val">${p_curr - risk:.2f}</span></div>
