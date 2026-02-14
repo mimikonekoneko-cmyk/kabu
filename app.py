@@ -893,7 +893,7 @@ with tab_port:
             st.rerun()
 
     # --- 2. 資産集計 ---
-    total_stock_val_usd = 0.0
+    total_stock_usd = 0.0  # 修正: 変数名を統一
     pos_details = []
     
     for t, d in pos_m.items():
@@ -1001,5 +1001,6 @@ with tab_port:
 
 st.divider()
 st.caption(f"🛡️ SENTINEL PRO SYSTEM | FULL AI INTEGRATION | V5.0")
+
 
 
