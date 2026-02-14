@@ -242,9 +242,11 @@ class NewsEngine:
     def format_for_prompt(news: dict) -> str:
         lines = []
         for a in news.get("articles", []):
-            lines.append(f"• {a['title']}")
+            lines.append(f"• タイトル: {a['title']}")
+            lines.append(f"  URL: {a['url']}") # URLをプロンプトに含める
             if a.get("body"):
                 lines.append(f"  (内容: {a['body']})")
+            lines.append("---")
         return "\n".join(lines) if lines else "特になし"
 
 # ==============================================================================
@@ -758,7 +760,8 @@ with tab_diag:
                         f"4. ニュースから読み取れる好材料・悪材料を具体的に挙げること。\n"
                         f"5. 全体を600文字程度に凝縮せよ。冗長な解説は不要。\n"
                         f"6. 最後に必ず「最終投資決断：[BUY / WAIT / SELL]」を提示せよ。\n"
-                        f"7. 文末に注釈「※投資は自己責任です。本分析は提供データに基づく参考情報であり、利益を保証するものではありません。」を含めること。\n"
+                        f"7. 参照したニュースの出典（タイトルとURL）を文末に箇条書きで記載せよ。\n"
+                        f"8. 文末に注釈「※投資は自己責任です。本分析は提供データに基づく参考情報であり、利益を保証するものではありません。」を含めること。\n"
                     )
                     
                     cl = OpenAI(api_key=key, base_url="https://api.deepseek.com")
