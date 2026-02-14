@@ -152,6 +152,21 @@ class DataEngine:
     @staticmethod
     def get_atr(ticker): return 1.5
 
+    @staticmethod
+    def get_market_overview():
+        """S&P500(SPY)とVIXの直近データを取得"""
+        try:
+            spy = yf.Ticker("SPY").history(period="5d")
+            vix = yf.Ticker("^VIX").history(period="1d")
+            
+            spy_price = spy["Close"].iloc[-1] if not spy.empty else 0
+            spy_change = (spy_price / spy["Close"].iloc[-2] - 1) * 100 if len(spy) >= 2 else 0
+            vix_price = vix["Close"].iloc[-1] if not vix.empty else 0
+            
+            return {"spy": spy_price, "spy_change": spy_change, "vix": vix_price}
+        except:
+            return {"spy": 0, "spy_change": 0, "vix": 0}
+
 class FundamentalEngine:
     CACHE_TTL = 24 * 3600
 
@@ -193,11 +208,10 @@ class NewsEngine:
                 try:
                     with open(cf) as f: return json.load(f)
                 except: pass
-
+        
+        # 既存の個別銘柄取得ロジック (省略せず記載)
         articles = []
         seen = set()
-
-        # 1. yfinance news
         try:
             for n in (yf.Ticker(ticker).news or [])[:3]:
                 title = n.get("title", n.get("headline", ""))
@@ -206,28 +220,19 @@ class NewsEngine:
                     seen.add(title)
                     articles.append({"title": title, "url": url, "body": ""})
         except: pass
-
-        # 2. Google News RSS
         try:
-            feed = feedparser.parse(
-                f"https://news.google.com/rss/search?q={ticker}+stock+when:3d&hl=en-US&gl=US&ceid=US:en"
-            )
+            feed = feedparser.parse(f"https://news.google.com/rss/search?q={ticker}+stock+when:3d&hl=en-US&gl=US&ceid=US:en")
             for e in feed.entries[:3]:
                 if e.title not in seen:
                     seen.add(e.title)
                     articles.append({"title": e.title, "url": getattr(e, "link", ""), "body": ""})
         except: pass
 
-        # 3. Scraping Body
         if BS4_OK:
-            for art in articles[:3]: # 上位3件のみ本文取得
+            for art in articles[:3]:
                 if not art["url"]: continue
                 try:
-                    r = requests.get(
-                        art["url"],
-                        headers={"User-Agent": "Mozilla/5.0"},
-                        timeout=NEWS_CONFIG["FETCH_TIMEOUT"],
-                    )
+                    r = requests.get(art["url"], headers={"User-Agent": "Mozilla/5.0"}, timeout=NEWS_CONFIG["FETCH_TIMEOUT"])
                     soup = BeautifulSoup(r.text, "html.parser")
                     paras = [p.get_text().strip() for p in soup.find_all("p") if len(p.get_text().strip()) > 50]
                     body  = " ".join(paras)[:NEWS_CONFIG["MAX_CHARS"]]
@@ -239,117 +244,114 @@ class NewsEngine:
         return result
 
     @staticmethod
+    def get_general_market() -> dict:
+        """市場全体のニュースを取得"""
+        cf = CACHE_DIR / "news_market_general.json"
+        if cf.exists():
+            if time.time() - cf.stat().st_mtime < NEWS_CONFIG["CACHE_TTL"]:
+                try:
+                    with open(cf) as f: return json.load(f)
+                except: pass
+        
+        articles = []
+        seen = set()
+        try:
+            # Google News RSS (Market)
+            feed = feedparser.parse("https://news.google.com/rss/search?q=stock+market+news+when:1d&hl=en-US&gl=US&ceid=US:en")
+            for e in feed.entries[:5]:
+                if e.title not in seen:
+                    seen.add(e.title)
+                    articles.append({"title": e.title, "url": getattr(e, "link", ""), "body": ""})
+        except: pass
+
+        if BS4_OK:
+            for art in articles[:3]:
+                if not art["url"]: continue
+                try:
+                    r = requests.get(art["url"], headers={"User-Agent": "Mozilla/5.0"}, timeout=NEWS_CONFIG["FETCH_TIMEOUT"])
+                    soup = BeautifulSoup(r.text, "html.parser")
+                    paras = [p.get_text().strip() for p in soup.find_all("p") if len(p.get_text().strip()) > 50]
+                    body  = " ".join(paras)[:NEWS_CONFIG["MAX_CHARS"]]
+                    art["body"] = body
+                except: pass
+
+        result = {"articles": articles, "fetched_at": datetime.datetime.now().isoformat()}
+        with open(cf, "w") as f: json.dump(result, f, ensure_ascii=False)
+        return result
+
+    @staticmethod
     def format_for_prompt(news: dict) -> str:
         lines = []
         for a in news.get("articles", []):
             lines.append(f"• タイトル: {a['title']}")
-            lines.append(f"  URL: {a['url']}") # URLをプロンプトに含める
+            lines.append(f"  URL: {a['url']}")
             if a.get("body"):
                 lines.append(f"  (内容: {a['body']})")
             lines.append("---")
         return "\n".join(lines) if lines else "特になし"
 
 # ==============================================================================
-# 分析ロジック
+# 分析ロジック (変更なし)
 # ==============================================================================
 
 class VCPAnalyzer:
     @staticmethod
     def calculate(df: pd.DataFrame) -> dict:
         try:
-            if df is None or len(df) < 130:
-                return VCPAnalyzer._empty_result()
-
-            close_s = df["Close"]
-            high_s  = df["High"]
-            low_s   = df["Low"]
-            vol_s   = df["Volume"]
-
-            tr1 = high_s - low_s
-            tr2 = (high_s - close_s.shift(1)).abs()
-            tr3 = (low_s - close_s.shift(1)).abs()
-            tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+            if df is None or len(df) < 130: return VCPAnalyzer._empty_result()
+            close_s = df["Close"]; high_s = df["High"]; low_s = df["Low"]; vol_s = df["Volume"]
+            tr = pd.concat([high_s-low_s, (high_s-close_s.shift(1)).abs(), (low_s-close_s.shift(1)).abs()], axis=1).max(axis=1)
             atr_val = float(tr.rolling(14).mean().iloc[-1])
-
-            if pd.isna(atr_val) or atr_val <= 0:
-                return VCPAnalyzer._empty_result()
-
+            if pd.isna(atr_val) or atr_val <= 0: return VCPAnalyzer._empty_result()
+            
             periods = [20, 30, 40, 60]
             vol_ranges = []
             for p in periods:
-                p_high = float(high_s.iloc[-p:].max())
-                p_low  = float(low_s.iloc[-p:].min())
-                if p_high > 0:
-                    vol_ranges.append((p_high - p_low) / p_high)
-                else:
-                    vol_ranges.append(1.0)
+                p_high = float(high_s.iloc[-p:].max()); p_low = float(low_s.iloc[-p:].min())
+                vol_ranges.append((p_high - p_low) / p_high if p_high > 0 else 1.0)
 
-            curr_range = vol_ranges[0]
-            avg_range = float(np.mean(vol_ranges[:3]))
+            curr_range = vol_ranges[0]; avg_range = float(np.mean(vol_ranges[:3]))
             is_contracting = vol_ranges[0] < vol_ranges[1] < vol_ranges[2]
-
-            if avg_range < 0.10:   tight_score = 40
+            
+            if avg_range < 0.10: tight_score = 40
             elif avg_range < 0.15: tight_score = 30
             elif avg_range < 0.20: tight_score = 20
             elif avg_range < 0.28: tight_score = 10
-            else:                  tight_score = 0
-
+            else: tight_score = 0
             if is_contracting: tight_score += 5
             tight_score = min(40, tight_score)
 
-            v20_avg = float(vol_s.iloc[-20:].mean())
-            v60_avg = float(vol_s.iloc[-60:-40].mean())
+            v20_avg = float(vol_s.iloc[-20:].mean()); v60_avg = float(vol_s.iloc[-60:-40].mean())
             if pd.isna(v20_avg) or pd.isna(v60_avg): return VCPAnalyzer._empty_result()
             v_ratio = v20_avg / v60_avg if v60_avg > 0 else 1.0
-
-            if v_ratio < 0.45:   vol_score = 30
+            if v_ratio < 0.45: vol_score = 30
             elif v_ratio < 0.60: vol_score = 25
             elif v_ratio < 0.75: vol_score = 15
-            else:                vol_score = 0
+            else: vol_score = 0
             is_dryup = v_ratio < 0.75
 
-            ma50_v  = float(close_s.rolling(50).mean().iloc[-1])
-            ma150_v = float(close_s.rolling(150).mean().iloc[-1])
-            ma200_v = float(close_s.rolling(200).mean().iloc[-1])
-            price_v = float(close_s.iloc[-1])
-
+            ma50_v = float(close_s.rolling(50).mean().iloc[-1]); ma150_v = float(close_s.rolling(150).mean().iloc[-1]); ma200_v = float(close_s.rolling(200).mean().iloc[-1]); price_v = float(close_s.iloc[-1])
             m_score = 0
-            if price_v > ma50_v:   m_score += 10
-            if ma50_v > ma150_v:   m_score += 10
-            if ma150_v > ma200_v:  m_score += 10
+            if price_v > ma50_v: m_score += 10
+            if ma50_v > ma150_v: m_score += 10
+            if ma150_v > ma200_v: m_score += 10
 
-            pivot_v = float(high_s.iloc[-50:].max())
-            dist_v = (pivot_v - price_v) / pivot_v
+            pivot_v = float(high_s.iloc[-50:].max()); dist_v = (pivot_v - price_v) / pivot_v
             p_bonus = 0
             if 0 <= dist_v <= 0.04: p_bonus = 5
             elif 0.04 < dist_v <= 0.08: p_bonus = 3
 
             signals = []
             if tight_score >= 35: signals.append("Tight Base (VCP)")
-            if is_contracting:    signals.append("V-Contraction Detected")
-            if is_dryup:          signals.append("Volume Dry-up Detected")
-            if m_score >= 20:     signals.append("Trend Alignment OK")
-            if p_bonus > 0:       signals.append("Near Pivot Point")
+            if is_contracting: signals.append("V-Contraction Detected")
+            if is_dryup: signals.append("Volume Dry-up Detected")
+            if m_score >= 20: signals.append("Trend Alignment OK")
+            if p_bonus > 0: signals.append("Near Pivot Point")
 
-            return {
-                "score": int(min(105, tight_score + vol_score + m_score + p_bonus)),
-                "atr": atr_val,
-                "signals": signals,
-                "is_dryup": is_dryup,
-                "range_pct": round(curr_range, 4),
-                "vol_ratio": round(v_ratio, 2),
-                "breakdown": {"tight": tight_score, "vol": vol_score, "ma": m_score, "pivot": p_bonus}
-            }
-        except Exception:
-            return VCPAnalyzer._empty_result()
-
+            return {"score": int(min(105, tight_score + vol_score + m_score + p_bonus)), "atr": atr_val, "signals": signals, "is_dryup": is_dryup, "range_pct": round(curr_range, 4), "vol_ratio": round(v_ratio, 2), "breakdown": {"tight": tight_score, "vol": vol_score, "ma": m_score, "pivot": p_bonus}}
+        except: return VCPAnalyzer._empty_result()
     @staticmethod
-    def _empty_result():
-        return {
-            "score": 0, "atr": 0.0, "signals": [], 
-            "is_dryup": False, "range_pct": 0.0, "vol_ratio": 1.0,
-            "breakdown": {"tight": 0, "vol": 0, "ma": 0, "pivot": 0}
-        }
+    def _empty_result(): return {"score": 0, "atr": 0.0, "signals": [], "is_dryup": False, "range_pct": 0.0, "vol_ratio": 1.0, "breakdown": {"tight": 0, "vol": 0, "ma": 0, "pivot": 0}}
 
 class RSAnalyzer:
     @staticmethod
@@ -357,56 +359,30 @@ class RSAnalyzer:
         try:
             c = df["Close"]
             if len(c) < 252: return -999.0
-            r12m = (c.iloc[-1] / c.iloc[-252]) - 1
-            r6m  = (c.iloc[-1] / c.iloc[-126]) - 1
-            r3m  = (c.iloc[-1] / c.iloc[-63])  - 1
-            r1m  = (c.iloc[-1] / c.iloc[-21])  - 1
-            return (r12m * 0.4) + (r6m * 0.2) + (r3m * 0.2) + (r1m * 0.2)
-        except Exception:
-            return -999.0
+            return ((c.iloc[-1]/c.iloc[-252]-1)*0.4) + ((c.iloc[-1]/c.iloc[-126]-1)*0.2) + ((c.iloc[-1]/c.iloc[-63]-1)*0.2) + ((c.iloc[-1]/c.iloc[-21]-1)*0.2)
+        except: return -999.0
 
 class StrategyValidator:
     @staticmethod
     def run(df: pd.DataFrame) -> float:
         try:
             if len(df) < 252: return 1.0
-            c_data = df["Close"]; h_data = df["High"]; l_data = df["Low"]
-            tr_calc = pd.concat([h_data - l_data, (h_data - c_data.shift(1)).abs(), (l_data - c_data.shift(1)).abs()], axis=1).max(axis=1)
-            atr_s = tr_calc.rolling(14).mean()
-            trade_results = []
-            is_in_pos = False; entry_p = 0.0; stop_p = 0.0
-            t_mult = EXIT_CFG["TARGET_R_MULT"]; s_mult = EXIT_CFG["STOP_LOSS_ATR_MULT"]
-
-            idx_start = max(65, len(df) - 252)
-            for i in range(idx_start, len(df)):
-                if is_in_pos:
-                    if float(l_data.iloc[i]) <= stop_p:
-                        trade_results.append(-1.0); is_in_pos = False
-                    elif float(h_data.iloc[i]) >= entry_p + (entry_p - stop_p) * t_mult:
-                        trade_results.append(t_mult); is_in_pos = False
-                    elif i == len(df) - 1:
-                        risk_unit = entry_p - stop_p
-                        if risk_unit > 0:
-                            pnl_r = (float(c_data.iloc[i]) - entry_p) / risk_unit
-                            trade_results.append(pnl_r)
-                        is_in_pos = False
-                else:
-                    if i < 20: continue
-                    local_high_20 = float(h_data.iloc[i-20:i].max())
-                    ma50_c = float(c_data.rolling(50).mean().iloc[i])
-                    if float(c_data.iloc[i]) > local_high_20 and float(c_data.iloc[i]) > ma50_c:
-                        is_in_pos = True
-                        entry_p = float(c_data.iloc[i])
-                        atr_now = float(atr_s.iloc[i])
-                        stop_p = entry_p - (atr_now * s_mult)
-
-            if not trade_results: return 1.0
-            gp = sum(res for res in trade_results if res > 0)
-            gl = abs(sum(res for res in trade_results if res < 0))
-            if gl == 0: return round(min(10.0, gp if gp > 0 else 1.0), 2)
-            return round(min(10.0, float(gp / gl)), 2)
-        except Exception:
-            return 1.0
+            c = df["Close"]; h = df["High"]; l = df["Low"]
+            tr = pd.concat([h-l, (h-c.shift(1)).abs(), (l-c.shift(1)).abs()], axis=1).max(axis=1)
+            atr = tr.rolling(14).mean()
+            trades = []; in_pos = False; entry = 0.0; stop = 0.0
+            tm = EXIT_CFG["TARGET_R_MULT"]; sm = EXIT_CFG["STOP_LOSS_ATR_MULT"]
+            for i in range(max(65, len(df)-252), len(df)):
+                if in_pos:
+                    if l.iloc[i] <= stop: trades.append(-1.0); in_pos = False
+                    elif h.iloc[i] >= entry + (entry-stop)*tm: trades.append(tm); in_pos = False
+                    elif i == len(df)-1 and (entry-stop)>0: trades.append((c.iloc[i]-entry)/(entry-stop)); in_pos = False
+                elif i > 20 and c.iloc[i] > h.iloc[i-20:i].max() and c.iloc[i] > c.rolling(50).mean().iloc[i]:
+                    in_pos = True; entry = float(c.iloc[i]); stop = entry - float(atr.iloc[i])*sm
+            if not trades: return 1.0
+            pos = sum(t for t in trades if t>0); neg = abs(sum(t for t in trades if t<0))
+            return round(min(10.0, pos/neg if neg>0 else (10.0 if pos>0 else 1.0)), 2)
+        except: return 1.0
 
 # ==============================================================================
 # UI ヘルパー
@@ -420,29 +396,18 @@ def draw_sentinel_grid_ui(metrics: List[Dict[str, Any]]):
             is_pos = "+" in str(m["delta"]) or (isinstance(m["delta"], (int, float)) and m["delta"] > 0)
             c_code = "#3fb950" if is_pos else "#f85149"
             delta_s = f'<div class="sentinel-delta" style="color:{c_code}">{m["delta"]}</div>'
-        item = (
-            '<div class="sentinel-card">'
-            f'<div class="sentinel-label">{m["label"]}</div>'
-            f'<div class="sentinel-value">{m["value"]}</div>'
-            f'{delta_s}'
-            '</div>'
-        )
-        html_out += item
+        html_out += f'<div class="sentinel-card"><div class="sentinel-label">{m["label"]}</div><div class="sentinel-value">{m["value"]}</div>{delta_s}</div>'
     html_out += '</div>'
     st.markdown(html_out.strip(), unsafe_allow_html=True)
 
 def load_portfolio_json() -> dict:
-    if not PORTFOLIO_FILE.exists():
-        return {"positions": {}, "closed": [], "meta": {"last_update": ""}}
+    if not PORTFOLIO_FILE.exists(): return {"positions": {}, "closed": [], "meta": {"last_update": ""}}
     try:
-        with open(PORTFOLIO_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {"positions": {}, "closed": []}
+        with open(PORTFOLIO_FILE, "r", encoding="utf-8") as f: return json.load(f)
+    except: return {"positions": {}, "closed": []}
 
 def save_portfolio_json(data: dict):
-    with open(PORTFOLIO_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    with open(PORTFOLIO_FILE, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_watchlist_data() -> list:
     if not WATCHLIST_FILE.exists(): return []
@@ -526,7 +491,7 @@ LANG = {
         "ma_trend": "移動平均トレンド",
         "pivot_bonus": "ピボットボーナス",
         "ai_reasoning": "🤖 SENTINEL AI診断",
-        "generate_ai": "🚀 AI診断を生成（ニュース＆ファンダメンタル）",
+        "generate_ai": "🚀 AI診断を生成",
         "ai_key_missing": "DEEPSEEK_API_KEY が設定されていません。",
         "portfolio_risk": "💼 ポートフォリオリスク管理",
         "portfolio_empty": "ポートフォリオは空です。",
@@ -541,6 +506,8 @@ LANG = {
         "shares": "株数",
         "avg_cost": "平均取得単価",
         "add_to_portfolio": "ポートフォリオに追加",
+        "market_ai_btn": "🤖 AI市場分析 (SENTINEL MARKET EYE)",
+        "port_ai_btn": "🛡️ AIポートフォリオ診断 (SENTINEL PORTFOLIO GUARD)",
     },
     "en": {
         "title": "🛡️ SENTINEL PRO",
@@ -572,7 +539,7 @@ LANG = {
         "ma_trend": "MA Trend Score",
         "pivot_bonus": "Pivot Bonus",
         "ai_reasoning": "🤖 SENTINEL AI CONTEXTUAL REASONING",
-        "generate_ai": "🚀 GENERATE AI DIAGNOSIS (NEWS & FUNDAMENTALS)",
+        "generate_ai": "🚀 GENERATE AI DIAGNOSIS",
         "ai_key_missing": "DEEPSEEK_API_KEY is not configured.",
         "portfolio_risk": "💼 PORTFOLIO RISK MANAGEMENT",
         "portfolio_empty": "Portfolio is currently empty.",
@@ -587,6 +554,8 @@ LANG = {
         "shares": "Shares",
         "avg_cost": "Avg Cost",
         "add_to_portfolio": "ADD TO PORTFOLIO",
+        "market_ai_btn": "🤖 AI MARKET ANALYSIS",
+        "port_ai_btn": "🛡️ AI PORTFOLIO REVIEW",
     }
 }
 
@@ -599,6 +568,8 @@ def initialize_sentinel_state():
     if "trigger_analysis" not in st.session_state: st.session_state.trigger_analysis = False
     if "quant_results_stored" not in st.session_state: st.session_state.quant_results_stored = None
     if "ai_analysis_text" not in st.session_state: st.session_state.ai_analysis_text = ""
+    if "ai_market_text" not in st.session_state: st.session_state.ai_market_text = ""
+    if "ai_port_text" not in st.session_state: st.session_state.ai_port_text = ""
     if "language" not in st.session_state: st.session_state.language = "ja"
 
 initialize_sentinel_state()
@@ -630,31 +601,86 @@ with st.sidebar:
 fx_rate = CurrencyEngine.get_usd_jpy()
 tab_scan, tab_diag, tab_port = st.tabs([txt["tab_scan"], txt["tab_diag"], txt["tab_port"]])
 
-# --- Tab 1: スキャン結果 ---
+# --- Tab 1: スキャン結果 & AI地合い分析 ---
 with tab_scan:
     st.markdown(f'<div class="section-header">{txt["tab_scan"]}</div>', unsafe_allow_html=True)
+    
+    # スキャンデータの読み込み
+    s_data = {}
+    s_df = pd.DataFrame()
     if RESULTS_DIR.exists():
         f_list = sorted(RESULTS_DIR.glob("*.json"), reverse=True)
         if f_list:
             try:
                 with open(f_list[0], "r", encoding="utf-8") as f: s_data = json.load(f)
                 s_df = pd.DataFrame(s_data.get("qualified_full", []))
-                draw_sentinel_grid_ui([
-                    {"label": txt["scan_date"], "value": s_data.get("date", TODAY_STR)},
-                    {"label": txt["usd_jpy"], "value": f"¥{fx_rate:.2f}"},
-                    {"label": txt["action_list"], "value": len(s_df[s_df["status"]=="ACTION"]) if not s_df.empty else 0},
-                    {"label": txt["wait_list"], "value": len(s_df[s_df["status"]=="WAIT"]) if not s_df.empty else 0}
-                ])
-                if not s_df.empty:
-                    st.markdown(f'<div class="section-header">{txt["sector_map"]}</div>', unsafe_allow_html=True)
-                    s_df["vcp_score"] = s_df["vcp"].apply(lambda x: x.get("score", 0))
-                    m_fig = px.treemap(s_df, path=["sector", "ticker"], values="vcp_score", color="rs", color_continuous_scale="RdYlGn", range_color=[70, 100])
-                    m_fig.update_layout(template="plotly_dark", height=600, margin=dict(t=0, b=0, l=0, r=0))
-                    st.plotly_chart(m_fig, use_container_width=True, key="sector_treemap")
-                    st.dataframe(s_df[["ticker", "status", "vcp_score", "rs", "sector"]].sort_values("vcp_score", ascending=False), use_container_width=True, height=500)
-            except Exception as e: st.error(f"Error: {e}")
+            except: pass
 
-# --- Tab 2: AI診断 (スクレイピング統合) ---
+    # AI地合い分析ボタン
+    if st.button(txt["market_ai_btn"], use_container_width=True, type="primary"):
+        key = st.secrets.get("DEEPSEEK_API_KEY")
+        if not key:
+            st.error(txt["ai_key_missing"])
+        else:
+            with st.spinner("Analyzing Market Conditions (SPY, VIX, News, Scan Data)..."):
+                # データ収集
+                m_ctx = DataEngine.get_market_overview()
+                m_news = NewsEngine.get_general_market()
+                m_news_txt = NewsEngine.format_for_prompt(m_news)
+                
+                # スキャン統計
+                act_count = len(s_df[s_df["status"]=="ACTION"]) if not s_df.empty else 0
+                wait_count = len(s_df[s_df["status"]=="WAIT"]) if not s_df.empty else 0
+                sectors = s_df["sector"].value_counts().to_dict() if not s_df.empty else {}
+                top_sectors = list(sectors.keys())[:3] if sectors else []
+
+                prompt = (
+                    f"あなたは「ウォール街のAI投資家SENTINEL」です。以下のデータに基づき、本日の市場環境（地合い）を分析し、投資家への助言を行ってください。\n\n"
+                    f"【現在日時】: {TODAY_STR}\n"
+                    f"【市場インジケータ】\n"
+                    f"S&P500(SPY): ${m_ctx['spy']:.2f} (5日前比変化率: {m_ctx['spy_change']:.2f}%)\n"
+                    f"VIX指数: {m_ctx['vix']:.2f}\n\n"
+                    f"【SENTINELスキャン統計】\n"
+                    f"買いシグナル(ACTION)数: {act_count}銘柄\n"
+                    f"待機シグナル(WAIT)数: {wait_count}銘柄\n"
+                    f"主導セクター: {', '.join(top_sectors)}\n\n"
+                    f"【市場ニュース（スクレイピング結果）】\n"
+                    f"{m_news_txt}\n\n"
+                    f"【指示】\n"
+                    f"1. 書き出しは「ウォール街のAI投資家SENTINELだ。」\n"
+                    f"2. 市場フェーズを定義せよ（例：上昇トレンド、調整局面、下落トレンド）。SPYとVIXの関係、およびスキャン結果（ACTIONが多いなら強気、少ないなら弱気など）を根拠にすること。\n"
+                    f"3. ニュースから読み取れる市場の懸念点や好材料を挙げること（ハルシネーション禁止。日付が未来のものは無視）。\n"
+                    f"4. 推奨エクスポージャー（積極投資か、キャッシュ比率を高めるべきか）を助言せよ。\n"
+                    f"5. 600文字以内でまとめること。\n"
+                    f"6. 参照したニュースのソースを明記すること。\n"
+                    f"7. 最後に免責事項を含めること。"
+                )
+                cl = OpenAI(api_key=key, base_url="https://api.deepseek.com")
+                try:
+                    res = cl.chat.completions.create(model="deepseek-reasoner", messages=[{"role": "user", "content": prompt}])
+                    st.session_state.ai_market_text = res.choices[0].message.content.replace("$", r"\$")
+                except Exception as e:
+                    st.error(f"AI Error: {e}")
+
+    if st.session_state.ai_market_text:
+        st.info(st.session_state.ai_market_text)
+
+    # グリッド表示
+    draw_sentinel_grid_ui([
+        {"label": txt["scan_date"], "value": s_data.get("date", TODAY_STR)},
+        {"label": txt["usd_jpy"], "value": f"¥{fx_rate:.2f}"},
+        {"label": txt["action_list"], "value": len(s_df[s_df["status"]=="ACTION"]) if not s_df.empty else 0},
+        {"label": txt["wait_list"], "value": len(s_df[s_df["status"]=="WAIT"]) if not s_df.empty else 0}
+    ])
+    if not s_df.empty:
+        st.markdown(f'<div class="section-header">{txt["sector_map"]}</div>', unsafe_allow_html=True)
+        s_df["vcp_score"] = s_df["vcp"].apply(lambda x: x.get("score", 0))
+        m_fig = px.treemap(s_df, path=["sector", "ticker"], values="vcp_score", color="rs", color_continuous_scale="RdYlGn", range_color=[70, 100])
+        m_fig.update_layout(template="plotly_dark", height=600, margin=dict(t=0, b=0, l=0, r=0))
+        st.plotly_chart(m_fig, use_container_width=True, key="sector_treemap")
+        st.dataframe(s_df[["ticker", "status", "vcp_score", "rs", "sector"]].sort_values("vcp_score", ascending=False), use_container_width=True, height=500)
+
+# --- Tab 2: AI診断 (個別) ---
 with tab_diag:
     st.markdown(f'<div class="section-header">{txt["realtime_scan"]}</div>', unsafe_allow_html=True)
     t_input = st.text_input(txt["ticker_input"], value=st.session_state.target_ticker).upper().strip()
@@ -684,8 +710,6 @@ with tab_diag:
     if st.session_state.quant_results_stored and st.session_state.quant_results_stored["ticker"] == t_input:
         q = st.session_state.quant_results_stored
         vcp_res, rs_val, pf_val, p_curr = q["vcp"], q["rs"], q["pf"], q["price"]
-        
-        # 安全な数値変換
         rs_val = float(rs_val) if rs_val else 0.0
         pf_val = float(pf_val) if pf_val else 0.0
         p_curr = float(p_curr) if p_curr else 0.0
@@ -732,38 +756,17 @@ with tab_diag:
                 st.error(txt["ai_key_missing"])
             else:
                 with st.spinner(f"Fetching News & Fundamentals for {t_input}..."):
-                    # ニュース取得 (スクレイピング実行)
                     news_data = NewsEngine.get(t_input)
                     news_text = NewsEngine.format_for_prompt(news_data)
-                    
-                    # ファンダメンタル取得
                     fund_data = FundamentalEngine.get(t_input)
                     fund_text = json.dumps(fund_data, indent=2, ensure_ascii=False)
-
                     prompt = (
                         f"あなたは「ウォール街のAI投資家SENTINEL」です。以下のデータのみに基づき、冷徹な相場観で投資判断を下してください。\n\n"
                         f"【現在日時】: {TODAY_STR}\n"
-                        f"【定量的データ（絶対事実）】\n"
-                        f"銘柄: {t_input}\n"
-                        f"現在値: ${p_curr:.2f}\n"
-                        f"VCPスコア: {vcp_res['score']}/105 (内訳: 収縮{vcp_res['breakdown']['tight']}/45, 出来高{vcp_res['breakdown']['vol']}/30, トレンド{vcp_res['breakdown']['ma']}/30)\n"
-                        f"プロフィットファクター(PF): {pf_val:.2f}\n"
-                        f"RSモメンタム: {rs_val*100:+.1f}%\n\n"
-                        f"【最新ニュース（スクレイピング結果）】\n"
-                        f"{news_text}\n\n"
-                        f"【ファンダメンタルズ】\n"
-                        f"{fund_text}\n\n"
-                        f"【制約事項】\n"
-                        f"1. 書き出しは必ず「ウォール街のAI投資家SENTINELだ。」とすること。\n"
-                        f"2. **ハルシネーション（幻覚）を徹底的に排除せよ**。ここにある数字とテキスト以外は一切参照するな。未来の日付や架空の出来事を事実として語るな。\n"
-                        f"3. ニュースの日付が【現在日時】より未来の場合は異常値として無視せよ。しかし、過去または現在の日付であれば積極的に判断材料とせよ。\n"
-                        f"4. ニュースから読み取れる好材料・悪材料を具体的に挙げること。\n"
-                        f"5. 全体を600文字程度に凝縮せよ。冗長な解説は不要。\n"
-                        f"6. 最後に必ず「最終投資決断：[BUY / WAIT / SELL]」を提示せよ。\n"
-                        f"7. 参照したニュースの出典（タイトルとURL）を文末に箇条書きで記載せよ。\n"
-                        f"8. 文末に注釈「※投資は自己責任です。本分析は提供データに基づく参考情報であり、利益を保証するものではありません。」を含めること。\n"
+                        f"【定量的データ】\n銘柄: {t_input}\n現在値: ${p_curr:.2f}\nVCPスコア: {vcp_res['score']}/105\nPF: {pf_val:.2f}\nRS: {rs_val*100:+.1f}%\n\n"
+                        f"【ニュース】\n{news_text}\n\n【ファンダメンタルズ】\n{fund_text}\n\n"
+                        f"【制約】\n1. 書き出しは「ウォール街のAI投資家SENTINELだ。」\n2. ハルシネーション禁止。提供データのみ使用。\n3. 未来日付のニュースは無視。\n4. 600字以内。\n5. 最終投資決断[BUY/WAIT/SELL]を提示。\n6. ニュースソースを明記。\n7. 免責事項を含める。"
                     )
-                    
                     cl = OpenAI(api_key=key, base_url="https://api.deepseek.com")
                     try:
                         res_ai = cl.chat.completions.create(model="deepseek-reasoner", messages=[{"role": "user", "content": prompt}])
@@ -775,11 +778,46 @@ with tab_diag:
             st.markdown("---")
             st.markdown(st.session_state.ai_analysis_text)
 
-# --- Tab 3: ポートフォリオ ---
+# --- Tab 3: ポートフォリオ & AI診断 ---
 with tab_port:
     st.markdown(f'<div class="section-header">{txt["portfolio_risk"]}</div>', unsafe_allow_html=True)
     p_j = load_portfolio_json()
     pos_m = p_j.get("positions", {})
+    
+    # AIポートフォリオ診断ボタン
+    if st.button(txt["port_ai_btn"], use_container_width=True, type="primary"):
+        key = st.secrets.get("DEEPSEEK_API_KEY")
+        if not key:
+            st.error(txt["ai_key_missing"])
+        else:
+            with st.spinner("Analyzing Portfolio Risk & Hedging Strategies..."):
+                m_ctx = DataEngine.get_market_overview()
+                pos_summary = []
+                for t, d in pos_m.items():
+                    pos_summary.append(f"{t}: Shares={d['shares']}, Cost={d['avg_cost']}")
+                
+                prompt = (
+                    f"あなたは「ウォール街のAI投資家SENTINEL」です。以下のポートフォリオと市場環境に基づき、リスク管理とリバランスの提案を行ってください。\n\n"
+                    f"【現在日時】: {TODAY_STR}\n"
+                    f"【市場環境】\nSPY: ${m_ctx['spy']:.2f}, VIX: {m_ctx['vix']:.2f}\n\n"
+                    f"【保有ポートフォリオ】\n" + "\n".join(pos_summary) + "\n\n"
+                    f"【指示】\n"
+                    f"1. 書き出しは「ウォール街のAI投資家SENTINELだ。」\n"
+                    f"2. ポートフォリオのセクター集中リスクや銘柄分散の状況を評価せよ。\n"
+                    f"3. VIX指数を考慮し、現在の市場でヘッジ（例: キャッシュ化、逆指値の引き上げ）が必要か助言せよ。\n"
+                    f"4. 600文字以内でまとめること。\n"
+                    f"5. 最後に免責事項を含めること。"
+                )
+                cl = OpenAI(api_key=key, base_url="https://api.deepseek.com")
+                try:
+                    res_p = cl.chat.completions.create(model="deepseek-reasoner", messages=[{"role": "user", "content": prompt}])
+                    st.session_state.ai_port_text = res_p.choices[0].message.content.replace("$", r"\$")
+                except Exception as e:
+                    st.error(f"AI Error: {e}")
+
+    if st.session_state.ai_port_text:
+        st.info(st.session_state.ai_port_text)
+
     if not pos_m:
         st.info(txt["portfolio_empty"])
     else:
@@ -831,6 +869,6 @@ with tab_port:
                 st.rerun()
 
 st.divider()
-st.caption(f"🛡️ SENTINEL PRO SYSTEM | NEWS INTEGRATED | V5.0")
+st.caption(f"🛡️ SENTINEL PRO SYSTEM | FULL AI INTEGRATION | V5.0")
 
 
