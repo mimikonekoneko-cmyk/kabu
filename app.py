@@ -794,16 +794,30 @@ with tab_port:
                 m_ctx = DataEngine.get_market_overview()
                 pos_summary = []
                 for t, d in pos_m.items():
-                    pos_summary.append(f"{t}: Shares={d['shares']}, Cost={d['avg_cost']}")
+                    # --- セクター情報の自動取得 ---
+                    fund = FundamentalEngine.get(t)
+                    sec = fund.get("sector", "Unknown")
+                    ind = fund.get("industry", "Unknown")
+                    
+                    # --- 現在価格と含み損益 ---
+                    curr_p = DataEngine.get_current_price(t)
+                    pnl_pct = ((curr_p / d['avg_cost']) - 1) * 100 if d['avg_cost'] > 0 else 0
+                    
+                    # --- 要約作成 ---
+                    summary_line = (
+                        f"• {t}: [Sector: {sec} | Industry: {ind}] "
+                        f"Shares={d['shares']}, Cost=${d['avg_cost']}, Current=${curr_p:.2f}, PnL={pnl_pct:+.2f}%"
+                    )
+                    pos_summary.append(summary_line)
                 
                 prompt = (
                     f"あなたは「ウォール街のAI投資家SENTINEL」です。以下のポートフォリオと市場環境に基づき、リスク管理とリバランスの提案を行ってください。\n\n"
                     f"【現在日時】: {TODAY_STR}\n"
                     f"【市場環境】\nSPY: ${m_ctx['spy']:.2f}, VIX: {m_ctx['vix']:.2f}\n\n"
-                    f"【保有ポートフォリオ】\n" + "\n".join(pos_summary) + "\n\n"
+                    f"【保有ポートフォリオ詳細（セクター含む）】\n" + "\n".join(pos_summary) + "\n\n"
                     f"【指示】\n"
                     f"1. 書き出しは「ウォール街のAI投資家SENTINELだ。」\n"
-                    f"2. ポートフォリオのセクター集中リスクや銘柄分散の状況を評価せよ。\n"
+                    f"2. 取得されたセクター情報に基づき、特定のセクターへの集中リスクや分散状況を具体的に評価せよ。\n"
                     f"3. VIX指数を考慮し、現在の市場でヘッジ（例: キャッシュ化、逆指値の引き上げ）が必要か助言せよ。\n"
                     f"4. 600文字以内でまとめること。\n"
                     f"5. 最後に免責事項を含めること。"
