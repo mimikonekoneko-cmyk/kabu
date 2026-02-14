@@ -53,7 +53,7 @@ EXIT_CFG = {
 warnings.filterwarnings("ignore")
 
 # ==============================================================================
-# エンジン群 (DataEngineは修正版を維持、News/Fundは強化版へ置換)
+# エンジン群
 # ==============================================================================
 
 class CurrencyEngine:
@@ -66,9 +66,6 @@ class CurrencyEngine:
             return 152.65
 
 class DataEngine:
-    """
-    チャート表示修正済みのデータエンジン（変更なし）
-    """
     @staticmethod
     def get_data(ticker, period):
         try:
@@ -156,9 +153,6 @@ class DataEngine:
     def get_atr(ticker): return 1.5
 
 class FundamentalEngine:
-    """
-    AI分析用にファンダメンタルズ情報を取得（強化版）
-    """
     CACHE_TTL = 24 * 3600
 
     @staticmethod
@@ -191,9 +185,6 @@ class FundamentalEngine:
             return {}
 
 class NewsEngine:
-    """
-    スクレイピング機能付きニュースエンジン（移植版）
-    """
     @staticmethod
     def get(ticker: str) -> dict:
         cf = CACHE_DIR / f"news_{ticker}.json"
@@ -238,7 +229,6 @@ class NewsEngine:
                         timeout=NEWS_CONFIG["FETCH_TIMEOUT"],
                     )
                     soup = BeautifulSoup(r.text, "html.parser")
-                    # pタグから適当な長さのテキストを抽出
                     paras = [p.get_text().strip() for p in soup.find_all("p") if len(p.get_text().strip()) > 50]
                     body  = " ".join(paras)[:NEWS_CONFIG["MAX_CHARS"]]
                     art["body"] = body
@@ -252,16 +242,13 @@ class NewsEngine:
     def format_for_prompt(news: dict) -> str:
         lines = []
         for a in news.get("articles", []):
-            lines.append(f"• タイトル: {a['title']}")
+            lines.append(f"• {a['title']}")
             if a.get("body"):
-                lines.append(f"  本文抜粋: {a['body']}...")
-            else:
-                lines.append("  (本文取得不可)")
-            lines.append("")
-        return "\n".join(lines) if lines else "（特になし）"
+                lines.append(f"  (内容: {a['body']})")
+        return "\n".join(lines) if lines else "特になし"
 
 # ==============================================================================
-# 分析ロジック (オリジナルを維持)
+# 分析ロジック
 # ==============================================================================
 
 class VCPAnalyzer:
@@ -752,17 +739,24 @@ with tab_diag:
                     fund_text = json.dumps(fund_data, indent=2, ensure_ascii=False)
 
                     prompt = (
-                        f"銘柄 {t_input} の診断結果に基づき、プロの投資判断を下してください。\n\n"
-                        f"【定量的データ】\n"
-                        f"現在値: ${p_curr:.2f} | VCP: {vcp_res['score']}/105 | PF: {pf_val:.2f} | RS: {rs_val*100:+.1f}%\n\n"
-                        f"【最新ニュース（スクレイピング取得）】\n"
+                        f"あなたは「ウォール街のAI投資家SENTINEL」です。以下のデータのみに基づき、冷徹な相場観で投資判断を下してください。\n\n"
+                        f"【定量的データ（絶対事実）】\n"
+                        f"銘柄: {t_input}\n"
+                        f"現在値: ${p_curr:.2f}\n"
+                        f"VCPスコア: {vcp_res['score']}/105 (内訳: 収縮{vcp_res['breakdown']['tight']}/45, 出来高{vcp_res['breakdown']['vol']}/30, トレンド{vcp_res['breakdown']['ma']}/30)\n"
+                        f"プロフィットファクター(PF): {pf_val:.2f}\n"
+                        f"RSモメンタム: {rs_val*100:+.1f}%\n\n"
+                        f"【最新ニュース（スクレイピング結果）】\n"
                         f"{news_text}\n\n"
                         f"【ファンダメンタルズ】\n"
                         f"{fund_text}\n\n"
-                        f"【指示】\n"
-                        f"1. 上記のニュース内容を分析し、企業の現状（好材料・悪材料）を評価してください。\n"
-                        f"2. ニュースに書かれていない情報を事実として捏造しないでください（ハルシネーション禁止）。\n"
-                        f"3. 定量的データ（VCPスコア等）とニュース情報を統合し、論理的な投資判断を1,500文字以上で記述してください。"
+                        f"【制約事項】\n"
+                        f"1. 書き出しは必ず「ウォール街のAI投資家SENTINELだ。」とすること。\n"
+                        f"2. **ハルシネーション（幻覚）を徹底的に排除せよ**。ここにある数字とテキスト以外は一切参照するな。未来の日付や架空の出来事を事実として語るな。\n"
+                        f"3. ニュース内に未来の日付などの異常値がある場合は、そのニュースを信頼せず無視し、定量データのみで判断せよ。データの信憑性についてメタ的に言及するな。\n"
+                        f"4. 全体を600文字程度に凝縮せよ。冗長な解説は不要。\n"
+                        f"5. 最後に必ず「最終投資決断：[BUY / WAIT / SELL]」を提示せよ。\n"
+                        f"6. 文末に注釈「※投資は自己責任です。本分析は提供データに基づく参考情報であり、利益を保証するものではありません。」を含めること。\n"
                     )
                     
                     cl = OpenAI(api_key=key, base_url="https://api.deepseek.com")
