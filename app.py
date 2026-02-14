@@ -732,7 +732,7 @@ with tab_diag:
 </div>'''
             st.markdown(panel_html2.strip(), unsafe_allow_html=True)
 
-        # チャート描画（改良版）
+        # チャート描画（デバッグ＋インデックス修正版）
         st.markdown("### 📈 価格チャート")
         with st.spinner("チャートを読み込み中..."):
             df_raw = DataEngine.get_data(t_input, "2y")
@@ -743,6 +743,10 @@ with tab_diag:
                 if df_t.empty:
                     st.warning("直近データが不足しています。")
                 else:
+                    # インデックスを日付型に強制変換（必要に応じて）
+                    if not isinstance(df_t.index, pd.DatetimeIndex):
+                        df_t.index = pd.to_datetime(df_t.index)
+                    
                     try:
                         fig = go.Figure(data=[go.Candlestick(
                             x=df_t.index,
@@ -760,6 +764,8 @@ with tab_diag:
                         st.plotly_chart(fig, use_container_width=True)
                     except Exception as e:
                         st.error(f"チャート描画中にエラー: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
 
         # AI診断セクション
         st.markdown(f'<div class="section-header">{txt["ai_reasoning"]}</div>', unsafe_allow_html=True)
@@ -855,4 +861,4 @@ with tab_port:
                 st.rerun()
 
 st.divider()
-st.caption(f"🛡️ SENTINEL PRO SYSTEM | CORE ENGINE: UNIFIED | UI: MULTILINGUAL | CHART: FIXED")
+st.caption(f"🛡️ SENTINEL PRO SYSTEM | CORE ENGINE: UNIFIED | UI: MULTILINGUAL | CHART: DEBUG+CONVERT")
