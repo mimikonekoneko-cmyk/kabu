@@ -15,7 +15,7 @@ import yfinance as yf
 from openai import OpenAI
 
 # ==============================================================================
-# 修正版データエンジン (yfinanceのMultiIndex問題に対応)
+# 強力修正版データエンジン
 # ==============================================================================
 
 try:
@@ -41,34 +41,103 @@ class CurrencyEngine:
 class DataEngine:
     @staticmethod
     def get_data(ticker, period):
+        """
+        yfinanceのデータ構造の変化に完全対応するためのロバストな取得メソッド
+        """
         try:
-            # yfinanceのデータをダウンロード
-            df = yf.download(ticker, period=period, progress=False)
+            # 1. Ticker.history を優先的に試す（downloadより構造が安定していることが多い）
+            t = yf.Ticker(ticker)
+            df = t.history(period=period)
             
-            # 【重要】データが空の場合はNoneを返す
+            # データが取れなかった場合、yf.download を試す（バックアップ）
+            if df is None or df.empty:
+                df = yf.download(ticker, period=period, progress=False, auto_adjust=False)
+            
             if df is None or df.empty:
                 return None
-            
-            # 【重要】MultiIndexカラム（('Close', 'AAPL')など）を平坦化する
-            # yfinanceのバージョンによってカラムが多層になるのを防ぎます
+
+            # 2. カラム名のクリーニング（最重要）
+            # MultiIndexの解消
             if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
+                # カラムの中に 'Close' という文字が含まれているレベルを探して採用する
+                target_level = None
+                for i in range(df.columns.nlevels):
+                    level_values = df.columns.get_level_values(i)
+                    if 'Close' in level_values:
+                        df.columns = level_values
+                        target_level = i
+                        break
+                
+                # それでも見つからない場合はレベル0を強制採用
+                if target_level is None:
+                    df.columns = df.columns.get_level_values(0)
+
+            # タプルなどが混じっている場合の強制文字列変換
+            # 例: ('Close', 'NVDA') -> 'Close'
+            new_cols = []
+            for c in df.columns:
+                if isinstance(c, tuple):
+                    # タプルの中に主要なキーワードがあればそれを採用
+                    found = False
+                    for part in c:
+                        s_part = str(part)
+                        if s_part in ['Open', 'High', 'Low', 'Close', 'Volume', 'Adj Close']:
+                            new_cols.append(s_part)
+                            found = True
+                            break
+                    if not found:
+                        new_cols.append(str(c[0]))
+                else:
+                    new_cols.append(str(c))
             
-            # インデックスが日付型でない場合は変換
-            if not isinstance(df.index, pd.DatetimeIndex):
+            df.columns = new_cols
+
+            # カラム名の空白除去とキャピタライズ
+            df.columns = [c.strip().capitalize() for c in df.columns]
+
+            # 'Adj close' 等の表記ゆれ対策
+            rename_map = {
+                'Adj close': 'Close',
+                'Adj Close': 'Close',
+                'Last': 'Close'
+            }
+            df.rename(columns=rename_map, inplace=True)
+
+            # 3. タイムゾーン情報の削除（Plotlyとの相性問題対策）
+            if isinstance(df.index, pd.DatetimeIndex):
+                if df.index.tz is not None:
+                    df.index = df.index.tz_localize(None)
+            else:
+                # インデックスが日付でない場合は変換を試みる
                 df.index = pd.to_datetime(df.index)
 
-            # 必要なカラムが存在するか確認
-            required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
-            # Adj Closeがある場合はCloseとして扱うなどの処理も可能ですが、
-            # ここでは単純化のためにカラム名の整合性だけチェック
-            missing_cols = [c for c in required_cols if c not in df.columns]
+            # 4. 必須カラムの確認
+            required = {'Open', 'High', 'Low', 'Close'}
+            # Volumeは無くてもチャートは描けるが、VCP分析には必要。無い場合は0で埋める
+            if 'Volume' not in df.columns:
+                df['Volume'] = 0
+
+            # 必須カラムが足りているかチェック
+            if not required.issubset(df.columns):
+                # Closeだけあれば他を補完して無理やり動かす（エラー回避）
+                if 'Close' in df.columns:
+                    if 'Open' not in df.columns: df['Open'] = df['Close']
+                    if 'High' not in df.columns: df['High'] = df['Close']
+                    if 'Low' not in df.columns:  df['Low'] = df['Close']
+                else:
+                    return None # Closeすらない場合は諦める
             
-            if missing_cols:
-                # カラムが見つからない場合（大文字小文字の違いなど）の修正
-                df.columns = [c.capitalize() for c in df.columns]
+            # データ型をfloatに強制変換（稀にObject型で返ることがあるため）
+            cols_to_numeric = ['Open', 'High', 'Low', 'Close', 'Volume']
+            for c in cols_to_numeric:
+                if c in df.columns:
+                    df[c] = pd.to_numeric(df[c], errors='coerce')
             
+            # NaNを含む行を削除
+            df.dropna(subset=['Close'], inplace=True)
+
             return df
+
         except Exception as e:
             st.error(f"Data Fetch Error: {e}")
             return None
@@ -77,14 +146,13 @@ class DataEngine:
     def get_current_price(ticker):
         try:
             ticker_dat = yf.Ticker(ticker)
-            # fast_infoからの取得を試みる
             price = ticker_dat.fast_info.get('lastPrice')
             if price is None:
-                # 取得できない場合は直近の履歴データから取得
                 hist = ticker_dat.history(period="1d")
                 if not hist.empty:
-                    price = hist['Close'].iloc[-1]
-            return price if price else 0.0
+                    # ここでもカラム名の問題が起きうるのでilocで位置指定アクセス
+                    price = hist.iloc[-1, 3] # 通常Closeは4番目(0,1,2,3)
+            return float(price) if price else 0.0
         except:
             return 0.0
 
@@ -781,45 +849,45 @@ with tab_diag:
             st.markdown(panel_html2.strip(), unsafe_allow_html=True)
 
         # -----------------------------------------------------------
-        # チャート描画ロジック（修正済み）
+        # チャート描画ロジック（再取得＆デバッグ対応）
         # -----------------------------------------------------------
         st.markdown("### 📈 価格チャート")
         with st.spinner("チャートを読み込み中..."):
-            # 再度取得するのではなく、キャッシュ的に取得するか、DataEngineのロバスト性に頼る
+            # ここでも DataEngine.get_data を呼ぶことでクリーンなデータフレームを得る
             df_raw = DataEngine.get_data(t_input, "2y")
             
             if df_raw is None or df_raw.empty:
                 st.warning(f"{t_input} のチャートデータを取得できませんでした。")
             else:
-                df_t = df_raw.tail(120)
-                
-                # Plotlyオブジェクトの作成
-                try:
-                    # カラム名がDataEngineでフラット化されているため、単純にOpen/Close等でアクセス可能
-                    fig = go.Figure(data=[go.Candlestick(
-                        x=df_t.index,
-                        open=df_t['Open'],
-                        high=df_t['High'],
-                        low=df_t['Low'],
-                        close=df_t['Close'],
-                        name=t_input
-                    )])
+                # 念のためカラム名が正しいか最終チェック
+                if 'Close' not in df_raw.columns:
+                     st.error("チャート描画エラー: 'Close' カラムが見つかりません。")
+                else:
+                    df_t = df_raw.tail(120).copy()
                     
-                    fig.update_layout(
-                        template="plotly_dark",
-                        height=500,
-                        margin=dict(t=30, b=0, l=0, r=0),
-                        xaxis_rangeslider_visible=False,
-                        title=dict(text=f"{t_input} Daily Chart", x=0.05)
-                    )
-                    
-                    # キーを指定して描画（リロード時の状態保持のため重要）
-                    st.plotly_chart(fig, use_container_width=True, key=f"chart_{t_input}")
-                    
-                except Exception as e:
-                    st.error(f"チャート描画エラー: {e}")
-                    # デバッグ用：カラム名を表示
-                    st.caption(f"Debug Info - Columns: {df_t.columns.tolist()}")
+                    # Plotlyオブジェクトの作成
+                    try:
+                        fig = go.Figure(data=[go.Candlestick(
+                            x=df_t.index,
+                            open=df_t['Open'],
+                            high=df_t['High'],
+                            low=df_t['Low'],
+                            close=df_t['Close'],
+                            name=t_input
+                        )])
+                        
+                        fig.update_layout(
+                            template="plotly_dark",
+                            height=500,
+                            margin=dict(t=30, b=0, l=0, r=0),
+                            xaxis_rangeslider_visible=False,
+                            title=dict(text=f"{t_input} Daily Chart", x=0.05)
+                        )
+                        
+                        st.plotly_chart(fig, use_container_width=True, key=f"chart_{t_input}")
+                        
+                    except Exception as e:
+                        st.error(f"チャート描画エラー: {e}")
 
         # AI診断セクション
         st.markdown(f'<div class="section-header">{txt["ai_reasoning"]}</div>', unsafe_allow_html=True)
@@ -916,4 +984,5 @@ with tab_port:
 
 st.divider()
 st.caption(f"🛡️ SENTINEL PRO SYSTEM | CORE ENGINE: UNIFIED | UI: MULTILINGUAL | CHART: DEBUG+CONVERT")
+
 
