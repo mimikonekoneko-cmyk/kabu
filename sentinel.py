@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-🛡️ SENTINEL PRO v5.0 — Total Superiority Edition
+🛡️ SENTINEL PRO v5.0 — ローカル統一版
 ==============================================================================
-改善点 (v4.5.2 → v5.0):
-  1. スキャン頻度: 1回/日 → 4回/日 (GitHub Actions cron)
-  2. アナリスト目標株価・空売り比率・インサイダー保有率 (yfinance.info)
-  3. SEC EDGAR インサイダー取引データ (無料API)
-  4. ニュース本文fetch (Google News RSS + BeautifulSoup)
-  5. 全データをJSONに保存 → app.py のAIプロンプトが劇的改善
+改善点:
+  - VCPAnalyzer を app.py と同じ高精度版に統一（内訳付き）
+  - その他クラスは既存のまま維持
 ==============================================================================
 """
 
@@ -52,8 +49,8 @@ CONFIG = {
     "STOP_LOSS_ATR":     _ef("STOP_LOSS_ATR", 2.0),
     "TARGET_R_MULTIPLE": _ef("TARGET_R_MULTIPLE", 2.5),
     "CACHE_EXPIRY":      12 * 3600,
-    "NEWS_FETCH_TIMEOUT": 6,          # 本文fetch タイムアウト(秒)
-    "NEWS_MAX_CHARS":     400,        # 本文の最大文字数
+    "NEWS_FETCH_TIMEOUT": 6,
+    "NEWS_MAX_CHARS":     400,
 }
 
 CACHE_DIR   = Path("./cache_v45"); CACHE_DIR.mkdir(exist_ok=True)
@@ -104,7 +101,7 @@ EXPANSION_LIST = [
 TICKERS = sorted(list(set(ORIGINAL_LIST + EXPANSION_LIST)))
 
 # ==============================================================================
-# 💱 CURRENCY
+# 💱 CURRENCY ENGINE
 # ==============================================================================
 
 class CurrencyEngine:
@@ -155,14 +152,10 @@ class DataEngine:
         except: return "Unknown"
 
 # ==============================================================================
-# 📊 FUNDAMENTAL DATA ENGINE (NEW v5.0)
+# 📊 FUNDAMENTAL ENGINE
 # ==============================================================================
 
 class FundamentalEngine:
-    """
-    yfinance.info から無料で取得できる機関・インサイダー・アナリストデータ。
-    キャッシュTTL=24時間（頻繁に変わらないデータ）。
-    """
     CACHE_TTL = 24 * 3600
 
     @staticmethod
@@ -176,24 +169,19 @@ class FundamentalEngine:
         try:
             info = yf.Ticker(ticker).info
             data = {
-                # アナリスト
-                "analyst_target":      info.get("targetMeanPrice"),       # 平均目標株価
-                "analyst_target_high": info.get("targetHighPrice"),       # 高値目標
-                "analyst_target_low":  info.get("targetLowPrice"),        # 安値目標
+                "analyst_target":      info.get("targetMeanPrice"),
+                "analyst_target_high": info.get("targetHighPrice"),
+                "analyst_target_low":  info.get("targetLowPrice"),
                 "analyst_count":       info.get("numberOfAnalystOpinions"),
-                "recommendation":      info.get("recommendationKey"),     # buy/hold/sell
-                # 空売り
-                "short_ratio":         info.get("shortRatio"),            # 日数ベース
-                "short_pct_float":     info.get("shortPercentOfFloat"),   # float比率
-                # インサイダー・機関
-                "insider_pct":         info.get("heldPercentInsiders"),   # インサイダー保有率
+                "recommendation":      info.get("recommendationKey"),
+                "short_ratio":         info.get("shortRatio"),
+                "short_pct_float":     info.get("shortPercentOfFloat"),
+                "insider_pct":         info.get("heldPercentInsiders"),
                 "institution_pct":     info.get("heldPercentInstitutions"),
-                # バリュエーション
                 "pe_forward":          info.get("forwardPE"),
                 "peg_ratio":           info.get("pegRatio"),
                 "revenue_growth":      info.get("revenueGrowth"),
                 "earnings_growth":     info.get("earningsGrowth"),
-                # 直近決算
                 "earnings_date":       str(info.get("earningsTimestamp", "")),
                 "eps_forward":         info.get("forwardEps"),
             }
@@ -203,14 +191,10 @@ class FundamentalEngine:
             return {}
 
 # ==============================================================================
-# 🏛️ SEC EDGAR INSIDER ENGINE (NEW v5.0)
+# 🏛️ INSIDER ENGINE
 # ==============================================================================
 
 class InsiderEngine:
-    """
-    SEC EDGAR の無料API でインサイダー取引(Form 4)を取得。
-    直近30日の売買バランスを返す。
-    """
     CACHE_TTL = 6 * 3600
 
     @staticmethod
@@ -224,7 +208,6 @@ class InsiderEngine:
 
         result = {"buy_count": 0, "sell_count": 0, "net_shares": 0, "recent": []}
         try:
-            # EDGAR full-text search for Form 4
             url = (
                 f"https://efts.sec.gov/LATEST/search-index?q=%22{ticker}%22"
                 f"&dateRange=custom&startdt={(datetime.now()-timedelta(days=30)).strftime('%Y-%m-%d')}"
@@ -232,22 +215,18 @@ class InsiderEngine:
             )
             headers = {"User-Agent": "sentinel-pro research@example.com"}
             r = requests.get(url, headers=headers, timeout=8)
-            if r.status_code != 200:
-                return result
-
-            hits = r.json().get("hits", {}).get("hits", [])
-            for hit in hits[:10]:
-                src = hit.get("_source", {})
-                trans_code = src.get("file_date", "")
-                shares      = src.get("period_of_report", "")
-                result["recent"].append({
-                    "date":   src.get("period_of_report", ""),
-                    "name":   src.get("display_names", ""),
-                    "filed":  src.get("file_date", ""),
-                })
+            if r.status_code == 200:
+                hits = r.json().get("hits", {}).get("hits", [])
+                for hit in hits[:10]:
+                    src = hit.get("_source", {})
+                    result["recent"].append({
+                        "date":   src.get("period_of_report", ""),
+                        "name":   src.get("display_names", ""),
+                        "filed":  src.get("file_date", ""),
+                    })
         except: pass
 
-        # フォールバック: yfinance insider transactions
+        # フォールバック
         try:
             t = yf.Ticker(ticker)
             it = t.insider_transactions
@@ -275,15 +254,11 @@ class InsiderEngine:
         return result
 
 # ==============================================================================
-# 📰 NEWS ENGINE WITH CONTENT FETCH (NEW v5.0)
+# 📰 NEWS ENGINE
 # ==============================================================================
 
 class NewsEngine:
-    """
-    Google News RSS から見出しを取得し、上位3記事は本文もfetch。
-    AIプロンプトに本文の要点まで渡せる。
-    """
-    CACHE_TTL = 3600  # 1時間
+    CACHE_TTL = 3600
 
     @staticmethod
     def get(ticker: str) -> dict:
@@ -297,7 +272,6 @@ class NewsEngine:
         articles = []
         seen = set()
 
-        # ① Yahoo Finance ニュース（見出し）
         try:
             for n in (yf.Ticker(ticker).news or [])[:5]:
                 title = n.get("title", n.get("headline", ""))
@@ -307,7 +281,6 @@ class NewsEngine:
                     articles.append({"title": title, "url": url, "body": ""})
         except: pass
 
-        # ② Google News RSS（見出し）
         try:
             feed = feedparser.parse(
                 f"https://news.google.com/rss/search?q={ticker}+stock+when:3d&hl=en-US&gl=US&ceid=US:en"
@@ -318,7 +291,6 @@ class NewsEngine:
                     articles.append({"title": e.title, "url": getattr(e, "link", ""), "body": ""})
         except: pass
 
-        # ③ 上位3記事の本文fetch（BS4が使える場合）
         if BS4_OK:
             for art in articles[:3]:
                 if not art["url"]: continue
@@ -329,7 +301,6 @@ class NewsEngine:
                         timeout=CONFIG["NEWS_FETCH_TIMEOUT"],
                     )
                     soup = BeautifulSoup(r.text, "html.parser")
-                    # <p>タグのテキストを結合（ノイズ除去）
                     paras = [p.get_text().strip() for p in soup.find_all("p") if len(p.get_text().strip()) > 50]
                     body  = " ".join(paras)[:CONFIG["NEWS_MAX_CHARS"]]
                     art["body"] = body
@@ -341,7 +312,6 @@ class NewsEngine:
 
     @staticmethod
     def format_for_prompt(news: dict) -> str:
-        """AIプロンプト用に整形。本文があれば要点まで含める。"""
         lines = []
         for a in news.get("articles", []):
             lines.append(f"• {a['title']}")
@@ -350,158 +320,128 @@ class NewsEngine:
         return "\n".join(lines) if lines else "ニュースなし"
 
 # ==============================================================================
-# 🎯 VCPAnalyzer（構造維持・ロジック改良版）
+# 🎯 VCPAnalyzer (app.py と同じ統一版)
 # ==============================================================================
 
 class VCPAnalyzer:
     """
-    Mark Minervini VCP スコアリング（改良版・横並び解消）
-
-    Tightness  (40pt)
-    Volume     (30pt)
-    MA Align   (30pt)
+    Mark Minervini VCP 分析エンジン（統一版）
+    - Tightness (40pt), Volume (30pt), MA (30pt), Pivot (5pt) = 105pt Max
     """
-
     @staticmethod
     def calculate(df: pd.DataFrame) -> dict:
-
         try:
-            if df is None or len(df) < 80:
-                return _empty_vcp()
+            if df is None or len(df) < 130:
+                return VCPAnalyzer._empty_result()
 
-            close = df["Close"]
-            high = df["High"]
-            low = df["Low"]
-            volume = df["Volume"]
+            close_s = df["Close"]
+            high_s  = df["High"]
+            low_s   = df["Low"]
+            vol_s   = df["Volume"]
 
-            # ── ATR(14) ─────────────────────────────────────────
-            tr = pd.concat([
-                high - low,
-                (high - close.shift()).abs(),
-                (low - close.shift()).abs(),
-            ], axis=1).max(axis=1)
+            # ATR(14)
+            tr1 = high_s - low_s
+            tr2 = (high_s - close_s.shift(1)).abs()
+            tr3 = (low_s - close_s.shift(1)).abs()
+            tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+            atr_val = float(tr.rolling(14).mean().iloc[-1])
+            
+            if pd.isna(atr_val) or atr_val <= 0:
+                return VCPAnalyzer._empty_result()
 
-            atr = float(tr.rolling(14).mean().iloc[-1])
-            if pd.isna(atr) or atr <= 0:
-                return _empty_vcp()
-
-            # =====================================================
-            # 1️⃣ Tightness（40pt 改良版）
-            # =====================================================
-            periods = [20, 30, 40]
-            ranges = []
-
+            # 1. Tightness
+            periods = [20, 30, 40, 60]
+            vol_ranges = []
             for p in periods:
-                h = float(high.iloc[-p:].max())
-                l = float(low.iloc[-p:].min())
-                ranges.append((h - l) / h)
+                p_high = float(high_s.iloc[-p:].max())
+                p_low  = float(low_s.iloc[-p:].min())
+                if p_high > 0:
+                    vol_ranges.append((p_high - p_low) / p_high)
+                else:
+                    vol_ranges.append(1.0)
+            
+            curr_range = vol_ranges[0]
+            avg_range = float(np.mean(vol_ranges[:3]))
+            is_contracting = vol_ranges[0] < vol_ranges[1] < vol_ranges[2]
 
-            avg_range = float(np.mean(ranges))
-
-            # 正しい収縮判定（短期 < 中期 < 長期）
-            is_contracting = ranges[0] < ranges[1] < ranges[2]
-
-            if avg_range < 0.12:
-                tight_score = 40
-            elif avg_range < 0.18:
-                tight_score = 30
-            elif avg_range < 0.24:
-                tight_score = 20
-            elif avg_range < 0.30:
-                tight_score = 10
-            else:
-                tight_score = 0
-
-            if is_contracting:
-                tight_score += 5
-
+            if avg_range < 0.10:   tight_score = 40
+            elif avg_range < 0.15: tight_score = 30
+            elif avg_range < 0.20: tight_score = 20
+            elif avg_range < 0.28: tight_score = 10
+            else:                  tight_score = 0
+            
+            if is_contracting: tight_score += 5
             tight_score = min(40, tight_score)
-            range_pct = round(ranges[0], 4)
 
-            # =====================================================
-            # 2️⃣ Volume（30pt 改良版）
-            # =====================================================
-            v20 = float(volume.iloc[-20:].mean())
-            v40 = float(volume.iloc[-40:-20].mean())
-            v60 = float(volume.iloc[-60:-40].mean())
+            # 2. Volume
+            v20_avg = float(vol_s.iloc[-20:].mean())
+            v60_avg = float(vol_s.iloc[-60:-40].mean())
+            
+            if pd.isna(v20_avg) or pd.isna(v60_avg):
+                return VCPAnalyzer._empty_result()
+            
+            v_ratio = v20_avg / v60_avg if v60_avg > 0 else 1.0
 
-            if pd.isna(v20) or pd.isna(v40) or pd.isna(v60):
-                return _empty_vcp()
+            if v_ratio < 0.45:   vol_score = 30
+            elif v_ratio < 0.60: vol_score = 25
+            elif v_ratio < 0.75: vol_score = 15
+            else:                vol_score = 0
+            
+            is_dryup = v_ratio < 0.75
 
-            ratio = v20 / v60 if v60 > 0 else 1.0
+            # 3. MA Alignment
+            ma50_v  = float(close_s.rolling(50).mean().iloc[-1])
+            ma150_v = float(close_s.rolling(150).mean().iloc[-1])
+            ma200_v = float(close_s.rolling(200).mean().iloc[-1])
+            price_v = float(close_s.iloc[-1])
+            
+            m_score = 0
+            if price_v > ma50_v:   m_score += 10
+            if ma50_v > ma150_v:   m_score += 10
+            if ma150_v > ma200_v:  m_score += 10
 
-            if ratio < 0.50:
-                vol_score = 30
-            elif ratio < 0.65:
-                vol_score = 25
-            elif ratio < 0.80:
-                vol_score = 15
-            else:
-                vol_score = 0
-
-            is_dryup = ratio < 0.80
-            vol_ratio = round(ratio, 2)
-
-            # =====================================================
-            # 3️⃣ MA Alignment（変更なし）
-            # =====================================================
-            ma50 = float(close.rolling(50).mean().iloc[-1])
-            ma200 = float(close.rolling(200).mean().iloc[-1])
-            price = float(close.iloc[-1])
-
-            trend_score = (
-                (10 if price > ma50 else 0) +
-                (10 if ma50 > ma200 else 0) +
-                (10 if price > ma200 else 0)
-            )
-
-            # =====================================================
-            # 🔥 Pivot接近ボーナス（最大+5）
-            # =====================================================
-            pivot = float(high.iloc[-40:].max())
-            distance = (pivot - price) / pivot
-
-            pivot_bonus = 0
-            if 0 <= distance <= 0.05:
-                pivot_bonus = 5
-            elif 0.05 < distance <= 0.08:
-                pivot_bonus = 3
+            # 4. Pivot Bonus
+            pivot_v = float(high_s.iloc[-50:].max())
+            dist_v = (pivot_v - price_v) / pivot_v
+            
+            p_bonus = 0
+            if 0 <= dist_v <= 0.04:
+                p_bonus = 5
+            elif 0.04 < dist_v <= 0.08:
+                p_bonus = 3
 
             signals = []
-            if tight_score >= 35:
-                signals.append("Multi-Stage Contraction")
-            if is_dryup:
-                signals.append("Volume Dry-Up")
-            if trend_score == 30:
-                signals.append("MA Aligned")
-            if pivot_bonus > 0:
-                signals.append("Near Pivot")
+            if tight_score >= 35: signals.append("Tight Base (VCP)")
+            if is_contracting:    signals.append("V-Contraction Detected")
+            if is_dryup:          signals.append("Volume Dry-up Detected")
+            if m_score >= 20:     signals.append("Trend Alignment OK")
+            if p_bonus > 0:       signals.append("Near Pivot Point")
 
             return {
-                "score": int(max(0, tight_score + vol_score + trend_score + pivot_bonus)),
-                "atr": atr,
+                "score": int(min(105, tight_score + vol_score + m_score + p_bonus)),
+                "atr": atr_val,
                 "signals": signals,
                 "is_dryup": is_dryup,
-                "range_pct": range_pct,
-                "vol_ratio": vol_ratio,
+                "range_pct": round(curr_range, 4),
+                "vol_ratio": round(v_ratio, 2),
+                "breakdown": {
+                    "tight": tight_score,
+                    "vol": vol_score,
+                    "ma": m_score,
+                    "pivot": p_bonus
+                }
             }
-
         except Exception:
-            return _empty_vcp()
+            return VCPAnalyzer._empty_result()
 
+    @staticmethod
+    def _empty_result():
+        return {
+            "score": 0, "atr": 0.0, "signals": [], 
+            "is_dryup": False, "range_pct": 0.0, "vol_ratio": 1.0,
+            "breakdown": {"tight": 0, "vol": 0, "ma": 0, "pivot": 0}
+        }
 
-def _empty_vcp() -> dict:
-    return {
-        "score": 0,
-        "atr": 0.0,
-        "signals": [],
-        "is_dryup": False,
-        "range_pct": 0.0,
-        "vol_ratio": 1.0
-    }
-
-
-  
 # ==============================================================================
 # 📈 RS ANALYZER
 # ==============================================================================
@@ -519,7 +459,7 @@ class RSAnalyzer:
         except: return -999.0
 
 # ==============================================================================
-# 🔬 STRATEGY VALIDATOR (250-day backtest)
+# 🔬 STRATEGY VALIDATOR
 # ==============================================================================
 
 class StrategyValidator:
@@ -596,7 +536,7 @@ def send_line(message: str):
 def run():
     start = time.time()
     print("="*60)
-    print("🛡️ SENTINEL PRO v5.0 — Total Superiority Edition")
+    print("🛡️ SENTINEL PRO v5.0 — ローカル統一版")
     print(f"   Capital: ¥{CONFIG['CAPITAL_JPY']:,}  Universe: {len(TICKERS)} tickers")
     print("="*60)
 
@@ -644,16 +584,13 @@ def run():
         shares = calculate_position(entry, stop, usd_jpy)
         if shares <= 0: continue
 
-        # ── NEW: Fundamental data ────────────────────────────────────
         fund    = FundamentalEngine.get(ticker)
         insider = InsiderEngine.get_recent(ticker)
 
-        # アナリスト目標株価と現在値の乖離
         analyst_upside = None
         if fund.get("analyst_target") and price > 0:
             analyst_upside = round((fund["analyst_target"] / price - 1) * 100, 1)
 
-        # インサイダーアラート（直近60日で売りが買いの2倍以上）
         insider_alert = (
             insider["sell_count"] >= 2 and
             insider["sell_count"] > insider["buy_count"] * 2
@@ -676,7 +613,6 @@ def run():
             "rs":             int(rs),
             "pf":             float(pf),
             "sector":         DataEngine.get_sector(ticker),
-            # v5.0 追加フィールド
             "analyst_target": fund.get("analyst_target"),
             "analyst_upside": analyst_upside,
             "analyst_count":  fund.get("analyst_count"),
