@@ -684,17 +684,34 @@ with tab_diag:
             else:
                 st.error(f"Failed to fetch data for {t_input}.")
 
-    if st.session_state.quant_results_stored and st.session_state.quant_results_stored["ticker"] == t_input:
-        q = st.session_state.quant_results_stored
-        vcp_res, rs_val, pf_val, p_curr = q["vcp"], q["rs"], q["pf"], q["price"]
+if st.session_state.quant_results_stored and st.session_state.quant_results_stored["ticker"] == t_input:
+    q = st.session_state.quant_results_stored
+    vcp_res, rs_val, pf_val, p_curr = q["vcp"], q["rs"], q["pf"], q["price"]
 
-        st.markdown(f'<div class="section-header">{txt["quant_dashboard"]}</div>', unsafe_allow_html=True)
-        draw_sentinel_grid_ui([
-            {"label": txt["current_price"], "value": f"${p_curr:.2f}"},
-            {"label": txt["vcp_score"], "value": f"{vcp_res['score']}/105"},
-            {"label": txt["profit_factor"], "value": f"x{pf_val:.2f}"},
-            {"label": txt["rs_momentum"], "value": f"{rs_val*100:+.1f}%"}
-        ])
+    # ---- 追加：数値の安全な変換 ----
+    try:
+        rs_val = float(rs_val) if rs_val is not None else 0.0
+    except (TypeError, ValueError):
+        rs_val = 0.0
+
+    try:
+        pf_val = float(pf_val) if pf_val is not None else 0.0
+    except (TypeError, ValueError):
+        pf_val = 0.0
+
+    try:
+        p_curr = float(p_curr) if p_curr is not None else 0.0
+    except (TypeError, ValueError):
+        p_curr = 0.0
+    # ---- ここまで ----
+
+    st.markdown(f'<div class="section-header">{txt["quant_dashboard"]}</div>', unsafe_allow_html=True)
+    draw_sentinel_grid_ui([
+        {"label": txt["current_price"], "value": f"${p_curr:.2f}"},
+        {"label": txt["vcp_score"], "value": f"{vcp_res['score']}/105"},
+        {"label": txt["profit_factor"], "value": f"x{pf_val:.2f}"},
+        {"label": txt["rs_momentum"], "value": f"{rs_val*100:+.1f}%"}
+    ])
 
         d1, d2 = st.columns(2)
         with d1:
