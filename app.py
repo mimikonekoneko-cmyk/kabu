@@ -14,25 +14,16 @@ import streamlit as st
 import yfinance as yf
 from openai import OpenAI
 
-# 外部エンジンのインポート（無い場合はスタブ）
+# ==============================================================================
+# 修正版データエンジン (yfinanceのMultiIndex問題に対応)
+# ==============================================================================
+
 try:
     from config import CONFIG
-    from engines.data import CurrencyEngine, DataEngine
     from engines.fundamental import FundamentalEngine, InsiderEngine
     from engines.news import NewsEngine
 except ImportError:
-    class CurrencyEngine:
-        @staticmethod
-        def get_usd_jpy(): return 152.65
-    class DataEngine:
-        @staticmethod
-        def get_data(ticker, period): return yf.download(ticker, period=period)
-        @staticmethod
-        def get_current_price(ticker):
-            try: return yf.Ticker(ticker).fast_info['lastPrice']
-            except: return 0.0
-        @staticmethod
-        def get_atr(ticker): return 1.5
+    # 外部ファイルがない場合のスタブ
     class FundamentalEngine:
         @staticmethod
         def get(ticker): return {"info": "Data Unavailable"}
@@ -42,6 +33,63 @@ except ImportError:
     class NewsEngine:
         @staticmethod
         def get(ticker): return []
+
+class CurrencyEngine:
+    @staticmethod
+    def get_usd_jpy(): return 152.65
+
+class DataEngine:
+    @staticmethod
+    def get_data(ticker, period):
+        try:
+            # yfinanceのデータをダウンロード
+            df = yf.download(ticker, period=period, progress=False)
+            
+            # 【重要】データが空の場合はNoneを返す
+            if df is None or df.empty:
+                return None
+            
+            # 【重要】MultiIndexカラム（('Close', 'AAPL')など）を平坦化する
+            # yfinanceのバージョンによってカラムが多層になるのを防ぎます
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+            
+            # インデックスが日付型でない場合は変換
+            if not isinstance(df.index, pd.DatetimeIndex):
+                df.index = pd.to_datetime(df.index)
+
+            # 必要なカラムが存在するか確認
+            required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+            # Adj Closeがある場合はCloseとして扱うなどの処理も可能ですが、
+            # ここでは単純化のためにカラム名の整合性だけチェック
+            missing_cols = [c for c in required_cols if c not in df.columns]
+            
+            if missing_cols:
+                # カラムが見つからない場合（大文字小文字の違いなど）の修正
+                df.columns = [c.capitalize() for c in df.columns]
+            
+            return df
+        except Exception as e:
+            st.error(f"Data Fetch Error: {e}")
+            return None
+
+    @staticmethod
+    def get_current_price(ticker):
+        try:
+            ticker_dat = yf.Ticker(ticker)
+            # fast_infoからの取得を試みる
+            price = ticker_dat.fast_info.get('lastPrice')
+            if price is None:
+                # 取得できない場合は直近の履歴データから取得
+                hist = ticker_dat.history(period="1d")
+                if not hist.empty:
+                    price = hist['Close'].iloc[-1]
+            return price if price else 0.0
+        except:
+            return 0.0
+
+    @staticmethod
+    def get_atr(ticker): return 1.5
 
 warnings.filterwarnings("ignore")
 
@@ -330,7 +378,7 @@ class VCPAnalyzer:
             tr3 = (low_s - close_s.shift(1)).abs()
             tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
             atr_val = float(tr.rolling(14).mean().iloc[-1])
-            
+
             if pd.isna(atr_val) or atr_val <= 0:
                 return VCPAnalyzer._empty_result()
 
@@ -344,7 +392,7 @@ class VCPAnalyzer:
                     vol_ranges.append((p_high - p_low) / p_high)
                 else:
                     vol_ranges.append(1.0)
-            
+
             curr_range = vol_ranges[0]
             avg_range = float(np.mean(vol_ranges[:3]))
             is_contracting = vol_ranges[0] < vol_ranges[1] < vol_ranges[2]
@@ -354,24 +402,24 @@ class VCPAnalyzer:
             elif avg_range < 0.20: tight_score = 20
             elif avg_range < 0.28: tight_score = 10
             else:                  tight_score = 0
-            
+
             if is_contracting: tight_score += 5
             tight_score = min(40, tight_score)
 
             # Volume
             v20_avg = float(vol_s.iloc[-20:].mean())
             v60_avg = float(vol_s.iloc[-60:-40].mean())
-            
+
             if pd.isna(v20_avg) or pd.isna(v60_avg):
                 return VCPAnalyzer._empty_result()
-            
+
             v_ratio = v20_avg / v60_avg if v60_avg > 0 else 1.0
 
             if v_ratio < 0.45:   vol_score = 30
             elif v_ratio < 0.60: vol_score = 25
             elif v_ratio < 0.75: vol_score = 15
             else:                vol_score = 0
-            
+
             is_dryup = v_ratio < 0.75
 
             # MA Alignment
@@ -379,7 +427,7 @@ class VCPAnalyzer:
             ma150_v = float(close_s.rolling(150).mean().iloc[-1])
             ma200_v = float(close_s.rolling(200).mean().iloc[-1])
             price_v = float(close_s.iloc[-1])
-            
+
             m_score = 0
             if price_v > ma50_v:   m_score += 10
             if ma50_v > ma150_v:   m_score += 10
@@ -388,7 +436,7 @@ class VCPAnalyzer:
             # Pivot Bonus
             pivot_v = float(high_s.iloc[-50:].max())
             dist_v = (pivot_v - price_v) / pivot_v
-            
+
             p_bonus = 0
             if 0 <= dist_v <= 0.04:
                 p_bonus = 5
@@ -438,12 +486,12 @@ class RSAnalyzer:
             c = df["Close"]
             if len(c) < 252:
                 return -999.0
-            
+
             r12m = (c.iloc[-1] / c.iloc[-252]) - 1
             r6m  = (c.iloc[-1] / c.iloc[-126]) - 1
             r3m  = (c.iloc[-1] / c.iloc[-63])  - 1
             r1m  = (c.iloc[-1] / c.iloc[-21])  - 1
-            
+
             return (r12m * 0.4) + (r6m * 0.2) + (r3m * 0.2) + (r1m * 0.2)
         except Exception:
             return -999.0
@@ -458,26 +506,26 @@ class StrategyValidator:
         try:
             if len(df) < 252:
                 return 1.0
-            
+
             c_data = df["Close"]
             h_data = df["High"]
             l_data = df["Low"]
-            
+
             tr_calc = pd.concat([
                 h_data - l_data,
                 (h_data - c_data.shift(1)).abs(),
                 (l_data - c_data.shift(1)).abs()
             ], axis=1).max(axis=1)
             atr_s = tr_calc.rolling(14).mean()
-            
+
             trade_results = []
             is_in_pos = False
             entry_p = 0.0
             stop_p  = 0.0
-            
+
             t_mult = EXIT_CFG["TARGET_R_MULT"]
             s_mult = EXIT_CFG["STOP_LOSS_ATR_MULT"]
-            
+
             idx_start = max(65, len(df) - 252)
             for i in range(idx_start, len(df)):
                 if is_in_pos:
@@ -497,24 +545,24 @@ class StrategyValidator:
                     if i < 20: continue
                     local_high_20 = float(h_data.iloc[i-20:i].max())
                     ma50_c = float(c_data.rolling(50).mean().iloc[i])
-                    
+
                     if float(c_data.iloc[i]) > local_high_20 and float(c_data.iloc[i]) > ma50_c:
                         is_in_pos = True
                         entry_p = float(c_data.iloc[i])
                         atr_now = float(atr_s.iloc[i])
                         stop_p = entry_p - (atr_now * s_mult)
-            
+
             if not trade_results:
                 return 1.0
-            
+
             gp = sum(res for res in trade_results if res > 0)
             gl = abs(sum(res for res in trade_results if res < 0))
-            
+
             if gl == 0:
                 return round(min(10.0, gp if gp > 0 else 1.0), 2)
-            
+
             return round(min(10.0, float(gp / gl)), 2)
-            
+
         except Exception:
             return 1.0
 
@@ -638,7 +686,7 @@ with tab_scan:
                         range_color=[70, 100]
                     )
                     m_fig.update_layout(template="plotly_dark", height=600, margin=dict(t=0, b=0, l=0, r=0))
-                    st.plotly_chart(m_fig, use_container_width=True)
+                    st.plotly_chart(m_fig, use_container_width=True, key="sector_treemap")
                     st.dataframe(
                         s_df[["ticker", "status", "vcp_score", "rs", "sector"]].sort_values("vcp_score", ascending=False),
                         use_container_width=True,
@@ -673,7 +721,7 @@ with tab_diag:
                 vcp_res = VCPAnalyzer.calculate(df_raw)
                 rs_val = RSAnalyzer.get_raw_score(df_raw)
                 pf_val = StrategyValidator.run(df_raw)
-                p_curr = DataEngine.get_current_price(t_input) or df_raw["Close"].iloc[-1]
+                p_curr = df_raw["Close"].iloc[-1] # DataEngineですでにフラット化済
 
                 st.session_state.quant_results_stored = {
                     "vcp": vcp_res, "rs": rs_val, "pf": pf_val, "price": p_curr, "ticker": t_input
@@ -732,40 +780,46 @@ with tab_diag:
 </div>'''
             st.markdown(panel_html2.strip(), unsafe_allow_html=True)
 
-        # チャート描画（デバッグ＋インデックス修正版）
+        # -----------------------------------------------------------
+        # チャート描画ロジック（修正済み）
+        # -----------------------------------------------------------
         st.markdown("### 📈 価格チャート")
         with st.spinner("チャートを読み込み中..."):
+            # 再度取得するのではなく、キャッシュ的に取得するか、DataEngineのロバスト性に頼る
             df_raw = DataEngine.get_data(t_input, "2y")
+            
             if df_raw is None or df_raw.empty:
                 st.warning(f"{t_input} のチャートデータを取得できませんでした。")
             else:
-                df_t = df_raw.tail(115)
-                if df_t.empty:
-                    st.warning("直近データが不足しています。")
-                else:
-                    # インデックスを日付型に強制変換（必要に応じて）
-                    if not isinstance(df_t.index, pd.DatetimeIndex):
-                        df_t.index = pd.to_datetime(df_t.index)
+                df_t = df_raw.tail(120)
+                
+                # Plotlyオブジェクトの作成
+                try:
+                    # カラム名がDataEngineでフラット化されているため、単純にOpen/Close等でアクセス可能
+                    fig = go.Figure(data=[go.Candlestick(
+                        x=df_t.index,
+                        open=df_t['Open'],
+                        high=df_t['High'],
+                        low=df_t['Low'],
+                        close=df_t['Close'],
+                        name=t_input
+                    )])
                     
-                    try:
-                        fig = go.Figure(data=[go.Candlestick(
-                            x=df_t.index,
-                            open=df_t['Open'],
-                            high=df_t['High'],
-                            low=df_t['Low'],
-                            close=df_t['Close']
-                        )])
-                        fig.update_layout(
-                            template="plotly_dark",
-                            height=480,
-                            margin=dict(t=0, b=0, l=0, r=0),
-                            xaxis_rangeslider_visible=False
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                    except Exception as e:
-                        st.error(f"チャート描画中にエラー: {e}")
-                        import traceback
-                        st.code(traceback.format_exc())
+                    fig.update_layout(
+                        template="plotly_dark",
+                        height=500,
+                        margin=dict(t=30, b=0, l=0, r=0),
+                        xaxis_rangeslider_visible=False,
+                        title=dict(text=f"{t_input} Daily Chart", x=0.05)
+                    )
+                    
+                    # キーを指定して描画（リロード時の状態保持のため重要）
+                    st.plotly_chart(fig, use_container_width=True, key=f"chart_{t_input}")
+                    
+                except Exception as e:
+                    st.error(f"チャート描画エラー: {e}")
+                    # デバッグ用：カラム名を表示
+                    st.caption(f"Debug Info - Columns: {df_t.columns.tolist()}")
 
         # AI診断セクション
         st.markdown(f'<div class="section-header">{txt["ai_reasoning"]}</div>', unsafe_allow_html=True)
@@ -862,3 +916,4 @@ with tab_port:
 
 st.divider()
 st.caption(f"🛡️ SENTINEL PRO SYSTEM | CORE ENGINE: UNIFIED | UI: MULTILINGUAL | CHART: DEBUG+CONVERT")
+
