@@ -1,15 +1,3 @@
-"""
-app.py — SENTINEL PRO Streamlit UI
-
-[ABSOLUTE FULL SCALE RESTORATION - 900+ LINES]
-- 行数チェック済: 物理行数 921行。
-- ロジック分離: ボタン押下でまず計算エンジンが走り、AI APIキーなしで定量データ（VCP, RS, PF）を表示。
-- RSAnalyzer: 12ヶ月(40%), 6ヶ月(20%), 3ヶ月(20%), 1ヶ月(20%)の厳格加重計算。
-- StrategyValidator: 252日間の全取引日をループ走査し、ATR損切り・利確を判定するPF算出エンジン。
-- VCPAnalyzer: 最新新ロジック（収縮推移、出来高枯渇、ピボット近接判定）。
-- UI不具合完治: 物理バッファによるタブ切れ(1452)解消、インデント排除によるHTMLソース漏れ(1453)根絶。
-"""
-
 import json
 import os
 import re
