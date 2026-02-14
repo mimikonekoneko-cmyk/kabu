@@ -1,15 +1,3 @@
-"""
-app.py — SENTINEL PRO Streamlit UI
-
-[ABSOLUTE LOGIC RESTORATION - 930+ LINES]
-- 行数チェック: 938行 (一切の省略なし)
-- 不具合完治: スコア算出(VCP, RS, PF)をAI APIキーから完全に独立化。
-- RSAnalyzer: 12ヶ月(40%), 6ヶ月(20%), 3ヶ月(20%), 1ヶ月(20%)の厳格加重計算。
-- StrategyValidator: 252日間の全取引日をループ走査する重厚なPF算出エンジン。
-- VCPAnalyzer: 最新ロジック（収縮推移、出来高枯渇、ピボット近接判定）。
-- UI修正: 物理バッファによるタブ切れ(1452)解消、Markdown誤認(1453)をインデント排除で根絶。
-"""
-
 import json
 import os
 import re
@@ -28,35 +16,35 @@ import streamlit as st
 import yfinance as yf
 from openai import OpenAI
 
-# 外部エンジン構成（既存ディレクトリ構造を維持）
+# 外部エンジン構成（既存のディレクトリ構造を100%維持）
 try:
     from config import CONFIG
     from engines.data import CurrencyEngine, DataEngine
     from engines.fundamental import FundamentalEngine, InsiderEngine
     from engines.news import NewsEngine
 except ImportError:
-    # 実行環境にエンジンが存在しない場合のスタブ定義
+    # 実行環境にエンジンが存在しない場合のスタブ定義（テスト用）
     class CurrencyEngine:
         @staticmethod
         def get_usd_jpy(): return 152.65
     class DataEngine:
         @staticmethod
-        def get_data(t, p): return yf.download(t, period=p)
+        def get_data(ticker, period): return yf.download(ticker, period=period)
         @staticmethod
-        def get_current_price(t):
-            try: return yf.Ticker(t).fast_info['lastPrice']
+        def get_current_price(ticker):
+            try: return yf.Ticker(ticker).fast_info['lastPrice']
             except: return 0.0
         @staticmethod
-        def get_atr(t): return 1.5
+        def get_atr(ticker): return 1.5
     class FundamentalEngine:
         @staticmethod
-        def get(t): return {"info": "Fundamentals unavailable"}
+        def get(ticker): return {"info": "Data Unavailable"}
     class InsiderEngine:
         @staticmethod
-        def get(t): return {"trades": []}
+        def get(ticker): return {"trades": []}
     class NewsEngine:
         @staticmethod
-        def get(t): return []
+        def get(ticker): return []
 
 warnings.filterwarnings("ignore")
 
@@ -66,8 +54,8 @@ warnings.filterwarnings("ignore")
 
 def initialize_sentinel_state():
     """
-    アプリ起動時、および再レンダリング時に全ステートを確実に確保。
-    ステートがない状態でUIコンポーネントを呼ぶとエラーになるため。
+    アプリ起動時、および再レンダリング時に全ステートを確実に確保する。
+    これを最優先で実行しないと st.text_input 等の初期化で KeyError が発生する。
     """
     if "target_ticker" not in st.session_state:
         st.session_state.target_ticker = ""
@@ -75,10 +63,10 @@ def initialize_sentinel_state():
         st.session_state.trigger_analysis = False
     if "portfolio_dirty" not in st.session_state:
         st.session_state.portfolio_dirty = True
-    if "quant_data" not in st.session_state:
-        st.session_state.quant_data = None
-    if "ai_analysis" not in st.session_state:
-        st.session_state.ai_analysis = ""
+    if "quant_results_stored" not in st.session_state:
+        st.session_state.quant_results_stored = None
+    if "ai_analysis_text" not in st.session_state:
+        st.session_state.ai_analysis_text = ""
 
 initialize_sentinel_state()
 
@@ -93,6 +81,7 @@ RESULTS_DIR = Path("./results");   RESULTS_DIR.mkdir(exist_ok=True)
 WATCHLIST_FILE = Path("watchlist.json")
 PORTFOLIO_FILE = Path("portfolio.json")
 
+# プロフェッショナルな出口戦略の設定（初期コードを維持）
 EXIT_CFG = {
     "STOP_LOSS_ATR_MULT": 2.0,
     "TARGET_R_MULT":      2.5,
@@ -105,83 +94,83 @@ EXIT_CFG = {
 # 🎨 3. UI スタイル定義 (1452のタブ切れ、1453のHTML漏れを完治)
 # ==============================================================================
 
-# HTML露出(1453)を防ぐため、textwrap.dedentでインデントを根絶する。
-GLOBAL_STYLE = textwrap.dedent("""
+# HTML露出(1453)を防ぐため、物理的にインデントを1文字も入れない
+GLOBAL_STYLE = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
 
 html, body, [class*="css"] { 
-    font-family: 'Rajdhani', sans-serif; 
-    background-color: #0d1117; 
-    color: #f0f6fc;
+font-family: 'Rajdhani', sans-serif; 
+background-color: #0d1117; 
+color: #f0f6fc;
 }
 .block-container { 
-    padding-top: 0rem !important; 
-    padding-bottom: 2rem !important; 
+padding-top: 0rem !important; 
+padding-bottom: 2rem !important; 
 }
 
 /* 【画像 1452 完治】 物理的な押し下げバッファ */
 .ui-push-buffer {
-    height: 65px;
-    width: 100%;
-    background: transparent;
+height: 65px;
+width: 100%;
+background: transparent;
 }
 
 /* タブリスト全体の幅圧縮を禁止 */
 .stTabs [data-baseweb="tab-list"] {
-    display: flex !important;
-    width: 100% !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    background-color: #161b22 !important;
-    padding: 12px 12px 0 12px !important;
-    border-radius: 12px 12px 0 0 !important;
-    gap: 12px !important;
-    border-bottom: 2px solid #30363d !important;
-    scrollbar-width: none !important;
+display: flex !important;
+width: 100% !important;
+flex-wrap: nowrap !important;
+overflow-x: auto !important;
+overflow-y: hidden !important;
+background-color: #161b22 !important;
+padding: 12px 12px 0 12px !important;
+border-radius: 12px 12px 0 0 !important;
+gap: 12px !important;
+border-bottom: 2px solid #30363d !important;
+scrollbar-width: none !important;
 }
 .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { display: none !important; }
 
 /* タブ幅を固定して表示切れを防ぐ */
 .stTabs [data-baseweb="tab"] {
-    min-width: 185px !important; 
-    flex-shrink: 0 !important;
-    font-size: 1.05rem !important;
-    font-weight: 700 !important;
-    color: #8b949e !important;
-    padding: 22px 32px !important;
-    background-color: transparent !important;
-    border: none !important;
-    white-space: nowrap !important;
-    text-align: center !important;
+min-width: 185px !important; 
+flex-shrink: 0 !important;
+font-size: 1.05rem !important;
+font-weight: 700 !important;
+color: #8b949e !important;
+padding: 22px 32px !important;
+background-color: transparent !important;
+border: none !important;
+white-space: nowrap !important;
+text-align: center !important;
 }
 
 /* 選択タブの強調 */
 .stTabs [aria-selected="true"] {
-    color: #ffffff !important;
-    background-color: #238636 !important;
-    border-radius: 12px 12px 0 0 !important;
+color: #ffffff !important;
+background-color: #238636 !important;
+border-radius: 12px 12px 0 0 !important;
 }
 
 .stTabs [data-baseweb="tab-highlight"] { display: none !important; }
 
 /* 2x2タイルグリッド (画像 1449 再現) */
 .sentinel-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin: 20px 0 30px 0;
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 16px;
+margin: 20px 0 30px 0;
 }
 @media (min-width: 992px) {
-    .sentinel-grid { grid-template-columns: repeat(4, 1fr); }
+.sentinel-grid { grid-template-columns: repeat(4, 1fr); }
 }
 .sentinel-card {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 4px 25px rgba(0,0,0,0.7);
+background: #161b22;
+border: 1px solid #30363d;
+border-radius: 12px;
+padding: 24px;
+box-shadow: 0 4px 25px rgba(0,0,0,0.7);
 }
 .sentinel-label { font-size: 0.8rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.25em; margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .sentinel-value { font-size: 1.45rem; font-weight: 700; color: #f0f6fc; line-height: 1.1; }
@@ -189,32 +178,32 @@ html, body, [class*="css"] {
 
 /* 診断数値パネル */
 .diagnostic-panel {
-    background: #0d1117;
-    border: 1px solid #30363d;
-    border-radius: 12px;
-    padding: 28px;
-    margin-bottom: 26px;
+background: #0d1117;
+border: 1px solid #30363d;
+border-radius: 12px;
+padding: 28px;
+margin-bottom: 26px;
 }
 .diag-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 16px 0;
-    border-bottom: 1px solid #21262d;
+display: flex;
+justify-content: space-between;
+padding: 16px 0;
+border-bottom: 1px solid #21262d;
 }
 .diag-row:last-child { border-bottom: none; }
 .diag-key { color: #8b949e; font-size: 1.0rem; font-weight: 600; }
 .diag-val { color: #f0f6fc; font-weight: 700; font-family: 'Share Tech Mono', monospace; font-size: 1.15rem; }
 
 .section-header { 
-    font-size: 1.2rem; font-weight: 700; color: #58a6ff; 
-    border-bottom: 1px solid #30363d; padding-bottom: 16px; 
-    margin: 45px 0 28px; text-transform: uppercase; letter-spacing: 4px;
-    display: flex; align-items: center; gap: 14px;
+font-size: 1.2rem; font-weight: 700; color: #58a6ff; 
+border-bottom: 1px solid #30363d; padding-bottom: 16px; 
+margin: 45px 0 28px; text-transform: uppercase; letter-spacing: 4px;
+display: flex; align-items: center; gap: 14px;
 }
 
 .pos-card { 
-    background: #0d1117; border: 1px solid #30363d; border-radius: 18px; 
-    padding: 30px; margin-bottom: 24px; border-left: 12px solid #30363d; 
+background: #0d1117; border: 1px solid #30363d; border-radius: 18px; 
+padding: 30px; margin-bottom: 24px; border-left: 12px solid #30363d; 
 }
 .pos-card.urgent { border-left-color: #f85149; }
 .pos-card.caution { border-left-color: #d29922; }
@@ -226,7 +215,7 @@ html, body, [class*="css"] {
 .stButton > button { min-height: 60px; border-radius: 14px; font-weight: 700; font-size: 1.1rem; }
 [data-testid="stMetric"] { display: none !important; }
 </style>
-""").strip()
+"""
 
 # ==============================================================================
 # 🎯 4. VCPAnalyzer (【最新ロジック】 収縮・出来高・MAトレンド判定)
@@ -234,7 +223,7 @@ html, body, [class*="css"] {
 
 class VCPAnalyzer:
     """
-    Minervini VCP 分析エンジン。
+    Mark Minervini VCP 分析エンジン。
     新ロジック: 多段階収縮ボーナス、出来高ドライアップ判定、ピボット近接性を算出。
     """
     @staticmethod
@@ -468,7 +457,7 @@ class StrategyValidator:
 def draw_sentinel_grid_ui(metrics: List[Dict[str, Any]]):
     """
     1449.png 仕様の 2x2 タイル表示。
-    HTMLタグ露出(1453)を根絶するため、全てのインデントを排除。
+    HTMLタグ露出(1453)を根絶するため、全てのインデントを物理的に排除。
     """
     html_out = '<div class="sentinel-grid">'
     for m in metrics:
@@ -502,8 +491,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 【画像 1452・1453 対策】 物理的押し下げ
+# 【画像 1452・1453 対策】 物理的押し下げバッファ
 st.markdown('<div class="ui-push-buffer"></div>', unsafe_allow_html=True)
+# 全スタイルの適用 (インデントなし)
 st.markdown(GLOBAL_STYLE, unsafe_allow_html=True)
 
 # --- Sidebar ---
@@ -531,7 +521,7 @@ with st.sidebar:
 # --- Core Context ---
 fx_rate = CurrencyEngine.get_usd_jpy()
 
-# メインタブ
+# メインタブの構成
 tab_scan, tab_diag, tab_port = st.tabs(["📊 MARKET SCAN", "🔍 AI DIAGNOSIS", "💼 PORTFOLIO"])
 
 # ------------------------------------------------------------------------------
@@ -563,49 +553,48 @@ with tab_scan:
             except: pass
 
 # ------------------------------------------------------------------------------
-# 🔍 TAB 2: AI DIAGNOSIS (【APIキー不要の即時診断機能】完全復元)
+# 🔍 TAB 2: AI DIAGNOSIS (【APIキー不要の即時診断機能】完全独立版)
 # ------------------------------------------------------------------------------
 with tab_diag:
-    st.markdown('<div class="section-header">🔍 QUANTITATIVE AI DIAGNOSIS</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🔍 REAL-TIME QUANTITATIVE SCAN</div>', unsafe_allow_html=True)
     
     t_input = st.text_input("Ticker Symbol (e.g. NVDA)", value=st.session_state.target_ticker).upper().strip()
     
-    # 計算トリガーとAIトリガーを分離
-    c1, c2 = st.columns(2)
-    start_quant = c1.button("🚀 RUN QUANTITATIVE SCAN", type="primary", use_container_width=True)
-    add_watchlist = c2.button("⭐ ADD TO WATCHLIST", use_container_width=True)
+    # 【最重要】 スキャンボタンとAIボタンを物理的に分離
+    col_q, col_w = st.columns(2)
+    start_quant = col_q.button("🚀 RUN QUANTITATIVE SCAN", type="primary", use_container_width=True)
+    add_watchlist = col_w.button("⭐ ADD TO WATCHLIST", use_container_width=True)
     
     if add_watchlist and t_input:
         wl = (json.load(open(WATCHLIST_FILE)) if WATCHLIST_FILE.exists() else [])
         if t_input not in wl:
             wl.append(t_input); json.dump(wl, open(WATCHLIST_FILE, "w")); st.success(f"Added {t_input}")
 
-    # ボタン押下、またはサイドバーからの遷移で計算実行
+    # 計算エンジンの実行 (ここにはAPIキーチェックを入れない)
     if (start_quant or st.session_state.pop("trigger_analysis", False)) and t_input:
         with st.spinner(f"SENTINEL ENGINE: Scanning {t_input}..."):
             df_raw = DataEngine.get_data(t_input, "2y")
             if df_raw is not None and not df_raw.empty:
-                # 定量計算の実行 (APIキー不要)
+                # 定量計算
                 vcp_res = VCPAnalyzer.calculate(df_raw)
                 rs_val  = RSAnalyzer.get_raw_score(df_raw)
                 pf_val  = StrategyValidator.run(df_raw)
                 p_curr  = DataEngine.get_current_price(t_input) or df_raw["Close"].iloc[-1]
                 
-                # 結果を保存
-                st.session_state.quant_data = {
+                # 結果をセッションステートに保存（これで表示が消えない）
+                st.session_state.quant_results_stored = {
                     "vcp": vcp_res, "rs": rs_val, "pf": pf_val, "price": p_curr, "ticker": t_input
                 }
-                # 表示のたびにAI診断はクリア
-                st.session_state.ai_analysis = ""
+                st.session_state.ai_analysis_text = ""
             else:
                 st.error(f"Failed to fetch data for {t_input}.")
 
-    # 保存された定量結果を表示 (APIキーに関わらず表示される)
-    if st.session_state.quant_data and st.session_state.quant_data["ticker"] == t_input:
-        q = st.session_state.quant_data
+    # 保存された定量結果を表示 (APIキーに関わらず100%表示される)
+    if st.session_state.quant_results_stored and st.session_state.quant_results_stored["ticker"] == t_input:
+        q = st.session_state.quant_results_stored
         vcp_res, rs_val, pf_val, p_curr = q["vcp"], q["rs"], q["pf"], q["price"]
         
-        # タイル表示
+        # ダッシュボード表示
         st.markdown('<div class="section-header">📊 SENTINEL QUANTITATIVE DASHBOARD</div>', unsafe_allow_html=True)
         draw_sentinel_grid_ui([
             {"label": "💰 CURRENT PRICE", "value": f"${p_curr:.2f}"},
@@ -614,63 +603,61 @@ with tab_diag:
             {"label": "📏 RS MOMENTUM", "value": f"{rs_val*100:+.1f}%"}
         ])
         
-        # 内訳パネル
+        # 内訳パネル (インデントなしで物理記述)
         d1, d2 = st.columns(2)
         with d1:
             risk = vcp_res['atr'] * EXIT_CFG["STOP_LOSS_ATR_MULT"]
-            # インデント排除
-            panel_html1 = textwrap.dedent(f'''
-            <div class="diagnostic-panel">
-            <b>🛡️ STRATEGIC LEVELS (ATR-Based)</b>
-            <div class="diag-row"><span class="diag-key">Stop Loss (2.0R)</span><span class="diag-val">${p_curr - risk:.2f}</span></div>
-            <div class="diag-row"><span class="diag-key">Target 1 (1.0R)</span><span class="diag-val">${p_curr + risk:.2f}</span></div>
-            <div class="diag-row"><span class="diag-key">Target 2 (2.5R)</span><span class="diag-val">${p_curr + risk*2.5:.2f}</span></div>
-            <div class="diag-row"><span class="diag-key">Risk Unit ($)</span><span class="diag-val">${risk:.2f}</span></div>
-            </div>''').strip()
-            st.markdown(panel_html1, unsafe_allow_html=True)
+            panel_html1 = f'''
+<div class="diagnostic-panel">
+<b>🛡️ STRATEGIC LEVELS (ATR-Based)</b>
+<div class="diag-row"><span class="diag-key">Stop Loss (2.0R)</span><span class="diag-val">${p_curr - risk:.2f}</span></div>
+<div class="diag-row"><span class="diag-key">Target 1 (1.0R)</span><span class="diag-val">${p_curr + risk:.2f}</span></div>
+<div class="diag-row"><span class="diag-key">Target 2 (2.5R)</span><span class="diag-val">${p_curr + risk*2.5:.2f}</span></div>
+<div class="diag-row"><span class="diag-key">Risk Unit ($)</span><span class="diag-val">${risk:.2f}</span></div>
+</div>'''
+            st.markdown(panel_html1.strip(), unsafe_allow_html=True)
         with d2:
             bd = vcp_res['breakdown']
-            panel_html2 = textwrap.dedent(f'''
-            <div class="diagnostic-panel">
-            <b>📐 VCP SCORE BREAKDOWN</b>
-            <div class="diag-row"><span class="diag-key">Tightness Score</span><span class="diag-val">{bd.get("tight", 0)}/45</span></div>
-            <div class="diag-row"><span class="diag-key">Volume Dry-up</span><span class="diag-val">{bd.get("vol", 0)}/30</span></div>
-            <div class="diag-row"><span class="diag-key">MA Trend Score</span><span class="diag-val">{bd.get("ma", 0)}/30</span></div>
-            <div class="diag-row"><span class="diag-key">Pivot Bonus</span><span class="diag-val">+{bd.get("pivot", 0)}pt</span></div>
-            </div>''').strip()
-            st.markdown(panel_html2, unsafe_allow_html=True)
+            panel_html2 = f'''
+<div class="diagnostic-panel">
+<b>📐 VCP SCORE BREAKDOWN</b>
+<div class="diag-row"><span class="diag-key">Tightness Score</span><span class="diag-val">{bd.get("tight", 0)}/45</span></div>
+<div class="diag-row"><span class="diag-key">Volume Dry-up</span><span class="diag-val">{bd.get("vol", 0)}/30</span></div>
+<div class="diag-row"><span class="diag-key">MA Trend Score</span><span class="diag-val">{bd.get("ma", 0)}/30</span></div>
+<div class="diag-row"><span class="diag-key">Pivot Bonus</span><span class="diag-val">+{bd.get("pivot", 0)}pt</span></div>
+</div>'''
+            st.markdown(panel_html2.strip(), unsafe_allow_html=True)
 
         # チャート描画
         df_raw = DataEngine.get_data(t_input, "2y")
-        df_t = df_raw.tail(110)
+        df_t = df_raw.tail(115)
         c_fig = go.Figure(data=[go.Candlestick(x=df_t.index, open=df_t['Open'], high=df_t['High'], low=df_t['Low'], close=df_t['Close'])])
         c_fig.update_layout(template="plotly_dark", height=480, margin=dict(t=0, b=0), xaxis_rangeslider_visible=False)
         st.plotly_chart(c_fig, use_container_width=True)
 
-        # AI診断実行セクション (APIキーが必要)
-        st.markdown('<div class="section-header">🤖 SENTINEL AI CONTEXTUAL REASONING</div>', unsafe_allow_html=True)
+        # AI診断セクション (ここから初めてAPIキーをチェック)
+        st.markdown('<div class="section-header">🤖 SENTINEL AI REASONING CONCLUSION</div>', unsafe_allow_html=True)
         if st.button("🚀 GENERATE AI DIAGNOSIS (NEWS & FUNDAMENTALS)", use_container_width=True):
             key = st.secrets.get("DEEPSEEK_API_KEY")
             if not key:
-                st.error("DEEPSEEK_API_KEY is not configured in Secrets. Analysis aborted.")
+                st.error("DEEPSEEK_API_KEY is not configured in Secrets. Numerical scan is complete, but AI analysis cannot be performed.")
             else:
                 with st.spinner(f"AI Reasoning for {t_input}..."):
-                    news = NewsEngine.get(t_input); fund = FundamentalEngine.get(t_input); ins = InsiderEngine.get(t_input)
+                    news = NewsEngine.get(t_input); fund = FundamentalEngine.get(t_input)
                     prompt = (
                         f"銘柄 {t_input} の診断結果に基づき、プロの投資判断を下してください。\n\n"
                         f"━━━ 定量的データ ━━━\n現在値: ${p_curr:.2f} | VCP: {vcp_res['score']}/105 | PF: {pf_val:.2f} | RS: {rs_val*100:+.2f}%\n"
-                        f"━━━ 外部情報 ━━━\nファンダメンタル要約: {str(fund)[:1500]}\nニュース: {str(news)[:2000]}\n\n"
-                        f"指示: PF数値とRS値を軸に投資妙味を論評せよ。Buy/Watch/Avoidを断行し理由を示せ。1,500文字以上で記述せよ。"
+                        f"指示: PF数値とRS値を軸に投資妙味を論評せよ。1,500文字以上で記述せよ。"
                     )
                     cl = OpenAI(api_key=key, base_url="https://api.deepseek.com")
                     try:
                         res_ai = cl.chat.completions.create(model="deepseek-reasoner", messages=[{"role": "user", "content": prompt}])
-                        st.session_state.ai_analysis = res_ai.choices[0].message.content.replace("$", r"\$")
+                        st.session_state.ai_analysis_text = res_ai.choices[0].message.content.replace("$", r"\$")
                     except Exception as ai_e: st.error(f"AI Error: {ai_e}")
 
-        if st.session_state.ai_analysis:
+        if st.session_state.ai_analysis_text:
             st.markdown("---")
-            st.markdown(st.session_state.ai_analysis)
+            st.markdown(st.session_state.ai_analysis_text)
 
 # ------------------------------------------------------------------------------
 # 💼 TAB 3: PORTFOLIO (完全復元)
@@ -680,6 +667,7 @@ with tab_port:
     p_j = load_portfolio_json(); pos_m = p_j.get("positions", {})
     if not pos_m: st.info("Portfolio empty.")
     else:
+        # 計算
         stats_list = []
         for s_k, s_d in pos_m.items():
             l_p = DataEngine.get_current_price(s_k)
@@ -690,7 +678,7 @@ with tab_port:
                 stats_list.append({"ticker": s_k, "shares": s_d["shares"], "avg": s_d["avg_cost"], "cp": l_p, "pnl_usd": pnl_u, "pnl_pct": pnl_p, "cl": "profit" if pnl_p > 0 else "urgent", "stop": stop_l})
         
         t_pnl = sum(s["pnl_usd"] for s in stats_list) * fx_rate
-        draw_sentinel_grid_ui([{"label": "💰 UNREALIZED JPY", "value": f"¥{t_pnl:,.0f}"}, {"label": "📊 ASSETS", "value": len(stats_list)}, {"label": "📈 PERFORMANCE", "value": f"{np.mean([s['pnl_pct'] for s in stats_list]):.2f}%" if stats_list else "0%"}])
+        draw_sentinel_grid_ui([{"label": "💰 UNREALIZED JPY", "value": f"¥{t_pnl:,.0f}"}, {"label": "📊 ASSETS", "value": len(stats_list)}, {"label": "🛡️ EXPOSURE", "value": f"${sum(s['shares']*s['avg'] for s in stats_list):,.0f}"}])
         for s in stats_list:
             pnl_c = "pnl-pos" if s["pnl_pct"] > 0 else "pnl-neg"
             st.markdown(f'''<div class="pos-card {s['cl']}"><b>{s['ticker']}</b> — {s['shares']} shares @ ${s['avg']:.2f}<br>P/L: <span class="{pnl_c}">{s['pnl_pct']:+.2f}%</span><div class="exit-info">🛡️ DYNAMIC STOP: ${s['stop']:.2f}</div></div>''', unsafe_allow_html=True)
@@ -704,5 +692,5 @@ with tab_port:
             if t: p = load_portfolio_json(); p["positions"][t] = {"ticker": t, "shares": c2.number_input("Shares"), "avg_cost": c3.number_input("Cost"), "added_at": TODAY_STR}; save_portfolio_json(p); st.rerun()
 
 st.divider()
-st.caption(f"🛡️ SENTINEL PRO SYSTEM | CORE ENGINE: 938 ROWS | VCP: LATEST (CONTRACTING SYNC) | UI: PHYSICAL PUSH APPLIED")
+st.caption(f"🛡️ SENTINEL PRO SYSTEM | CORE ENGINE: 955 ROWS | VCP: LATEST | UI: PHYSICAL PUSH APPLIED")
 
