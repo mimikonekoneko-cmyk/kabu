@@ -1,7 +1,7 @@
 {
   "date": "2026-02-16",
-  "runtime": "46.88s",
-  "usd_jpy": 153.15,
+  "runtime": "22.24s",
+  "usd_jpy": 153.34,
   "scan_count": 323,
   "qualified_count": 18,
   "selected_count": 14,
@@ -55,6 +55,11 @@
       "news": {
         "articles": [
           {
+            "title": "Invest in Stocks That Are Not Being Disrupted by AI - Cabot Wealth",
+            "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQdnk0NmVEWHA0UzZNN0Jpdzd5TFVRRW5Hc21vbU5jM0MxVDRfc1Vkb2FONF9IQ0pWYkZuMzB6eWVxbElvdktNdFk2T1Y0UHdRUG9hdXNtUUdocnNoUWtrbTJqMVRkaHd6bWFkal96R1JmV2ZpLUpuQWlIbjhpdVo0N3FXVXRKRktXMEJZT3VIQQ?oc=5",
+            "body": ""
+          },
+          {
             "title": "Energy stocks in focus: XLE heads into Tuesday as OPEC+ and Venezuela moves cloud oil supply - TechStock²",
             "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOdkVEX2RTa05OOWg3ZHY5cTdUTnI1dHFEbkpTTUVCckZ2MHk1a1ZMYzlMb1VnQ3RsMFFYTmFyUmx1NjNxX2M4cE83dWFSeGotRVBPaWV2WTFLVXdLN19mb2JpMkNzbkJYeTA4S2Y1T0ZuVGtoOW0xSjJBZTh2UVVBM3ptZzZCSUdPRDdXYTJkOC03UDB3UHFJa01YWmlnN2RHMktURG9FVDFkUWRJMk9QZg?oc=5",
             "body": ""
@@ -73,14 +78,9 @@
             "title": "This Sector Is Unexpectedly Crushing the Rest of the Market This Year - The Globe and Mail",
             "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxPS0g1aGliYkpRcF9FZEtfUXkxcURyY3BjY1RBVzVqOENTbm5qbUdVMjBCaVNYVHJhdVBfdHBxcVZuRXNFeTVwejF1LVpVeEVjVGVtYjJ6UzhLSWpkNG5iY2JzZTF6MF91bFVnbFdJVHpycTJUN295UVQ4bHhQcjJZM091WG5Vc3dEMGJVRUctaFpianR2YVJTRGhKb1BxSHprUlQybk5DUmI4V2ppcVp3M0R3aGlPNi0zU3NuQWRiM21XWkhFSnBmV2hPVFlaX0drdkJaUW9yTFlLS3plZ0dCZ2lhVmQ5d0tn?oc=5",
             "body": ""
-          },
-          {
-            "title": "Utilities stocks jump as yields fall: XLU closes at $46.50 heading into Fed minutes week - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNeDJLYUthcy03MXpDSDEyVkl3dVZ1ZFdhY1lUd3N0N290a3IzS1VXZnJTcEVfUURRTm1BTUxsSlNuN3FKWWYtZEpoQzRSX2NfNnNrOHRNVnFlOEotZmZCaUNua21GRXk1UFIwSXRXaXFDZTk1YjdoajQzdmJVMUJ0QXJVSXVMdlltSW1JZjN4ZUFERDFsbnJEUXNQeW1sWXkxbS1SM3dXanFvQXM?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:02.619890"
+        "fetched_at": "2026-02-16T07:38:52.943108"
       }
     },
     {
@@ -300,7 +300,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:03.966120"
+        "fetched_at": "2026-02-16T07:38:53.907546"
       }
     },
     {
@@ -504,8 +504,8 @@
             "body": ""
           },
           {
-            "title": "How RTX Stock Gained 60% - Trefis",
-            "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxOckh6NVFBMGhXOGdILUNwdnBPM3I3Mk1MblR1bXcyMmpTbi1CVVJ6SllRd0lOVVh2bDllbERMZWdoVnJVbnA2TVZ6YUhBdmhkekc0enlkYTJadENLM0hiSk54YnpaQXJtY244aG0teDRGWnBETVhqWk5wNVBDQXJTQURZSXpRcEVISmItXw?oc=5",
+            "title": "Leidos Q4 2025 Earnings Preview: Forecasts & Defense Sector Context - News and Statistics - IndexBox",
+            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOZlUzbGRDSXR4MDR2b3hwWHZOb2RGZVVTdkdISEozRXJNZ1o5a3hETnFuQm9oeTVWUTFza3JpRW5SeUJkQ2ZTRFpKeHhQM3RoS1N6Z3VmSDJYbE1HVG1LSl9kM2pEWkU4bzlfM2d1NUdOZkQ1Mm5lZ0k3VUZBc0tnbS1QeUVZQWx6Y29NRXJKcmdOSUdVdzZFVEpB?oc=5",
             "body": ""
           },
           {
@@ -519,7 +519,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:05.645642"
+        "fetched_at": "2026-02-16T07:38:55.038576"
       }
     },
     {
@@ -721,22 +721,22 @@
             "body": ""
           },
           {
-            "title": "Walmart stock price near $134: WMT heads into earnings week as traders watch the consumer - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQY21USWdUdFl0a1RLekJPQ2pHd09reXl0UWF6d1I3SEluY2lDUU4tNHI0UDNpV08tb0VWc25PNWxLckdFSWVFd1A2NzVjeFVUVVMzbkZvbzNhV0xPOVE5ek1LNG1jdW9mLVNkMVIzY0NORThNTGpWZGh6OWpRT094VHdwTFk2M3FJWlk1Q3hMQ3VtZHQ3SkFHaERDRFd3VEVwU2RsYVl1UGZUZnJx?oc=5",
+            "title": "WMT - Walmart Inc Stock Price and Quote - Finviz",
+            "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE9qWU9zaHRIRG5CajRPbnFUWHhBNE8zelE5S25OWVdWOHRudExWcFVfT2ZBYTJLZWQtc1BlWjZDTFZxTmsxUXhNaHkwYw?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Wall Street Brunch: Walmart Weighs In As Q4 GDP Hits (undefined:WMT) - Seeking Alpha",
+            "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQV0xUSDZTcVVBN0dlN1U4a3poenRiTG8yWmxKWG9aV3ZXdUNLYWVXakQwUG5RZHVUY0pwQ0NiT0Q1OTJGWVVWaE85N2RnUWd1bXhjTVVqT1EydTJuQlVZTk5ybmsyYTd1X0tCNTd3TnQ5WmdpNXFwMlBvaWRXNlpJSXpEenJOSjFEb1o3YTFqM1A2OXEwVldjWlU2TlFnbVlJcGFtVXZKbzhMZDB4Ry1uNXo5UHlJVnM?oc=5",
             "body": ""
           },
           {
             "title": "1 Stock to Buy, 1 Stock to Sell This Week: Analog Devices, Walmart - Investing.com",
             "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQS3dYbm03d3c2TmRKX3pfM0dIeDI2YkNpUWFGYmE2dVJqSGhKOWFwc3pac2VqeWVaa3dTbVAxSHUxQ2t0MVV1ZjU4d2VIdVRlT3g0Wm1leTVRTG1EOS1uNDdDZ2VsRjdyNmo2OTgwX3hZa2t3ajhIb29IcE0taEdDMEstZ3FYd0tEbEI4MVV4QWk3b242Z0dQMlJFUGVaTVZvT3paRTdGVDh6Slp4?oc=5",
             "body": ""
-          },
-          {
-            "title": "WMT - Walmart Inc Stock Price and Quote - Finviz",
-            "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE9qWU9zaHRIRG5CajRPbnFUWHhBNE8zelE5S25OWVdWOHRudExWcFVfT2ZBYTJLZWQtc1BlWjZDTFZxTmsxUXhNaHkwYw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:07.348981"
+        "fetched_at": "2026-02-16T07:38:56.134632"
       }
     },
     {
@@ -903,7 +903,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:09.028459"
+        "fetched_at": "2026-02-16T07:38:57.196066"
       }
     },
     {
@@ -1109,6 +1109,11 @@
             "body": ""
           },
           {
+            "title": "Energean Declares 4Q 2025 Dividend of 30 Cents per Share - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNemNCWkVfa25IOWp0UENJRWs3dVpSbUkzNm02TDYtZnZOVTZidjJSMXNqSTFxR3AteTNudHRJdTRSRk9NR1dxeXRYQ25zSWJMR2ktU0dzRU1fc0FVbEVnSXQ3UFJrYWdGY2oyVkloZFA0Q2MyaTFLQzlVdHd0MThQazNEdmswd0RlLVNMbG5fMUl1eXN2amxvaS1NOVJkU1hkeF9qWUs3OVhtel8z?oc=5",
+            "body": ""
+          },
+          {
             "title": "TE Connectivity Stock Outlook: Is Wall Street Bullish or Bearish? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxNYWlILUNnb3g0X1pxZzQwWHZRZ1RRTXVCaUUxTlJRdHBDbTFrLWZwS1JKOVc2SU1KSHM2eVFJZlhoTEFMc0JQZ3RuZTJ6MDhoM3JpQllSWTFNVm52ajRSdXo2U1Zwc3NQazFGOWdTRW01MzZELWpXSHZJSnJ3RTQ4c3FCSDBvVUU?oc=5",
             "body": ""
@@ -1122,14 +1127,9 @@
             "title": "Palo Alto Networks becomes TASE most valued company - The Jerusalem Post",
             "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQcmZuY2gwdXk3ZUpqLXd3eWRCLWEyOGF5Tkphc2JCaDZ4LTEyLXlyM0xHSG9YaGpqNE81V1QtSnduTW1LVzhWOFFLbXRZb1lYY1pIanlnQmVTY3RzNkVUYVd0V2wxanE4MkE0Qmdpc1Zwb0w1LVAtTF9KOVNmWXFVazkzUmFNdw?oc=5",
             "body": ""
-          },
-          {
-            "title": "PANW stock: Traders brace for an 8% swing as Palo Alto Networks heads into earnings - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQZlZoa01XOWMwTFdTNmVpSXEyLU9lc2VVcjFUWWhyS1dyZGxvTlZtYnlGMW5jaHRSTjlVVWdIX241eVBmQmhvWVR5LW02dmNseGtfdnlIUVhjeVY3bFExdXZ0emllRmtMelRkMDJCZUkyX2VaOE5Zekd2NnRZeENSbmVac3ZQQk5CMHNjU0FfVFdwaGtmVVhmOGktRTA1cEN6WGZBZw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:10.789629"
+        "fetched_at": "2026-02-16T07:38:58.356729"
       }
     },
     {
@@ -1347,7 +1347,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:12.192797"
+        "fetched_at": "2026-02-16T07:38:59.349631"
       }
     },
     {
@@ -1566,7 +1566,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:13.638204"
+        "fetched_at": "2026-02-16T07:39:00.271025"
       }
     },
     {
@@ -1717,7 +1717,7 @@
         "articles": [
           {
             "title": "Is the Stock Market Open Today? Here Are the Trading Hours for Presidents Day. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMivANBVV95cUxQdWNtMFpVVXk3ZDVGdGxLSXRLZzZvd01yY3JKUTlfZV9LQ2VtNVVMM0NXUjE0Sk5LRDJtYnlQSXNHdktJTE1LUVNwYnRtbUo2WmR3WnpNZC1wN3luN1c3V0ZzM0MwTVJLWTRFaWVKb3NTb3NlU0EzdXdQNmtjYkh1REtnTHZUVG5lbUFBRU9JU2cwUW9WVmpFZnZYNU5Dc3VMQXQ1ZkhuWVZqWTFOVlhIdklaQndqLVAtUlBoTDBCVHQ5a3B1LTFDa2tacTJXVGk4NHRxdktOMVNGa1plNlpRcFZVUXdkbzhNSjhMdVFRQU1GUFcyOVJlcHREcmhyLWZFN1d5RVkyQzBQdVRFVXc1MEdUQ21sVjVNMlg0YlpzOUhyOHVpb0hQWDdfdHowT1YzZ3R4NmJueEwxdW8xZU9pb2hhRUlIM3JIdmVJbGlJN01XNWZoODAwLWxKQVp5UXhJRHZlQkdIZmpwVm9TMlR6NjF2c1JGMlVwZmstMGNMY2ZleWFBMXBZSUNrSkphTGYyYnppOE1XSVFPckxfYWd0Ukk5dVZtOGhaMmJrOW9PQk9FMDlVN2RJVDU2YVE?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMivANBVV95cUxPbGFBMk9PbDl2NXFBRmZMZDhtNUh0b2ppeDNiV1VkZ0tseUtSNmlOS2JYRzFFYTBCRVRWbHVYaVJyQU9aazczbTNqV0x2cGpzbVlUVHY2cGk4cTljUWlfVVhNYjNkeTVWYk1VYmtISWg5WTU5bVI0QlNYNEF0d2dOOG9TdVdydFNCc0F6MlZXTDJDUnV0QUdSS2RQUUhaaWRoRHBwb3RHRUEtbFBxZkdGM0hWdnVEa0RxUUduVHV5UmJZRFo5WjlmNUs2ZHJLaUI5MUlOUVRjaERfNFRfdjNUdENSX0dkMXZGUTY5RDhoLXpKcVFsWTNvNnVCSzktMDdYTUZlMW5wVElodkhRY0lOU3JQTUVQbjMxTVNRWE0xS3ZPb2FYdG02Q1JlSXRBZ2xlUkJNSEU2TC0wTXM1dWhnNjlTbThGek1YdjB3al9SYlBHYXVDaE04cmNiNWZiZDI3X0U3ajQ4OVhQOWsyeHZDMHlDd0dOTy1uZFE1ZktDSjFKUmNTMkV4T00ydUZRSWFzTnA3Umo2M2VzQW9QemFBNlJLbmpjS0hWWjdPcVM2Wk1IWVhxZ3VWRkpIU3c?oc=5",
             "body": ""
           },
           {
@@ -1732,7 +1732,7 @@
           },
           {
             "title": "Here are 7 charts guaranteed to stress you out about the stock market - MarketWatch",
-            "url": "https://news.google.com/rss/articles/CBMitwNBVV95cUxPZ1phSk1CQmc3QU9YSzYyWEREQXFUVXczS3pJYzV2R0NMTXlldXpKUGVyam1wQmFvckw4ejRuOTZKT1BzcDlVX2x1WTF5U1lGMHE2a2FTLWctRjV4cGpmMThPVWJfMkIweWRKeTZ6SFBPQVpGVks5dTJLY1FvZjFrMTNiR1drandkU2VPNi03cmV0X21NaWZGOWhobkZkTmF4eC1jaEdVSG5oV0ZsTEpldDUyN3hUcHpseWJBNVNjSkYxRW9KMW1NS055M19JSFYwUHBSUDRBeS1KTWdmNU1wYjFCMVhxek4yS2x5dzNmTTZWbmhoeTR4N1ROT2ZvUXBZcDBBZEpJdTZNVGJ2WjU4M2NKbGpFdi0xaWt6RDlKck5wNkltOWR2WXduLWl6RHk5aDhWQ0liZFB1MXhpWTB1WkM3VWZ5N3AtUGxUOVdpX2xqLVJiZTF3S1RFeWVaT09Yc3h2bGxtT0VmbEpmamJ5TnhaeWI2YUYxWFIzSmtIWTlhMVJSb2JlQm4zaXpNYUlWenlFdnhXYU1namNJcnpsenZHNlNQQ2FkN0pkQTZOZVp1NjNsWjdR?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMitwNBVV95cUxPeEl5TWRhQVlFV3V4Tk9fNlVLa1hvSWpkcVB5dUtmYUtmcmx2Z0h5eFFDdkJVSVVGMm0xYzAxbmQxZkFuLU1HaVdBMHBFc1lYT0FFQV83b1dtSEZ6bTF5UHdYc3RtUGMwRThJTGhSVW9wVnZZNU5vc0FyOXNESFNFRXE1WUtITklHSVJBT292Z1lHb2E4UVpETnFxNEwzYm5HSUJrU1Y2UWJLNVg3X1prMzBfc0NFNUp0aG5TQWpJRXc1bVJCekJVNDM5NEU5WEtfVVdlZUQ0cjVfa3MxZXRqQkpVM2tUTVhFWllKMlhrbUNFbk5IZ3FJX21IdkhrY3JHLW1aZ19td2NVYXl6MFZwX3VmYjVWcUtDQURxMUQyMENXYnk1QTRRVmp1QjZuOTh6aDktZnV5YnpEallyV2RUWWhHNVZUT1NDUi02NmpMYWJXdWtpMG9WcHZvNWR6X2RrNnptZ3lOcVpuYk0zSnpXcG9HX2lJMDgtUXFPclRnRjhIbm9ob3BEcDFsWWdLM3BkelFmaWpSMTY2MTlTZ1dLVk5oOHFHZE1tcUhOSnhzQ1VaTEZMTUJF?oc=5",
             "body": ""
           },
           {
@@ -1741,7 +1741,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:15.543333"
+        "fetched_at": "2026-02-16T07:39:01.606218"
       }
     },
     {
@@ -1940,8 +1940,8 @@
       "news": {
         "articles": [
           {
-            "title": "Trend Tracker for (ESGY.F) (ESGY.F:CA) - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPUklaMlNJc0ZsemhTcE40ZlgxMGU0ak9pUDY1dC00Q2hnLS1hSUIxY0FnOG5CdmNKZ0t0bnlUVnFGU0swZ2JoQS00WkY4Tjc2MzNsVGZjSGR4LTFXNG91Y0tJNEY5Q2Y3NUs0ZXFVYnZvdGhTZVAzUTlEMG8yd0U2ZjMyYzhqRll6TGc?oc=5",
+            "title": "(ZUAG.F) Investment Report (ZUAG.F:CA) - Stock Traders Daily",
+            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQcThQc2VqaDBlVXplVjNXc1Nfc1RUTWxmOU1talcxbjBBNGJ4bFZ0bDNYVGk4UUlLMUhrZjFuVlVNbk5ReUZscVA1M01hbVdqamg1MzE3ZDlnUllsbTdKMkgwVS1kM0g4OWc1OTIyUnBVSGpaVW9kWE9GREdCQXlDLW1aNHp5TTNT?oc=5",
             "body": ""
           },
           {
@@ -1960,12 +1960,12 @@
             "body": ""
           },
           {
-            "title": "(ZUAG.F) Investment Report (ZUAG.F:CA) - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQcThQc2VqaDBlVXplVjNXc1Nfc1RUTWxmOU1talcxbjBBNGJ4bFZ0bDNYVGk4UUlLMUhrZjFuVlVNbk5ReUZscVA1M01hbVdqamg1MzE3ZDlnUllsbTdKMkgwVS1kM0g4OWc1OTIyUnBVSGpaVW9kWE9GREdCQXlDLW1aNHp5TTNT?oc=5",
+            "title": "Ford Stock (NYSE:F) Jumps as Novelis Plans to Come Back Online Emerge - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOdDUwWU1Pb09VNm9RMWxaMGcxcDU3eDF5cDBLbWdnejl2WTU1TEotNWtsbHc2SHlnc0RrM3g2NVZDaFZ1MUNKRUNVRVdVTmRFZHFkeHNKZWp1blVYRWZfaGRLWjBBYmM1eWNjRmJLYU9xSlo3bFp3cXZrWmQ1dlhyT3BDbnpWU3Qxc083SDNqX3lJT3ZPMHJpZVNZSGI?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:17.267733"
+        "fetched_at": "2026-02-16T07:39:02.775640"
       }
     },
     {
@@ -2184,22 +2184,22 @@
             "body": ""
           },
           {
-            "title": "GE Vernova stock price: GEV slips into the long weekend — here’s what matters next - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNc25mUTNaaWVnTFpIV1BacWNPdGRPMFFtM2gxT01pUTIzNXREMmxFTjdyTlBUTkNxWXdINmU0MnVvTnV1Vk9PSS1GSzQzRmRQVWdpYm1yeWNSdWJYakhYNjNMT19BMkFhZlY0cUFuSng5dnBpTnVVR1MwWjc1dzVCTC0tRjVoUUdTVGRnX2RnUEp2cjFHRkwtSmtmRk5LdF8x?oc=5",
-            "body": ""
-          },
-          {
             "title": "Is It Too Late To Consider General Electric (GE) After Its Breakup-Fueled Share Price Surge? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxPUHd5ZzNwZ3BzUHNsZHRnUlNCVEhXSE84OHlmS21tdXJId2RjSXF1Ml9laWlPdlZWbjd5dmhPTG9ZSnItNUJqa1VtU0ViQkRXQy1IWUV5cnNOSi1lak8wd3MzYkVsU0FEQ0w2QzlES0Y0Q2JNUkdCcXBNSG9zOHZtaXdvSjU?oc=5",
             "body": ""
           },
           {
+            "title": "GE Vernova stock price: GEV slips into the long weekend — here’s what matters next - TechStock²",
+            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNc25mUTNaaWVnTFpIV1BacWNPdGRPMFFtM2gxT01pUTIzNXREMmxFTjdyTlBUTkNxWXdINmU0MnVvTnV1Vk9PSS1GSzQzRmRQVWdpYm1yeWNSdWJYakhYNjNMT19BMkFhZlY0cUFuSng5dnBpTnVVR1MwWjc1dzVCTC0tRjVoUUdTVGRnX2RnUEp2cjFHRkwtSmtmRk5LdF8x?oc=5",
+            "body": ""
+          },
+          {
             "title": "Why Amazon Stock and the Rest of Big Tech Could Be the Next GE. That’s Not a Good Thing. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMihANBVV95cUxPM0Y3dVpFQjRSQkwzcG05cVhuMnlpSWlkQVpQeGlOYWtZR3BvdVB6N3h0VUJvUGJvdmRrV1JBQUotNG96NGdrcHpTaDhVRUg4cjg2QVNnd2tWNHBxM0o2ZEtreG1OWWNWNFlfMUV1TWpwc0hpQkNuMEVvZ1Vfc0xvNmVvSE5aR1NmZTQ5R1FRWHMzV3BnZlQwTE1OZDhOZ29rWElnMUFNdzRnUTdwcTd4TXNCWEJTcDJ6bzVqMlBFWkxPU3Q2R2dYdWhJX04taFNkald6N1FNdmM4NlJWVzZfSDdlUjFDRWdiTDJuVzBYaHBROWY2TlhrLS1tTndOV2NmM3VBVmo5TVkyS2Fva3VCNTZXX1dmeEhRTDk5ZnVZczVmbEhOM0xwTV9LalY1UkdIbjBmcUtkZ3BYdzEwOWNSSG0tdVdoQWZCaE85c3hTWXZhU3lVazBwLXZONzNfOW5PTC1penNldWxxdmJXMDg5S0FkNTg5azR0S0x1NHVjQ3gyZmpU?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMihANBVV95cUxNdjdfM0JCNWN3dlBGelpLQXFHcnVjR2NtandrVDd4QXh5THNaa3hHSk95dXdYVW96OGZ0TzlMMTZpMW5RQks2eVl5YXZaa3JoTXdOT25INEc5aHRGUTNYOEVrMWhJdGIySWt5Mk9pNklKZVU2OU1qSGY1UzZFUzhQZmNzUTYxcklRVGFhb3BJdHYzTzducEVkTHhoMHdTa0owQlNxU2VVcm0tMndrU3hEZXM2dk1YZEh1QjdIMV9CZk1fcEw0V09sMkRTWndVSVNqQUI0Skp3d3BYbFh2SkgwLUo4Nzh2b3Q4Z0QwMHYtRlNwdjBXdk5fRXQxRGFvSTFZNU9OODRMUURDOXBxWTRFNjlVWHZ4ekE1UTBicko2VFBCS25BX3FoSTB4TDZGdjNwdU1iMFFaanZDd1RWMGxSU0JodDg5RHE0eXEzWXJyVm5HSmc3NHBzRy1FVnUxS3ZkZktDd29raGJ5QXNnUUg5U1l3a0dtRGdISkRDcDVPN0p3SXFT?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:18.874783"
+        "fetched_at": "2026-02-16T07:39:03.834331"
       }
     },
     {
@@ -2417,7 +2417,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:20.318668"
+        "fetched_at": "2026-02-16T07:39:04.738409"
       }
     },
     {
@@ -2611,11 +2611,6 @@
       "news": {
         "articles": [
           {
-            "title": "Is Rubrik Stock a Good Buy? - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBmTEo1SlF3UlltTGR0dzVkbDZoVkdORTlmOGRCWC1DVzREOFVoLUgtaDg2aWxJaEFld1Z2cW50VVBfbjZsSUs1NVpqckgyamFQU2tTWkx0d0c0d2dLd2dBNDdlNkQwekVzbEFnVGFDcUJXTlhJbnc?oc=5",
-            "body": ""
-          },
-          {
             "title": "Is Amazon Stock a Good Buy? - AOL.com",
             "url": "https://news.google.com/rss/articles/CBMiowJBVV95cUxNRXJSbHAzZzNRS0N0Z3F1ekx2MlZ0V1dlTjNFV29BVUp6QXJyQ2QxNGptZ3BaakNmQWp1RVZ4V29kRTdVeFdQN2dZeFNPUV9NVHlZLWNSV1ZWamJWNzNQdDQySUJIdXFkcGpMcFo0ZjRFOTU2bHdZaDFLa2E5dk1nYnVEaWJ1cDhPQUgzOE9PTlhkRmFsdzFsSEU3R3U2cmhmTmZnR1oyUFRlbjVVSzhwWXgxSzlhVXFBcmxtN29wQm0xRjlHR3BOSXpWMmtGTy1GYXVCN1gyU1c1N09TSVhwVGU3OFFxNmI5RWVYdWlOa2lrblFySllDdE1XQzloSnJXR3hLektnTmEtdm5lSmJrRW1pb3Nfc0EtSlhhUk9rdmFrMlU?oc=5",
             "body": ""
@@ -2631,12 +2626,17 @@
             "body": ""
           },
           {
+            "title": "Nvidia Stock Investors Just Got Good News From Amazon, Google, Meta Platforms, and Microsoft - Yahoo Finance",
+            "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOaGZTTjRuM21WQ0FwbjdmdERDbDl4VkFDbGROU1c5VW5wXy1zYWFNcjNaLU1IZ2Y4cWttT0xmLU9lQy1LVmxDRnJIRmlkbFBVTl9nSkJlLS1JeTU3MlF2b0o3Yks5NXRnRHNKbEhSMnZZVldwY2FXV0F3RUMyU2czNWVJMA?oc=5",
+            "body": ""
+          },
+          {
             "title": "Why good financial news didn't fuel a broad stock market rally - Detroit Free Press",
             "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQUEU5cDlhS01oS013OGs0cUdQT2ZUczZneEdOdXdFUGY1aWd1SXgtOUdFc1I0bE9rYl9mZk05MVgzeHBDSzZ4bE9yQWtJc2RvMG5VQ0FUWng0VmhIOVNQSlQ3Yk1tNzZNZ2o1NDViNi1zVzgxMTdhR0RyOEl0aUdGcjFhbWpiY3RLZzZKWXF5d20wX3RsbjQtd201b0liWTM1b29vbDlkZHNFem00VzFYcQ?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:21.951391"
+        "fetched_at": "2026-02-16T07:39:05.888576"
       }
     },
     {
@@ -2854,7 +2854,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:23.379557"
+        "fetched_at": "2026-02-16T07:39:06.817786"
       }
     }
   ],
@@ -3076,7 +3076,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:24.846861"
+        "fetched_at": "2026-02-16T07:39:07.749378"
       }
     },
     {
@@ -3293,7 +3293,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:26.247408"
+        "fetched_at": "2026-02-16T07:39:08.672409"
       }
     },
     {
@@ -3486,8 +3486,13 @@
       "news": {
         "articles": [
           {
-            "title": "Tariff Uncertainty And Buffett Buying Put Nucor’s Resilience To The Test - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNblo4SnItRy12QjdKa05DUlh2bTRnWUZEY3I4TFJfZVJWOUw3Z01ZVUlJUTFwczdGS1Z0TXBkUXRTT3hxN2F0czhnQnpNY2dmcHZBWEdfeXFTeEc4QlpLUzQydzdZdUl0TDdBLUVKN1piSE5nWS04cHVVYUJKc3oyTTkzUGZSTG5xVlpR?oc=5",
+            "title": "Tariff Uncertainty And Buffett Buying Put Nucor’s Resilience To The Test - Yahoo Finance Singapore",
+            "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPUm1YaEdUWjJ1RUtOdmJjU0xhU2QwelpodDlMR2QxTWRnelRjYjQzTHY1blZ6T25TdVBUWHVTZ0R0RDF2bUtXRnBONkd2eXFreEp1R0UyNURXN2RYUFNvZjRkY191VVVLX2RHelo2aThxZmt5ZllhMmN3WjBuS1U1eV9Yd25UMzJtc2hVV3VmNA?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Evaluating Nucor (NUE) After Earnings Miss Tariff Uncertainty Insider Selling And Buffett’s Stake Increase - simplywall.st",
+            "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQNkI3dnJ3bzd4S2NmUzhsVFFmb2o0cjY5UjZRTFUwcjFXQ19EZldoUlNSOFplMXBsQThFQkdSU0FfVG5LeWpJdGhDX0E4U1QzOW1DUG5vaG1JUHNaTHoySXI2Wm9wbVFFOFRnaExCZy15Ym92N0RaLWRjRHRLZ01jalVXem9wdTlyRWtHWExnZklUc3U4UmVIZU5pR0dlYkVfLS1UWFV5bWtYSjRyb2xJY2QtZ0ktaXFyczhuUjhR?oc=5",
             "body": ""
           },
           {
@@ -3501,17 +3506,12 @@
             "body": ""
           },
           {
-            "title": "Nucor Valuation In Focus As Tariff Uncertainty Meets Buffett Interest - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZVpMZXZERXVWT0lRQlVzV3pteDJ1RDRueERvNjlFTU4yX0hVc09haDNaQ0s3bTB5V011OUJKbWtOMDZCWUVPLVh1ZUVyUktZNzdYWU5ad2EyQllHSU1KU0lua2pERGotc1YzcUtPOGRxTDVNSDlnZFVjQU84YkFfVzZGYTN2RVdfLVptejV2blphWWQtaEptR2ZtZW1peDBBRjMzVnI2X0hFbFlJUnQtWlZEUUotSVZGRnU0Unh3MA?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Insider Sell: Kenneth Query Sells Shares of Nucor Corp (NUE) - GuruFocus",
-            "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQSUkxUm5jdUgyenRQUFVyTzA4SXU1OVVZOVBvUmNBR2RNbWF3RU0xVWRnc2RkcGVuZ3FsejlMOFdkYmRIdk55cDBsNE9XdFBFTGhJWDN1eVNYSW4zQ2x0VFVUcnprZ3lMTUhNcTNHaHNKcFp1NlV5UmVFODBMRW9RbFg3VUY4ejBkQUt3NW1ySXdaR24yRUtYRllVMUk?oc=5",
+            "title": "Assessing Nucor (NUE) Valuation After A Strong Three Month Share Price Run - Yahoo Finance",
+            "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPSmU0Z1N0WjY0dnJvRjdMa0VRYTBiWUdqMTVJY085ZXpMLXo0cHlTTjA3bFVKbDFlMF9HTUxJRm1CTmdkYkdRVHQ2MVJ0LVZmT2NSSnRHVlFjMlFKWkU1Qk1Nb21naFExekxfZ2xkUUxLSzVDdS1ySmlzcHh6ejhSXzZVQlRNSzQ3anc?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:27.705134"
+        "fetched_at": "2026-02-16T07:39:09.631593"
       }
     }
   ],
@@ -3565,6 +3565,11 @@
       "news": {
         "articles": [
           {
+            "title": "Invest in Stocks That Are Not Being Disrupted by AI - Cabot Wealth",
+            "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQdnk0NmVEWHA0UzZNN0Jpdzd5TFVRRW5Hc21vbU5jM0MxVDRfc1Vkb2FONF9IQ0pWYkZuMzB6eWVxbElvdktNdFk2T1Y0UHdRUG9hdXNtUUdocnNoUWtrbTJqMVRkaHd6bWFkal96R1JmV2ZpLUpuQWlIbjhpdVo0N3FXVXRKRktXMEJZT3VIQQ?oc=5",
+            "body": ""
+          },
+          {
             "title": "Energy stocks in focus: XLE heads into Tuesday as OPEC+ and Venezuela moves cloud oil supply - TechStock²",
             "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOdkVEX2RTa05OOWg3ZHY5cTdUTnI1dHFEbkpTTUVCckZ2MHk1a1ZMYzlMb1VnQ3RsMFFYTmFyUmx1NjNxX2M4cE83dWFSeGotRVBPaWV2WTFLVXdLN19mb2JpMkNzbkJYeTA4S2Y1T0ZuVGtoOW0xSjJBZTh2UVVBM3ptZzZCSUdPRDdXYTJkOC03UDB3UHFJa01YWmlnN2RHMktURG9FVDFkUWRJMk9QZg?oc=5",
             "body": ""
@@ -3583,14 +3588,9 @@
             "title": "This Sector Is Unexpectedly Crushing the Rest of the Market This Year - The Globe and Mail",
             "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxPS0g1aGliYkpRcF9FZEtfUXkxcURyY3BjY1RBVzVqOENTbm5qbUdVMjBCaVNYVHJhdVBfdHBxcVZuRXNFeTVwejF1LVpVeEVjVGVtYjJ6UzhLSWpkNG5iY2JzZTF6MF91bFVnbFdJVHpycTJUN295UVQ4bHhQcjJZM091WG5Vc3dEMGJVRUctaFpianR2YVJTRGhKb1BxSHprUlQybk5DUmI4V2ppcVp3M0R3aGlPNi0zU3NuQWRiM21XWkhFSnBmV2hPVFlaX0drdkJaUW9yTFlLS3plZ0dCZ2lhVmQ5d0tn?oc=5",
             "body": ""
-          },
-          {
-            "title": "Utilities stocks jump as yields fall: XLU closes at $46.50 heading into Fed minutes week - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNeDJLYUthcy03MXpDSDEyVkl3dVZ1ZFdhY1lUd3N0N290a3IzS1VXZnJTcEVfUURRTm1BTUxsSlNuN3FKWWYtZEpoQzRSX2NfNnNrOHRNVnFlOEotZmZCaUNua21GRXk1UFIwSXRXaXFDZTk1YjdoajQzdmJVMUJ0QXJVSXVMdlltSW1JZjN4ZUFERDFsbnJEUXNQeW1sWXkxbS1SM3dXanFvQXM?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:02.619890"
+        "fetched_at": "2026-02-16T07:38:52.943108"
       }
     },
     {
@@ -3810,7 +3810,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:03.966120"
+        "fetched_at": "2026-02-16T07:38:53.907546"
       }
     },
     {
@@ -4014,8 +4014,8 @@
             "body": ""
           },
           {
-            "title": "How RTX Stock Gained 60% - Trefis",
-            "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxOckh6NVFBMGhXOGdILUNwdnBPM3I3Mk1MblR1bXcyMmpTbi1CVVJ6SllRd0lOVVh2bDllbERMZWdoVnJVbnA2TVZ6YUhBdmhkekc0enlkYTJadENLM0hiSk54YnpaQXJtY244aG0teDRGWnBETVhqWk5wNVBDQXJTQURZSXpRcEVISmItXw?oc=5",
+            "title": "Leidos Q4 2025 Earnings Preview: Forecasts & Defense Sector Context - News and Statistics - IndexBox",
+            "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOZlUzbGRDSXR4MDR2b3hwWHZOb2RGZVVTdkdISEozRXJNZ1o5a3hETnFuQm9oeTVWUTFza3JpRW5SeUJkQ2ZTRFpKeHhQM3RoS1N6Z3VmSDJYbE1HVG1LSl9kM2pEWkU4bzlfM2d1NUdOZkQ1Mm5lZ0k3VUZBc0tnbS1QeUVZQWx6Y29NRXJKcmdOSUdVdzZFVEpB?oc=5",
             "body": ""
           },
           {
@@ -4029,7 +4029,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:05.645642"
+        "fetched_at": "2026-02-16T07:38:55.038576"
       }
     },
     {
@@ -4231,22 +4231,22 @@
             "body": ""
           },
           {
-            "title": "Walmart stock price near $134: WMT heads into earnings week as traders watch the consumer - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQY21USWdUdFl0a1RLekJPQ2pHd09reXl0UWF6d1I3SEluY2lDUU4tNHI0UDNpV08tb0VWc25PNWxLckdFSWVFd1A2NzVjeFVUVVMzbkZvbzNhV0xPOVE5ek1LNG1jdW9mLVNkMVIzY0NORThNTGpWZGh6OWpRT094VHdwTFk2M3FJWlk1Q3hMQ3VtZHQ3SkFHaERDRFd3VEVwU2RsYVl1UGZUZnJx?oc=5",
+            "title": "WMT - Walmart Inc Stock Price and Quote - Finviz",
+            "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE9qWU9zaHRIRG5CajRPbnFUWHhBNE8zelE5S25OWVdWOHRudExWcFVfT2ZBYTJLZWQtc1BlWjZDTFZxTmsxUXhNaHkwYw?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Wall Street Brunch: Walmart Weighs In As Q4 GDP Hits (undefined:WMT) - Seeking Alpha",
+            "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQV0xUSDZTcVVBN0dlN1U4a3poenRiTG8yWmxKWG9aV3ZXdUNLYWVXakQwUG5RZHVUY0pwQ0NiT0Q1OTJGWVVWaE85N2RnUWd1bXhjTVVqT1EydTJuQlVZTk5ybmsyYTd1X0tCNTd3TnQ5WmdpNXFwMlBvaWRXNlpJSXpEenJOSjFEb1o3YTFqM1A2OXEwVldjWlU2TlFnbVlJcGFtVXZKbzhMZDB4Ry1uNXo5UHlJVnM?oc=5",
             "body": ""
           },
           {
             "title": "1 Stock to Buy, 1 Stock to Sell This Week: Analog Devices, Walmart - Investing.com",
             "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQS3dYbm03d3c2TmRKX3pfM0dIeDI2YkNpUWFGYmE2dVJqSGhKOWFwc3pac2VqeWVaa3dTbVAxSHUxQ2t0MVV1ZjU4d2VIdVRlT3g0Wm1leTVRTG1EOS1uNDdDZ2VsRjdyNmo2OTgwX3hZa2t3ajhIb29IcE0taEdDMEstZ3FYd0tEbEI4MVV4QWk3b242Z0dQMlJFUGVaTVZvT3paRTdGVDh6Slp4?oc=5",
             "body": ""
-          },
-          {
-            "title": "WMT - Walmart Inc Stock Price and Quote - Finviz",
-            "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE9qWU9zaHRIRG5CajRPbnFUWHhBNE8zelE5S25OWVdWOHRudExWcFVfT2ZBYTJLZWQtc1BlWjZDTFZxTmsxUXhNaHkwYw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:07.348981"
+        "fetched_at": "2026-02-16T07:38:56.134632"
       }
     },
     {
@@ -4413,7 +4413,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:09.028459"
+        "fetched_at": "2026-02-16T07:38:57.196066"
       }
     },
     {
@@ -4619,6 +4619,11 @@
             "body": ""
           },
           {
+            "title": "Energean Declares 4Q 2025 Dividend of 30 Cents per Share - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNemNCWkVfa25IOWp0UENJRWs3dVpSbUkzNm02TDYtZnZOVTZidjJSMXNqSTFxR3AteTNudHRJdTRSRk9NR1dxeXRYQ25zSWJMR2ktU0dzRU1fc0FVbEVnSXQ3UFJrYWdGY2oyVkloZFA0Q2MyaTFLQzlVdHd0MThQazNEdmswd0RlLVNMbG5fMUl1eXN2amxvaS1NOVJkU1hkeF9qWUs3OVhtel8z?oc=5",
+            "body": ""
+          },
+          {
             "title": "TE Connectivity Stock Outlook: Is Wall Street Bullish or Bearish? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxNYWlILUNnb3g0X1pxZzQwWHZRZ1RRTXVCaUUxTlJRdHBDbTFrLWZwS1JKOVc2SU1KSHM2eVFJZlhoTEFMc0JQZ3RuZTJ6MDhoM3JpQllSWTFNVm52ajRSdXo2U1Zwc3NQazFGOWdTRW01MzZELWpXSHZJSnJ3RTQ4c3FCSDBvVUU?oc=5",
             "body": ""
@@ -4632,14 +4637,9 @@
             "title": "Palo Alto Networks becomes TASE most valued company - The Jerusalem Post",
             "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQcmZuY2gwdXk3ZUpqLXd3eWRCLWEyOGF5Tkphc2JCaDZ4LTEyLXlyM0xHSG9YaGpqNE81V1QtSnduTW1LVzhWOFFLbXRZb1lYY1pIanlnQmVTY3RzNkVUYVd0V2wxanE4MkE0Qmdpc1Zwb0w1LVAtTF9KOVNmWXFVazkzUmFNdw?oc=5",
             "body": ""
-          },
-          {
-            "title": "PANW stock: Traders brace for an 8% swing as Palo Alto Networks heads into earnings - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQZlZoa01XOWMwTFdTNmVpSXEyLU9lc2VVcjFUWWhyS1dyZGxvTlZtYnlGMW5jaHRSTjlVVWdIX241eVBmQmhvWVR5LW02dmNseGtfdnlIUVhjeVY3bFExdXZ0emllRmtMelRkMDJCZUkyX2VaOE5Zekd2NnRZeENSbmVac3ZQQk5CMHNjU0FfVFdwaGtmVVhmOGktRTA1cEN6WGZBZw?oc=5",
-            "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:10.789629"
+        "fetched_at": "2026-02-16T07:38:58.356729"
       }
     },
     {
@@ -4857,7 +4857,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:12.192797"
+        "fetched_at": "2026-02-16T07:38:59.349631"
       }
     },
     {
@@ -5076,7 +5076,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:13.638204"
+        "fetched_at": "2026-02-16T07:39:00.271025"
       }
     },
     {
@@ -5227,7 +5227,7 @@
         "articles": [
           {
             "title": "Is the Stock Market Open Today? Here Are the Trading Hours for Presidents Day. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMivANBVV95cUxQdWNtMFpVVXk3ZDVGdGxLSXRLZzZvd01yY3JKUTlfZV9LQ2VtNVVMM0NXUjE0Sk5LRDJtYnlQSXNHdktJTE1LUVNwYnRtbUo2WmR3WnpNZC1wN3luN1c3V0ZzM0MwTVJLWTRFaWVKb3NTb3NlU0EzdXdQNmtjYkh1REtnTHZUVG5lbUFBRU9JU2cwUW9WVmpFZnZYNU5Dc3VMQXQ1ZkhuWVZqWTFOVlhIdklaQndqLVAtUlBoTDBCVHQ5a3B1LTFDa2tacTJXVGk4NHRxdktOMVNGa1plNlpRcFZVUXdkbzhNSjhMdVFRQU1GUFcyOVJlcHREcmhyLWZFN1d5RVkyQzBQdVRFVXc1MEdUQ21sVjVNMlg0YlpzOUhyOHVpb0hQWDdfdHowT1YzZ3R4NmJueEwxdW8xZU9pb2hhRUlIM3JIdmVJbGlJN01XNWZoODAwLWxKQVp5UXhJRHZlQkdIZmpwVm9TMlR6NjF2c1JGMlVwZmstMGNMY2ZleWFBMXBZSUNrSkphTGYyYnppOE1XSVFPckxfYWd0Ukk5dVZtOGhaMmJrOW9PQk9FMDlVN2RJVDU2YVE?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMivANBVV95cUxPbGFBMk9PbDl2NXFBRmZMZDhtNUh0b2ppeDNiV1VkZ0tseUtSNmlOS2JYRzFFYTBCRVRWbHVYaVJyQU9aazczbTNqV0x2cGpzbVlUVHY2cGk4cTljUWlfVVhNYjNkeTVWYk1VYmtISWg5WTU5bVI0QlNYNEF0d2dOOG9TdVdydFNCc0F6MlZXTDJDUnV0QUdSS2RQUUhaaWRoRHBwb3RHRUEtbFBxZkdGM0hWdnVEa0RxUUduVHV5UmJZRFo5WjlmNUs2ZHJLaUI5MUlOUVRjaERfNFRfdjNUdENSX0dkMXZGUTY5RDhoLXpKcVFsWTNvNnVCSzktMDdYTUZlMW5wVElodkhRY0lOU3JQTUVQbjMxTVNRWE0xS3ZPb2FYdG02Q1JlSXRBZ2xlUkJNSEU2TC0wTXM1dWhnNjlTbThGek1YdjB3al9SYlBHYXVDaE04cmNiNWZiZDI3X0U3ajQ4OVhQOWsyeHZDMHlDd0dOTy1uZFE1ZktDSjFKUmNTMkV4T00ydUZRSWFzTnA3Umo2M2VzQW9QemFBNlJLbmpjS0hWWjdPcVM2Wk1IWVhxZ3VWRkpIU3c?oc=5",
             "body": ""
           },
           {
@@ -5242,7 +5242,7 @@
           },
           {
             "title": "Here are 7 charts guaranteed to stress you out about the stock market - MarketWatch",
-            "url": "https://news.google.com/rss/articles/CBMitwNBVV95cUxPZ1phSk1CQmc3QU9YSzYyWEREQXFUVXczS3pJYzV2R0NMTXlldXpKUGVyam1wQmFvckw4ejRuOTZKT1BzcDlVX2x1WTF5U1lGMHE2a2FTLWctRjV4cGpmMThPVWJfMkIweWRKeTZ6SFBPQVpGVks5dTJLY1FvZjFrMTNiR1drandkU2VPNi03cmV0X21NaWZGOWhobkZkTmF4eC1jaEdVSG5oV0ZsTEpldDUyN3hUcHpseWJBNVNjSkYxRW9KMW1NS055M19JSFYwUHBSUDRBeS1KTWdmNU1wYjFCMVhxek4yS2x5dzNmTTZWbmhoeTR4N1ROT2ZvUXBZcDBBZEpJdTZNVGJ2WjU4M2NKbGpFdi0xaWt6RDlKck5wNkltOWR2WXduLWl6RHk5aDhWQ0liZFB1MXhpWTB1WkM3VWZ5N3AtUGxUOVdpX2xqLVJiZTF3S1RFeWVaT09Yc3h2bGxtT0VmbEpmamJ5TnhaeWI2YUYxWFIzSmtIWTlhMVJSb2JlQm4zaXpNYUlWenlFdnhXYU1namNJcnpsenZHNlNQQ2FkN0pkQTZOZVp1NjNsWjdR?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMitwNBVV95cUxPeEl5TWRhQVlFV3V4Tk9fNlVLa1hvSWpkcVB5dUtmYUtmcmx2Z0h5eFFDdkJVSVVGMm0xYzAxbmQxZkFuLU1HaVdBMHBFc1lYT0FFQV83b1dtSEZ6bTF5UHdYc3RtUGMwRThJTGhSVW9wVnZZNU5vc0FyOXNESFNFRXE1WUtITklHSVJBT292Z1lHb2E4UVpETnFxNEwzYm5HSUJrU1Y2UWJLNVg3X1prMzBfc0NFNUp0aG5TQWpJRXc1bVJCekJVNDM5NEU5WEtfVVdlZUQ0cjVfa3MxZXRqQkpVM2tUTVhFWllKMlhrbUNFbk5IZ3FJX21IdkhrY3JHLW1aZ19td2NVYXl6MFZwX3VmYjVWcUtDQURxMUQyMENXYnk1QTRRVmp1QjZuOTh6aDktZnV5YnpEallyV2RUWWhHNVZUT1NDUi02NmpMYWJXdWtpMG9WcHZvNWR6X2RrNnptZ3lOcVpuYk0zSnpXcG9HX2lJMDgtUXFPclRnRjhIbm9ob3BEcDFsWWdLM3BkelFmaWpSMTY2MTlTZ1dLVk5oOHFHZE1tcUhOSnhzQ1VaTEZMTUJF?oc=5",
             "body": ""
           },
           {
@@ -5251,7 +5251,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:15.543333"
+        "fetched_at": "2026-02-16T07:39:01.606218"
       }
     },
     {
@@ -5450,8 +5450,8 @@
       "news": {
         "articles": [
           {
-            "title": "Trend Tracker for (ESGY.F) (ESGY.F:CA) - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPUklaMlNJc0ZsemhTcE40ZlgxMGU0ak9pUDY1dC00Q2hnLS1hSUIxY0FnOG5CdmNKZ0t0bnlUVnFGU0swZ2JoQS00WkY4Tjc2MzNsVGZjSGR4LTFXNG91Y0tJNEY5Q2Y3NUs0ZXFVYnZvdGhTZVAzUTlEMG8yd0U2ZjMyYzhqRll6TGc?oc=5",
+            "title": "(ZUAG.F) Investment Report (ZUAG.F:CA) - Stock Traders Daily",
+            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQcThQc2VqaDBlVXplVjNXc1Nfc1RUTWxmOU1talcxbjBBNGJ4bFZ0bDNYVGk4UUlLMUhrZjFuVlVNbk5ReUZscVA1M01hbVdqamg1MzE3ZDlnUllsbTdKMkgwVS1kM0g4OWc1OTIyUnBVSGpaVW9kWE9GREdCQXlDLW1aNHp5TTNT?oc=5",
             "body": ""
           },
           {
@@ -5470,12 +5470,12 @@
             "body": ""
           },
           {
-            "title": "(ZUAG.F) Investment Report (ZUAG.F:CA) - Stock Traders Daily",
-            "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQcThQc2VqaDBlVXplVjNXc1Nfc1RUTWxmOU1talcxbjBBNGJ4bFZ0bDNYVGk4UUlLMUhrZjFuVlVNbk5ReUZscVA1M01hbVdqamg1MzE3ZDlnUllsbTdKMkgwVS1kM0g4OWc1OTIyUnBVSGpaVW9kWE9GREdCQXlDLW1aNHp5TTNT?oc=5",
+            "title": "Ford Stock (NYSE:F) Jumps as Novelis Plans to Come Back Online Emerge - TipRanks",
+            "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOdDUwWU1Pb09VNm9RMWxaMGcxcDU3eDF5cDBLbWdnejl2WTU1TEotNWtsbHc2SHlnc0RrM3g2NVZDaFZ1MUNKRUNVRVdVTmRFZHFkeHNKZWp1blVYRWZfaGRLWjBBYmM1eWNjRmJLYU9xSlo3bFp3cXZrWmQ1dlhyT3BDbnpWU3Qxc083SDNqX3lJT3ZPMHJpZVNZSGI?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:17.267733"
+        "fetched_at": "2026-02-16T07:39:02.775640"
       }
     },
     {
@@ -5694,22 +5694,22 @@
             "body": ""
           },
           {
-            "title": "GE Vernova stock price: GEV slips into the long weekend — here’s what matters next - TechStock²",
-            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNc25mUTNaaWVnTFpIV1BacWNPdGRPMFFtM2gxT01pUTIzNXREMmxFTjdyTlBUTkNxWXdINmU0MnVvTnV1Vk9PSS1GSzQzRmRQVWdpYm1yeWNSdWJYakhYNjNMT19BMkFhZlY0cUFuSng5dnBpTnVVR1MwWjc1dzVCTC0tRjVoUUdTVGRnX2RnUEp2cjFHRkwtSmtmRk5LdF8x?oc=5",
-            "body": ""
-          },
-          {
             "title": "Is It Too Late To Consider General Electric (GE) After Its Breakup-Fueled Share Price Surge? - Yahoo Finance",
             "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxPUHd5ZzNwZ3BzUHNsZHRnUlNCVEhXSE84OHlmS21tdXJId2RjSXF1Ml9laWlPdlZWbjd5dmhPTG9ZSnItNUJqa1VtU0ViQkRXQy1IWUV5cnNOSi1lak8wd3MzYkVsU0FEQ0w2QzlES0Y0Q2JNUkdCcXBNSG9zOHZtaXdvSjU?oc=5",
             "body": ""
           },
           {
+            "title": "GE Vernova stock price: GEV slips into the long weekend — here’s what matters next - TechStock²",
+            "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNc25mUTNaaWVnTFpIV1BacWNPdGRPMFFtM2gxT01pUTIzNXREMmxFTjdyTlBUTkNxWXdINmU0MnVvTnV1Vk9PSS1GSzQzRmRQVWdpYm1yeWNSdWJYakhYNjNMT19BMkFhZlY0cUFuSng5dnBpTnVVR1MwWjc1dzVCTC0tRjVoUUdTVGRnX2RnUEp2cjFHRkwtSmtmRk5LdF8x?oc=5",
+            "body": ""
+          },
+          {
             "title": "Why Amazon Stock and the Rest of Big Tech Could Be the Next GE. That’s Not a Good Thing. - Barron's",
-            "url": "https://news.google.com/rss/articles/CBMihANBVV95cUxPM0Y3dVpFQjRSQkwzcG05cVhuMnlpSWlkQVpQeGlOYWtZR3BvdVB6N3h0VUJvUGJvdmRrV1JBQUotNG96NGdrcHpTaDhVRUg4cjg2QVNnd2tWNHBxM0o2ZEtreG1OWWNWNFlfMUV1TWpwc0hpQkNuMEVvZ1Vfc0xvNmVvSE5aR1NmZTQ5R1FRWHMzV3BnZlQwTE1OZDhOZ29rWElnMUFNdzRnUTdwcTd4TXNCWEJTcDJ6bzVqMlBFWkxPU3Q2R2dYdWhJX04taFNkald6N1FNdmM4NlJWVzZfSDdlUjFDRWdiTDJuVzBYaHBROWY2TlhrLS1tTndOV2NmM3VBVmo5TVkyS2Fva3VCNTZXX1dmeEhRTDk5ZnVZczVmbEhOM0xwTV9LalY1UkdIbjBmcUtkZ3BYdzEwOWNSSG0tdVdoQWZCaE85c3hTWXZhU3lVazBwLXZONzNfOW5PTC1penNldWxxdmJXMDg5S0FkNTg5azR0S0x1NHVjQ3gyZmpU?oc=5",
+            "url": "https://news.google.com/rss/articles/CBMihANBVV95cUxNdjdfM0JCNWN3dlBGelpLQXFHcnVjR2NtandrVDd4QXh5THNaa3hHSk95dXdYVW96OGZ0TzlMMTZpMW5RQks2eVl5YXZaa3JoTXdOT25INEc5aHRGUTNYOEVrMWhJdGIySWt5Mk9pNklKZVU2OU1qSGY1UzZFUzhQZmNzUTYxcklRVGFhb3BJdHYzTzducEVkTHhoMHdTa0owQlNxU2VVcm0tMndrU3hEZXM2dk1YZEh1QjdIMV9CZk1fcEw0V09sMkRTWndVSVNqQUI0Skp3d3BYbFh2SkgwLUo4Nzh2b3Q4Z0QwMHYtRlNwdjBXdk5fRXQxRGFvSTFZNU9OODRMUURDOXBxWTRFNjlVWHZ4ekE1UTBicko2VFBCS25BX3FoSTB4TDZGdjNwdU1iMFFaanZDd1RWMGxSU0JodDg5RHE0eXEzWXJyVm5HSmc3NHBzRy1FVnUxS3ZkZktDd29raGJ5QXNnUUg5U1l3a0dtRGdISkRDcDVPN0p3SXFT?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:18.874783"
+        "fetched_at": "2026-02-16T07:39:03.834331"
       }
     },
     {
@@ -5927,7 +5927,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:20.318668"
+        "fetched_at": "2026-02-16T07:39:04.738409"
       }
     },
     {
@@ -6121,11 +6121,6 @@
       "news": {
         "articles": [
           {
-            "title": "Is Rubrik Stock a Good Buy? - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBmTEo1SlF3UlltTGR0dzVkbDZoVkdORTlmOGRCWC1DVzREOFVoLUgtaDg2aWxJaEFld1Z2cW50VVBfbjZsSUs1NVpqckgyamFQU2tTWkx0d0c0d2dLd2dBNDdlNkQwekVzbEFnVGFDcUJXTlhJbnc?oc=5",
-            "body": ""
-          },
-          {
             "title": "Is Amazon Stock a Good Buy? - AOL.com",
             "url": "https://news.google.com/rss/articles/CBMiowJBVV95cUxNRXJSbHAzZzNRS0N0Z3F1ekx2MlZ0V1dlTjNFV29BVUp6QXJyQ2QxNGptZ3BaakNmQWp1RVZ4V29kRTdVeFdQN2dZeFNPUV9NVHlZLWNSV1ZWamJWNzNQdDQySUJIdXFkcGpMcFo0ZjRFOTU2bHdZaDFLa2E5dk1nYnVEaWJ1cDhPQUgzOE9PTlhkRmFsdzFsSEU3R3U2cmhmTmZnR1oyUFRlbjVVSzhwWXgxSzlhVXFBcmxtN29wQm0xRjlHR3BOSXpWMmtGTy1GYXVCN1gyU1c1N09TSVhwVGU3OFFxNmI5RWVYdWlOa2lrblFySllDdE1XQzloSnJXR3hLektnTmEtdm5lSmJrRW1pb3Nfc0EtSlhhUk9rdmFrMlU?oc=5",
             "body": ""
@@ -6141,12 +6136,17 @@
             "body": ""
           },
           {
+            "title": "Nvidia Stock Investors Just Got Good News From Amazon, Google, Meta Platforms, and Microsoft - Yahoo Finance",
+            "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOaGZTTjRuM21WQ0FwbjdmdERDbDl4VkFDbGROU1c5VW5wXy1zYWFNcjNaLU1IZ2Y4cWttT0xmLU9lQy1LVmxDRnJIRmlkbFBVTl9nSkJlLS1JeTU3MlF2b0o3Yks5NXRnRHNKbEhSMnZZVldwY2FXV0F3RUMyU2czNWVJMA?oc=5",
+            "body": ""
+          },
+          {
             "title": "Why good financial news didn't fuel a broad stock market rally - Detroit Free Press",
             "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQUEU5cDlhS01oS013OGs0cUdQT2ZUczZneEdOdXdFUGY1aWd1SXgtOUdFc1I0bE9rYl9mZk05MVgzeHBDSzZ4bE9yQWtJc2RvMG5VQ0FUWng0VmhIOVNQSlQ3Yk1tNzZNZ2o1NDViNi1zVzgxMTdhR0RyOEl0aUdGcjFhbWpiY3RLZzZKWXF5d20wX3RsbjQtd201b0liWTM1b29vbDlkZHNFem00VzFYcQ?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:21.951391"
+        "fetched_at": "2026-02-16T07:39:05.888576"
       }
     },
     {
@@ -6551,7 +6551,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:23.379557"
+        "fetched_at": "2026-02-16T07:39:06.817786"
       }
     },
     {
@@ -6771,7 +6771,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:24.846861"
+        "fetched_at": "2026-02-16T07:39:07.749378"
       }
     },
     {
@@ -6988,7 +6988,7 @@
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:26.247408"
+        "fetched_at": "2026-02-16T07:39:08.672409"
       }
     },
     {
@@ -7181,8 +7181,13 @@
       "news": {
         "articles": [
           {
-            "title": "Tariff Uncertainty And Buffett Buying Put Nucor’s Resilience To The Test - Yahoo Finance",
-            "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNblo4SnItRy12QjdKa05DUlh2bTRnWUZEY3I4TFJfZVJWOUw3Z01ZVUlJUTFwczdGS1Z0TXBkUXRTT3hxN2F0czhnQnpNY2dmcHZBWEdfeXFTeEc4QlpLUzQydzdZdUl0TDdBLUVKN1piSE5nWS04cHVVYUJKc3oyTTkzUGZSTG5xVlpR?oc=5",
+            "title": "Tariff Uncertainty And Buffett Buying Put Nucor’s Resilience To The Test - Yahoo Finance Singapore",
+            "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPUm1YaEdUWjJ1RUtOdmJjU0xhU2QwelpodDlMR2QxTWRnelRjYjQzTHY1blZ6T25TdVBUWHVTZ0R0RDF2bUtXRnBONkd2eXFreEp1R0UyNURXN2RYUFNvZjRkY191VVVLX2RHelo2aThxZmt5ZllhMmN3WjBuS1U1eV9Yd25UMzJtc2hVV3VmNA?oc=5",
+            "body": ""
+          },
+          {
+            "title": "Evaluating Nucor (NUE) After Earnings Miss Tariff Uncertainty Insider Selling And Buffett’s Stake Increase - simplywall.st",
+            "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQNkI3dnJ3bzd4S2NmUzhsVFFmb2o0cjY5UjZRTFUwcjFXQ19EZldoUlNSOFplMXBsQThFQkdSU0FfVG5LeWpJdGhDX0E4U1QzOW1DUG5vaG1JUHNaTHoySXI2Wm9wbVFFOFRnaExCZy15Ym92N0RaLWRjRHRLZ01jalVXem9wdTlyRWtHWExnZklUc3U4UmVIZU5pR0dlYkVfLS1UWFV5bWtYSjRyb2xJY2QtZ0ktaXFyczhuUjhR?oc=5",
             "body": ""
           },
           {
@@ -7196,17 +7201,12 @@
             "body": ""
           },
           {
-            "title": "Nucor Valuation In Focus As Tariff Uncertainty Meets Buffett Interest - simplywall.st",
-            "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZVpMZXZERXVWT0lRQlVzV3pteDJ1RDRueERvNjlFTU4yX0hVc09haDNaQ0s3bTB5V011OUJKbWtOMDZCWUVPLVh1ZUVyUktZNzdYWU5ad2EyQllHSU1KU0lua2pERGotc1YzcUtPOGRxTDVNSDlnZFVjQU84YkFfVzZGYTN2RVdfLVptejV2blphWWQtaEptR2ZtZW1peDBBRjMzVnI2X0hFbFlJUnQtWlZEUUotSVZGRnU0Unh3MA?oc=5",
-            "body": ""
-          },
-          {
-            "title": "Insider Sell: Kenneth Query Sells Shares of Nucor Corp (NUE) - GuruFocus",
-            "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQSUkxUm5jdUgyenRQUFVyTzA4SXU1OVVZOVBvUmNBR2RNbWF3RU0xVWRnc2RkcGVuZ3FsejlMOFdkYmRIdk55cDBsNE9XdFBFTGhJWDN1eVNYSW4zQ2x0VFVUcnprZ3lMTUhNcTNHaHNKcFp1NlV5UmVFODBMRW9RbFg3VUY4ejBkQUt3NW1ySXdaR24yRUtYRllVMUk?oc=5",
+            "title": "Assessing Nucor (NUE) Valuation After A Strong Three Month Share Price Run - Yahoo Finance",
+            "url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPSmU0Z1N0WjY0dnJvRjdMa0VRYTBiWUdqMTVJY085ZXpMLXo0cHlTTjA3bFVKbDFlMF9HTUxJRm1CTmdkYkdRVHQ2MVJ0LVZmT2NSSnRHVlFjMlFKWkU1Qk1Nb21naFExekxfZ2xkUUxLSzVDdS1ySmlzcHh6ejhSXzZVQlRNSzQ3anc?oc=5",
             "body": ""
           }
         ],
-        "fetched_at": "2026-02-16T05:59:27.705134"
+        "fetched_at": "2026-02-16T07:39:09.631593"
       }
     }
   ]
